@@ -9,20 +9,20 @@ const initialState = {
 export default function (state = initialState, action) {
   switch (action.type) {
     // GET STUDENTS
-    case types.GET_STUDENTS_REQUEST: {
+    case types.GET_STUDENT_REQUEST: {
       return {
         ...state,
         isLoading: true,
       };
     }
-    case types.GET_STUDENTS_SUCCESS: {
+    case types.GET_STUDENT_SUCCESS: {
       return {
         ...state,
         students: action.payload,
         isLoading: false,
       };
     }
-    case types.GET_STUDENTS_FAILURE: {
+    case types.GET_STUDENT_FAILURE: {
       return {
         ...state,
         isLoading: false,
@@ -30,20 +30,38 @@ export default function (state = initialState, action) {
     }
 
     // CREATE STUDENT
-    case types.CREATE_STUDENT_REQUEST: {
+    case types.CREATE_STUDENT_REQUEST:
+    case types.UPDATE_STUDENT_REQUEST: {
       return {
         ...state,
         isLoading: true,
       };
     }
-    case types.CREATE_STUDENT_SUCCESS: {
+
+    case types.CREATE_STUDENT_SUCCESS:
+    case types.UPDATE_STUDENT_SUCCESS: {
+      const student = action.payload;
+      const { students } = state;
+      const exists = students.find(item => String(item.id) === String(student.id));
+      let newStudents;
+
+      if (exists) {
+        newStudents = students.map(item =>
+          String(item.id) === String(student.id) ? student : item
+        );
+      } else {
+        newStudents = [...students, student];
+      }
+
       return {
         ...state,
-        students: [...state.students, action.payload],
+        students: newStudents,
         isLoading: false,
       };
     }
-    case types.CREATE_STUDENT_FAILURE: {
+
+    case types.CREATE_STUDENT_FAILURE:
+    case types.UPDATE_STUDENT_FAILURE: {
       return {
         ...state,
         isLoading: false,

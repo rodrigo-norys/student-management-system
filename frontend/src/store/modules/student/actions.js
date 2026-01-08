@@ -1,25 +1,5 @@
 import * as types from './types';
 
-// GET STUDENTS
-export function getStudentsRequest() {
-  return {
-    type: types.GET_STUDENTS_REQUEST,
-  };
-}
-
-export function getStudentsSuccess(students) {
-  return {
-    type: types.GET_STUDENTS_SUCCESS,
-    payload: students,
-  };
-}
-
-export function getStudentsFailure() {
-  return {
-    type: types.GET_STUDENTS_FAILURE,
-  };
-}
-
 // CREATE STUDENT
 export function createStudentRequest(studentData) {
   return {
@@ -39,6 +19,48 @@ export function createStudentFailure(studentData) {
   return {
     type: types.CREATE_STUDENT_FAILURE,
     payload: studentData,
+  };
+}
+
+// GET STUDENT
+export function getStudentRequest() {
+  return {
+    type: types.GET_STUDENT_REQUEST,
+  };
+}
+
+export function getStudentSuccess(students) {
+  return {
+    type: types.GET_STUDENT_SUCCESS,
+    payload: students,
+  };
+}
+
+export function getStudentFailure() {
+  return {
+    type: types.GET_STUDENT_FAILURE,
+  };
+}
+
+// UPDATE STUDENT
+export function updateStudentRequest(payload) {
+  return {
+    type: types.UPDATE_STUDENT_REQUEST,
+    payload,
+  };
+}
+
+export function updateStudentSuccess(payload) {
+  return {
+    type: types.UPDATE_STUDENT_SUCCESS,
+    payload,
+  };
+}
+
+export function updateStudentFailure(payload) {
+  return {
+    type: types.UPDATE_STUDENT_FAILURE,
+    payload,
   };
 }
 

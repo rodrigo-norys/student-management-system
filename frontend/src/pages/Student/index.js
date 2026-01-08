@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
+import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { isEmail } from 'validator';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Container } from '../../styles/GlobalStyles';
 import { Form, ActionsContainer } from './styled';
@@ -11,7 +13,11 @@ import Loading from '../../components/Loading';
 
 export default function Student() {
   const dispatch = useDispatch();
-  const isLoading = useSelector(state => state.student.isLoading);
+  const { id } = useParams();
+  const isLoading = useSelector(item => item.student.isLoading);
+  const student = useSelector(state =>
+    state.student.students.find(student => String(student.id) === String(id))
+  );
 
   const [name, setName] = useState('');
   const [last_name, setLastName] = useState('');
@@ -19,6 +25,24 @@ export default function Student() {
   let [age, setAge] = useState('');
   let [weight, setWeight] = useState('');
   let [height, setHeight] = useState('');
+
+  useEffect(() => {
+    if (!student) {
+      dispatch(actions.getStudentRequest());
+    }
+  }, [id, student, dispatch]);
+
+  useEffect(() => {
+    if (student) {
+      setName(student.name);
+      setLastName(student.last_name);
+      setEmail(student.email);
+      setAge(student.age);
+      setWeight(student.weight);
+      setHeight(student.height);
+    }
+  }, [student]);
+
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -51,13 +75,15 @@ export default function Student() {
     }
     if (formErrors) return;
 
-    dispatch(actions.createStudentRequest({ name, last_name, email, age, weight, height, shouldRedirect }
+    dispatch(actions.createStudentRequest({id, name, last_name, email, age, weight, height, shouldRedirect }
     ));
   }
+
+
   return (
     <Container>
       <Loading isLoading={isLoading} />
-      <h1>Student</h1>
+      <h1>{id ? 'Edit Student' : 'Create Student'}</h1>
       <Form onSubmit={handleSubmit}>
         <input type='text' value={name} onChange={e => setName(e.target.value)} placeholder='Name' />
         <input type='text' value={last_name} onChange={e => setLastName(e.target.value)} placeholder='Surname' />
@@ -72,4 +98,8 @@ export default function Student() {
       </Form>
     </Container>
   );
-}
+};
+
+Student.propTypes = {
+  match: PropTypes.shape({}).isRequired,
+};

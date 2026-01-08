@@ -6,30 +6,41 @@ import * as actions from './actions';
 import * as types from './types';
 import axios from '../../../services/axios';
 
-function* getStudents() {
+function* getStudentsRequest() {
   try {
     const response = yield call(axios.get, '/students');
-    yield put(actions.getStudentsSuccess(response.data.allStudents));
-    console.log(response.data)
+    yield put(actions.getStudentSuccess(response.data.allStudents));
   } catch (err) {
-    yield put(actions.getStudentsFailure());
+    yield put(actions.getStudentFailure());
   }
 }
 
 function* createStudentRequest({ payload }) {
   try {
-    const { name, last_name, email, age, weight, height, shouldRedirect } = payload;
-    const response = yield call(axios.post, '/students', { name, last_name, email, age, weight, height });
-    yield put(actions.createStudentSuccess(response.data));
-    toast.success('Successfully student created');
+    const { id, name, last_name, email, age, weight, height, shouldRedirect } = payload;
 
-    if (shouldRedirect) {
-      history.push('/');
+    if (id) {
+      yield call(axios.put, `/students/${id}`, {
+        name, last_name, email, age, weight, height
+      });
+
+      yield put(actions.updateStudentSuccess(payload));
+      toast.success('Successfully student updated');
+
+    } else {
+      const response = yield call(axios.post, '/students', {
+        name, last_name, email, age, weight, height
+      });
+
+      yield put(actions.createStudentSuccess(response.data));
+      toast.success('Successfully student created');
     }
+
+    if (shouldRedirect) history.push('/');
+
   } catch (err) {
     const errors = get(err, 'response.data.errors', []);
     errors.map(error => toast.error(error));
-
     yield put(actions.createStudentFailure());
   }
 }
@@ -51,7 +62,7 @@ function* deleteStudentRequest({ payload }) {
 }
 
 export default all([
-  takeLatest(types.GET_STUDENTS_REQUEST, getStudents),
+  takeLatest(types.GET_STUDENT_REQUEST, getStudentsRequest),
   takeLatest(types.DELETE_STUDENT_REQUEST, deleteStudentRequest),
   takeLatest(types.CREATE_STUDENT_REQUEST, createStudentRequest)
 ]);
