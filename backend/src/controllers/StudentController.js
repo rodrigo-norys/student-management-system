@@ -17,15 +17,14 @@ class StudentController {
   // index
   async index(req, res) {
     try {
-      const allStudents = await Student.findAll({
+      return res.json(await Student.findAll({
         attributes: ['id', 'name', 'last_name', 'email', 'age', 'weight', 'height'],
         order: [['id', 'DESC'], [Photo, 'id', 'DESC']],
         include: {
           model: Photo,
           attributes: ['url', 'filename']
         }
-      });
-      return res.json({allStudents});
+      }));
     } catch (e) {
       return res.json({ errors: e.errors.map(err => err.message) });
     }

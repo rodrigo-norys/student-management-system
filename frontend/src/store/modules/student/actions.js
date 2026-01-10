@@ -43,24 +43,24 @@ export function getStudentFailure() {
 }
 
 // UPDATE STUDENT
-export function updateStudentRequest(payload) {
+export function updateStudentRequest(updatedStudent) {
   return {
     type: types.UPDATE_STUDENT_REQUEST,
-    payload,
+    payload: updatedStudent,
   };
 }
 
-export function updateStudentSuccess(payload) {
+export function updateStudentSuccess(updatedStudent) {
   return {
     type: types.UPDATE_STUDENT_SUCCESS,
-    payload,
+    payload: updatedStudent,
   };
 }
 
-export function updateStudentFailure(payload) {
+export function updateStudentFailure(updatedStudent) {
   return {
     type: types.UPDATE_STUDENT_FAILURE,
-    payload,
+    payload: updatedStudent,
   };
 }
 

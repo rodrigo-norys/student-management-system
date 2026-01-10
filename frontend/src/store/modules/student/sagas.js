@@ -9,7 +9,7 @@ import axios from '../../../services/axios';
 function* getStudentsRequest() {
   try {
     const response = yield call(axios.get, '/students');
-    yield put(actions.getStudentSuccess(response.data.allStudents));
+    yield put(actions.getStudentSuccess(response.data));
   } catch (err) {
     yield put(actions.getStudentFailure());
   }

@@ -75,10 +75,20 @@ export default function Student() {
     }
     if (formErrors) return;
 
-    dispatch(actions.createStudentRequest({id, name, last_name, email, age, weight, height, shouldRedirect }
+    dispatch(actions.createStudentRequest({ id, name, last_name, email, age, weight, height, shouldRedirect }
     ));
   }
 
+  // SUBMITTERS
+  const foundStudent = id ?
+    <>
+      <button type='submit' name='stay'>Update & Stay</button>
+      <button type='submit' name='leave'>Update & List</button>
+    </> :
+    <>
+      <button type='submit' name='stay'>Create & Stay</button>
+      <button type='submit' name='leave'>Create & List</button>
+    </>
 
   return (
     <Container>
@@ -92,8 +102,7 @@ export default function Student() {
         <input type='number' value={weight} onChange={e => setWeight(e.target.value)} placeholder='Weight (Use "." instead "," for decimal numbers)' />
         <input type='number' value={height} onChange={e => setHeight(e.target.value)} placeholder='Height (Use "." instead "," for decimal numbers)' />
         <ActionsContainer>
-          <button type='submit' name='stay'>Create & Stay</button>
-          <button type='submit' name='leave'>Create & List</button>
+          {foundStudent}
         </ActionsContainer>
       </Form>
     </Container>
