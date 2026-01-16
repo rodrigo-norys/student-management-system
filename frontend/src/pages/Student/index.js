@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { isEmail } from 'validator';
+import { FaUserCircle, FaEdit } from 'react-icons/fa';
 
-import { Container } from '../../styles/GlobalStyles';
-import { Form, ActionsContainer } from './styled';
+import PropTypes from 'prop-types';
+import { isEmail } from 'validator';
 import * as actions from '../../store/modules/student/actions.js';
 
 import Loading from '../../components/Loading';
 
-export default function Student() {
-  const dispatch = useDispatch();
-  const { id } = useParams();
-  const isLoading = useSelector(item => item.student.isLoading);
-  const student = useSelector(state =>
-    state.student.students.find(student => String(student.id) === String(id))
-  );
+import { Container } from '../../styles/GlobalStyles';
+import { Form, ActionsContainer, ProfilePicture, Title } from './styled';
 
+
+export default function Student() {
   const [name, setName] = useState('');
   const [last_name, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,9 +22,17 @@ export default function Student() {
   let [weight, setWeight] = useState('');
   let [height, setHeight] = useState('');
 
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const isLoading = useSelector(item => item.student.isLoading);
+  const student = useSelector(state =>
+    state.student.students.find(student => String(student.id) === String(id))
+  );
+  const studentPhoto = student?.Photos?.[0]?.url || '';
+
   useEffect(() => {
     if (!student) {
-      dispatch(actions.getStudentRequest());
+      dispatch(actions.getStudentsRequest());
     }
   }, [id, student, dispatch]);
 
@@ -93,7 +97,18 @@ export default function Student() {
   return (
     <Container>
       <Loading isLoading={isLoading} />
-      <h1>{id ? 'Edit Student' : 'Create Student'}</h1>
+      <Title>{id ? 'Edit Student' : 'Create Student'}</Title>
+      <ProfilePicture>
+        {studentPhoto ? (
+          <img src={studentPhoto} alt="Student Photo" />
+        ) : (
+          <FaUserCircle size={180} />
+        )}
+
+        <Link to={`/photos/${id}`}>
+          <FaEdit size={16} />
+        </Link>
+      </ProfilePicture>
       <Form onSubmit={handleSubmit}>
         <input type='text' value={name} onChange={e => setName(e.target.value)} placeholder='Name' />
         <input type='text' value={last_name} onChange={e => setLastName(e.target.value)} placeholder='Surname' />

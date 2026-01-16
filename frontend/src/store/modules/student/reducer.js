@@ -9,20 +9,20 @@ const initialState = {
 export default function (state = initialState, action) {
   switch (action.type) {
     // GET STUDENTS
-    case types.GET_STUDENT_REQUEST: {
+    case types.GET_STUDENTS_REQUEST: {
       return {
         ...state,
         isLoading: true,
       };
     }
-    case types.GET_STUDENT_SUCCESS: {
+    case types.GET_STUDENTS_SUCCESS: {
       return {
         ...state,
         students: action.payload,
         isLoading: false,
       };
     }
-    case types.GET_STUDENT_FAILURE: {
+    case types.GET_STUDENTS_FAILURE: {
       return {
         ...state,
         isLoading: false,

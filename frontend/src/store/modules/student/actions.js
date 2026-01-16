@@ -22,23 +22,23 @@ export function createStudentFailure(studentData) {
   };
 }
 
-// GET STUDENT
-export function getStudentRequest() {
+// GET STUDENTS
+export function getStudentsRequest() {
   return {
-    type: types.GET_STUDENT_REQUEST,
+    type: types.GET_STUDENTS_REQUEST,
   };
 }
 
-export function getStudentSuccess(students) {
+export function getStudentsSuccess(students) {
   return {
-    type: types.GET_STUDENT_SUCCESS,
+    type: types.GET_STUDENTS_SUCCESS,
     payload: students,
   };
 }
 
-export function getStudentFailure() {
+export function getStudentsFailure() {
   return {
-    type: types.GET_STUDENT_FAILURE,
+    type: types.GET_STUDENTS_FAILURE,
   };
 }
 

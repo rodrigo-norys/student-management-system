@@ -9,9 +9,11 @@ import axios from '../../../services/axios';
 function* getStudentsRequest() {
   try {
     const response = yield call(axios.get, '/students');
-    yield put(actions.getStudentSuccess(response.data));
+    yield put(actions.getStudentsSuccess(response.data));
   } catch (err) {
-    yield put(actions.getStudentFailure());
+    const errors = get(err, 'response.data.errors', []);
+    errors.map(error => toast.error(error));
+    yield put(actions.getStudentsFailure());
   }
 }
 
@@ -62,7 +64,7 @@ function* deleteStudentRequest({ payload }) {
 }
 
 export default all([
-  takeLatest(types.GET_STUDENT_REQUEST, getStudentsRequest),
+  takeLatest(types.GET_STUDENTS_REQUEST, getStudentsRequest),
   takeLatest(types.DELETE_STUDENT_REQUEST, deleteStudentRequest),
   takeLatest(types.CREATE_STUDENT_REQUEST, createStudentRequest)
 ]);

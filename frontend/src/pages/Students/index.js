@@ -17,7 +17,7 @@ export default function Students() {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
 
   useEffect(() => {
-    dispatch(actions.getStudentRequest());
+    dispatch(actions.getStudentsRequest());
   }, [dispatch]);
 
   if (!isLoggedIn) {
