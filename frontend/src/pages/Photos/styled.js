@@ -17,7 +17,14 @@ label {
   margin: 30px auto;
   border-radius: 50%;
 }
-  input {
-    display: none;
-  }
+input {
+  display: none;
+}
+
+img {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
 `;

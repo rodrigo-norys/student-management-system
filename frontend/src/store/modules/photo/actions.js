@@ -1,5 +1,26 @@
 import * as types from './types';
 
+export function getPhotoRequest(photo) {
+  return {
+    type: types.GET_PHOTO_REQUEST,
+    payload: photo,
+  };
+}
+
+export function getPhotoSuccess(photo) {
+  return {
+    type: types.GET_PHOTO_SUCCESS,
+    payload: photo,
+  };
+}
+
+export function getPhotoFailure(photo) {
+  return {
+    type: types.GET_PHOTO_FAILURE,
+    payload: photo,
+  };
+}
+
 export function updatePhotoRequest(updatedPhoto) {
   return {
     type: types.UPDATE_PHOTO_REQUEST,
@@ -9,7 +30,7 @@ export function updatePhotoRequest(updatedPhoto) {
 
 export function updatePhotoSuccess(updatedPhoto) {
   return {
-    types: types.UPDATE_PHOTO_SUCCESS,
+    type: types.UPDATE_PHOTO_SUCCESS,
     payload: updatedPhoto,
   };
 }

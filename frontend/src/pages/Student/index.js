@@ -13,7 +13,6 @@ import Loading from '../../components/Loading';
 import { Container } from '../../styles/GlobalStyles';
 import { Form, ActionsContainer, ProfilePicture, Title } from './styled';
 
-
 export default function Student() {
   const [name, setName] = useState('');
   const [last_name, setLastName] = useState('');
@@ -24,7 +23,7 @@ export default function Student() {
 
   const dispatch = useDispatch();
   const { id } = useParams();
-  const isLoading = useSelector(item => item.student.isLoading);
+  const isLoading = useSelector(state => state.student.isLoading);
   const student = useSelector(state =>
     state.student.students.find(student => String(student.id) === String(id))
   );
@@ -99,6 +98,7 @@ export default function Student() {
       <Loading isLoading={isLoading} />
       <Title>{id ? 'Edit Student' : 'Create Student'}</Title>
       <ProfilePicture>
+
         {studentPhoto ? (
           <img src={studentPhoto} alt="Student Photo" />
         ) : (
