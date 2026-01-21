@@ -20,33 +20,22 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE: 'school_local'
-      DATABASE_HOST: 'db'
-      DATABASE_PORT: 3306
-      DATABASE_USERNAME: 'root'
-      DATABASE_PASSWORD: '123456'
-      TOKEN_SECRET: 'v5jRRnQEjbgaoXS5Y1FWJJTk7YZ1FdXJuiry2Xld67pe2NiGH8'
-      TOKEN_EXPIRATION: '7d'
-      APP_URL: 'http://69.6.250.127:3001'
-      APP_PORT: 3001
       NODE_ENV: 'production'
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
       - ./backend/uploads:/usr/src/app/uploads
+      # Como você criou o .env manual no VPS, vamos garantir que a API o use:
+      - ./backend/.env:/usr/src/app/.env
+
+  frontend:
+    build: ./frontend
+    container_name: react_app
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - api
 
 volumes:
   db_data:
-
-
-frontend:
-  build:
-    context: ./frontend
-    args:
-      - REACT_APP_API_URL=http://69.6.250.127:3001
-  container_name: react_app
-  restart: always
-  ports:
-    - "80:80"
-  depends_on:
-    - api
