@@ -1,0 +1,39 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: mariadb_db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: '123456'
+      MARIADB_DATABASE: 'school_local'
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  api:
+    build: ./backend
+    container_name: node_api
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    environment:
+      DATABASE: 'school_local'
+      DATABASE_HOST: 'db'
+      DATABASE_PORT: 3306
+      DATABASE_USERNAME: 'root'
+      DATABASE_PASSWORD: '123456'
+      TOKEN_SECRET: 'v5jRRnQEjbgaoXS5Y1FWJJTk7YZ1FdXJuiry2Xld67pe2NiGH8'
+      TOKEN_EXPIRATION: '7d'
+      APP_URL: 'http://69.6.250.127:3001'
+      APP_PORT: 3001
+      NODE_ENV: 'production'
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./backend/uploads:/usr/src/app/uploads
+
+volumes:
+  db_data:
