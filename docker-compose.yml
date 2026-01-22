@@ -25,11 +25,13 @@ services:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
       - ./backend/uploads:/usr/src/app/uploads
-      # Como você criou o .env manual no VPS, vamos garantir que a API o use:
       - ./backend/.env:/usr/src/app/.env
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - REACT_APP_API_URL=http://69.6.250.127:3001
     container_name: react_app
     restart: always
     ports:
