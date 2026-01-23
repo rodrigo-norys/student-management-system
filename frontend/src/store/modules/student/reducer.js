@@ -40,17 +40,17 @@ export default function (state = initialState, action) {
 
     case types.CREATE_STUDENT_SUCCESS:
     case types.UPDATE_STUDENT_SUCCESS: {
-      const student = action.payload;
+      const { id, name, last_name, email, age, weight, height} = action.payload;
       const { students } = state;
-      const exists = students.find(item => String(item.id) === String(student.id));
+      const exists = students.find(item => String(item.id) === String(id));
       let newStudents;
 
       if (exists) {
         newStudents = students.map(item =>
-          String(item.id) === String(student.id) ? student : item
+          String(item.id) === String(id) ? { id, name, last_name, email, age, weight, height} : item
         );
       } else {
-        newStudents = [...students, student];
+        newStudents = [...students, { id, name, last_name, email, age, weight, height}];
       }
 
       return {

@@ -1,10 +1,11 @@
 import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
 import { get } from 'lodash';
-import history from '../../../services/history';
+
+import axios from '../../../services/axios';
+
 import * as actions from './actions';
 import * as types from './types';
-import axios from '../../../services/axios';
 
 function* getStudentsRequest() {
   try {
@@ -19,8 +20,7 @@ function* getStudentsRequest() {
 
 function* createStudentRequest({ payload }) {
   try {
-    const { id, name, last_name, email, age, weight, height, shouldRedirect } = payload;
-
+    const { id, name, last_name, email, age, weight, height, shouldLeave, shouldStay, navigate } = payload;
     if (id) {
       yield call(axios.put, `/students/${id}`, {
         name, last_name, email, age, weight, height
@@ -28,7 +28,6 @@ function* createStudentRequest({ payload }) {
 
       yield put(actions.updateStudentSuccess(payload));
       toast.success('Successfully student updated');
-
     } else {
       const response = yield call(axios.post, '/students', {
         name, last_name, email, age, weight, height
@@ -38,7 +37,8 @@ function* createStudentRequest({ payload }) {
       toast.success('Successfully student created');
     }
 
-    if (shouldRedirect) history.push('/');
+    if (shouldStay) navigate(0);
+    if (shouldLeave) navigate('/');
 
   } catch (err) {
     const errors = get(err, 'response.data.errors', []);
