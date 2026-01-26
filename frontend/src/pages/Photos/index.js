@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; // Adicionei React
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { get } from 'lodash';
@@ -13,13 +13,14 @@ export default function Photos() {
   const [photo, setPhoto] = useState('');
   const { id } = useParams();
 
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const student = useSelector(state =>
     state.student.students.find(student => String(student.id) === String(id))
   );
   const isLoading = useSelector(state => state.student.isLoading);
-  const mainPhoto = student?.Photos?.[0]?.url || '';
+  const mainPhoto = student?.Photos?.[0]?.url || photo;
 
   useEffect(() => {
     if (!student) {
@@ -38,7 +39,7 @@ export default function Photos() {
     formData.append('student_id', id);
     formData.append('photo', file);
 
-    dispatch(actions.updatePhotoRequest({ id, formData }));
+    dispatch(actions.updatePhotoRequest({ id, formData, navigate}));
   }
 
   return (

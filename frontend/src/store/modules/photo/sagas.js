@@ -5,19 +5,19 @@ import * as actions from './actions';
 import * as loginActions from '../auth/actions.js';
 import * as types from './types';
 import axios from '../../../services/axios';
-import history from '../../../services/history';
 
 function* updatePhotoRequest({ payload }) {
+  const { formData, id, navigate } = payload;
   try {
-    const { formData, id } = payload;
     const response = yield call(axios.post, `/photos/${id}`, formData)
 
     yield put(actions.updatePhotoSuccess({
       id,
       photo: response.data.url
     }));
+
     toast.success('Successfully');
-    history.push(`/student/${id}/edit`);
+    navigate(`/student/${id}/edit`);
 
   } catch (err) {
     const status = get(err, 'response.status', 0);
@@ -25,7 +25,7 @@ function* updatePhotoRequest({ payload }) {
       toast.error('Internal server error. Please check the backend console.');
     } else if (status === 401) {
       toast.error('Session expired, please log in again.');
-      history.push('/');
+      navigate('/');
       yield put(loginActions.loginFailure());
     } else {
       const errors = get(err, 'response.data.errors', []);

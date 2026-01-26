@@ -22,7 +22,7 @@ export default function Student() {
   const isLoading = useSelector(state => state.student.isLoading);
 
   const student = useSelector(state =>
-    state.student.students.find(s => String(s.id) === String(id))
+    state.student.students.find(stud => String(stud.id) === String(id))
   );
 
   const [name, setName] = useState('');

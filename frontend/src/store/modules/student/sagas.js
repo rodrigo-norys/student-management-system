@@ -26,7 +26,7 @@ function* createStudentRequest({ payload }) {
         name, last_name, email, age, weight, height
       });
 
-      yield put(actions.updateStudentSuccess(payload));
+      yield put(actions.updateStudentSuccess({ id, name, last_name, email, age, weight, height}));
       toast.success('Successfully student updated');
     } else {
       const response = yield call(axios.post, '/students', {
