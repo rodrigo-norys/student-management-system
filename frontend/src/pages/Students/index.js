@@ -45,34 +45,37 @@ export default function Students() {
           <button type='button'>Add</button>
         </Link>
       </HeaderToolbar>
+
       <StudentContainer>
         {students.map(student => (
           <div key={String(student.id)}>
             <ProfilePicture>
-              {
-                get(student, 'Photos[0].url', false) ?
-                  (<img src={student.Photos[0].url} alt="" />) :
-                  (<FaUserCircle size={36} />)
-              }
+              {get(student, 'Photos[0].url', false) ? (
+                <img src={student.Photos[0].url} alt="" />
+              ) : (
+                <FaUserCircle size={36} />
+              )}
             </ProfilePicture>
-            <span>{student.name}</span>
-            <span>{student.email}</span>
-            <Link to={`/student/${student.id}/edit`}>
-              <FaEdit size={16} />
-            </Link>
 
-            <Link
-              to={`/student/${student.id}/delete`}
-              onClick={handleDeleteAsk}>
-              <FaWindowClose size={16} />
-            </Link>
+            <div className="info">
+              <span className="name">{student.name}</span>
+              <span className="email">{student.email}</span>
+            </div>
 
-            <FaExclamation
-              size={16}
-              display="none"
-              cursor="pointer"
-              onClick={(e) => handleDelete(e, student.id)}
-            />
+            <div className="actions">
+              <Link to={`/student/${student.id}/edit`}>
+                <FaEdit size={16} />
+              </Link>
+              <Link to={`/student/${student.id}/delete`} onClick={handleDeleteAsk}>
+                <FaWindowClose size={16} />
+              </Link>
+              <FaExclamation
+                size={16}
+                display="none"
+                cursor="pointer"
+                onClick={(e) => handleDelete(e, student.id)}
+              />
+            </div>
           </div>
         ))}
       </StudentContainer>

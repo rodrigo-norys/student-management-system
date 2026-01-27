@@ -68,8 +68,8 @@ export default function Student() {
     const shouldStay = e.nativeEvent.submitter.name === 'stay';
 
     const rules = [
-      { condition: name.length < 3 || name.length > 50, message: 'Invalid name' },
-      { condition: last_name.length < 3 || last_name.length > 50, message: 'Invalid surname' },
+      { condition: name.length < 3 || name.length > 20, message: 'Invalid name' },
+      { condition: last_name.length < 3 || last_name.length > 30, message: 'Invalid surname' },
       { condition: !isEmail(email), message: 'Invalid email' },
       { condition: Number.isNaN(age) || (age < 5 || age > 80), message: 'Invalid age' },
       { condition: Number.isNaN(weight), message: 'Invalid weight' },
