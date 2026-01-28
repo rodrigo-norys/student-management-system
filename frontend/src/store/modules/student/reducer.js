@@ -84,7 +84,7 @@ export default function (state = initialState, action) {
           (student) => student.id !== studentId
         ),
         isLoading: false,
-      }
+      };
     }
     case types.DELETE_STUDENT_FAILURE: {
       return {
@@ -94,28 +94,35 @@ export default function (state = initialState, action) {
     }
 
     ///////////// UPDATE PHOTO /////////////
+    case photoTypes.UPDATE_PHOTO_REQUEST: {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+
     case photoTypes.UPDATE_PHOTO_SUCCESS: {
       const { id, photo } = action.payload;
       const students = state.students;
       const studentsToNotUpdate = students.filter(student => String(student.id) !== String(id));
-      
+
       const studentToUpdate = students.find(student => {
         if (String(student.id) === String(id)) {
           return {
             ...student,
-            Photos: [{ url: photo }]
+            Photos: [{ url: photo }],
           }
         } else {
           return {
-            students: [...students]
+            students: [...students],
           }
         }
       });
 
       return {
         ...state,
-        students: [...studentsToNotUpdate, { studentToUpdate }]
-      }
+        students: [...studentsToNotUpdate, { studentToUpdate }],
+      };
     }
 
     default: {

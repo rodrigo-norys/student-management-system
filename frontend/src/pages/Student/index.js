@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { get } from 'lodash';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { isEmail } from 'validator';
@@ -25,14 +25,13 @@ export default function Student() {
     state.student.students.find(stud => String(stud.id) === String(id))
   );
 
+  const [photo, setPhoto] = useState('');
   const [name, setName] = useState('');
   const [last_name, setLastName] = useState('');
   const [email, setEmail] = useState('');
   let [age, setAge] = useState('');
   let [weight, setWeight] = useState('');
   let [height, setHeight] = useState('');
-
-  const studentPhoto = student?.Photos?.[0]?.url || '';
 
   useEffect(() => {
     if (!student) {
@@ -48,6 +47,11 @@ export default function Student() {
       setAge(student.age);
       setWeight(student.weight);
       setHeight(student.height);
+
+      const photoData = get(student, 'Photos', '');
+      if (photoData) {
+        setPhoto(get(photoData, '[0].url', ''));
+      }
     }
   }, [student]);
 
@@ -84,7 +88,7 @@ export default function Student() {
 
     if (formErrors) return;
 
-    dispatch(actions.createStudentRequest({ id, name, last_name, email, age, weight, height, shouldLeave, shouldStay, navigate }
+    dispatch(actions.createStudentRequest({ id,  name, last_name, email, age, weight, height, shouldLeave, shouldStay, navigate }
     ));
   }
 
@@ -106,8 +110,8 @@ export default function Student() {
 
       {id ?
         <ProfilePicture>
-          {studentPhoto ? (
-            <img src={studentPhoto} alt="Student Photo" />
+          {photo ? (
+            <img src={photo} alt="Student Photo" />
           ) : (
             <FaUserCircle size={180} />
           )}

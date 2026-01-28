@@ -24,16 +24,26 @@ export default function Students() {
     return <Navigate to="/login" replace />;
   }
 
-  const handleDeleteAsk = e => {
+  function handleDeleteAsk(e) {
     e.preventDefault();
     const exclamation = e.currentTarget.nextSibling;
     exclamation.setAttribute('display', 'block');
     e.currentTarget.remove();
   };
 
-  const handleDelete = (e, id) => {
+  function handleDelete(e, id) {
     e.preventDefault();
     dispatch(actions.deleteStudentRequest(id));
+  }
+
+  function StudentPhoto({ student }) {
+    const photoUrl = get(student, 'Photos[0].url', false);
+
+    return (
+      <ProfilePicture>
+        {photoUrl ? <img src={student.Photos[0].url} alt="" /> : <FaUserCircle size={36} />}
+      </ProfilePicture>
+    );
   }
 
   return (
@@ -49,14 +59,9 @@ export default function Students() {
       <StudentContainer>
         {students.map(student => (
           <div key={String(student.id)}>
-            <ProfilePicture>
-              {get(student, 'Photos[0].url', false) ? (
-                <img src={student.Photos[0].url} alt="" />
-              ) : (
-                <FaUserCircle size={36} />
-              )}
-            </ProfilePicture>
 
+          <StudentPhoto student={student} />
+          
             <div className="info">
               <span className="name">{student.name}</span>
               <span className="email">{student.email}</span>
