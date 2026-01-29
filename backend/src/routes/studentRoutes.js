@@ -5,9 +5,9 @@ import loginRequired from '../middlewares/loginRequired.js';
 
 const router = new Router();
 
-router.get('/', studentController.index);
+router.get('/', loginRequired, studentController.index);
 router.get('/:id', loginRequired, studentController.show);
-router.post('/', studentController.create);
+router.post('/', loginRequired, studentController.create);
 router.put('/:id', loginRequired, studentController.update);
 router.delete('/:id', loginRequired, studentController.delete);
 

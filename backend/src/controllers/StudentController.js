@@ -5,7 +5,10 @@ class StudentController {
   // create
   async create(req, res) {
     try {
-      const newStudent = await Student.create(req.body);
+      const newStudent = await Student.create({
+        ...req.body,
+        user_id: req.userId,
+      });
       return res.json(newStudent);
     } catch (e) {
       return res.status(400).json({
@@ -18,6 +21,9 @@ class StudentController {
   async index(req, res) {
     try {
       return res.json(await Student.findAll({
+        where: {
+          user_id: req.userId,
+        },
         attributes: ['id', 'name', 'last_name', 'email', 'age', 'weight', 'height'],
         order: [['id', 'DESC'], [Photo, 'id', 'DESC']],
         include: {
@@ -40,7 +46,11 @@ class StudentController {
           errors: ['You must enter an ID']
         });
       }
-      const student = await Student.findByPk(id, {
+      const student = await Student.findOne({
+        where: {
+          id: id,
+          user_id: req.userId
+        },
         attributes: ['id', 'name', 'last_name', 'email', 'age', 'weight', 'height'],
         order: [['id', 'DESC'], [Photo, 'id', 'DESC']],
         include: {
@@ -67,31 +77,22 @@ class StudentController {
           errors: ['You must enter an ID']
         });
       }
-      let student = await Student.findByPk(id);
+
+      const student = await Student.findOne({
+        where: {
+          id: id,
+          user_id: req.userId
+        },
+      });
 
       if (!student) {
         return res.status(400).json({
           errors: ['Student not found']
         });
       }
-      const oldStudent = student.toJSON();
 
-      student = await student.update(
-        req.body,
-        {
-          where: {
-            id: id
-          }
-        }
-      );
-
-      if (oldStudent.updated_at.toString() === student.updated_at.toString()) {
-        return res.status(400).json({
-          errors: ['No lines were affected']
-        });
-      }
-
-      return res.json(student);
+      const updatedStudent = await student.update(req.body);
+      return res.json(updatedStudent);
     } catch (e) {
       return res.status(400).json({
         errors: e.errors.map(err => err.message)
@@ -104,16 +105,18 @@ class StudentController {
     try {
       const { id } = req.params;
 
+      const student = await Student.findOne({
+        where: {
+          id: id,
+          user_id: req.userId
+        }
+      });
+
       if (!id) {
         return res.status(400).json({
           errors: ['You must enter an ID']
         });
       }
-      const student = await Student.destroy({
-        where: {
-          id: id
-        }
-      });
 
       if (!student) {
         return res.status(400).json({
@@ -121,6 +124,7 @@ class StudentController {
         });
       }
 
+      await student.destroy();
       return res.status(204).send();
     } catch (error) {
       return res.status(400).json({
