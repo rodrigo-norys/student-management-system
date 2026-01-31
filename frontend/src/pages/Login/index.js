@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { isEmail } from 'validator';
 import { useDispatch, useSelector } from 'react-redux';
-import { get } from 'lodash';
+import { useNavigate } from 'react-router-dom';
 
 import { Container } from '../../styles/GlobalStyles';
 import { Form } from './styled';
@@ -12,12 +12,13 @@ import Loading from '../../components/Loading';
 
 export default function Login(props) {
   const dispatch = useDispatch();
-  const prevPath = get(props, 'location.state.prevPath', '/');
+
   const isLoading = useSelector(state => state.auth.isLoading);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const navigate = useNavigate();
   function handleSubmit(e) {
     e.preventDefault();
     let formErrors = false;
@@ -32,7 +33,7 @@ export default function Login(props) {
     }
     if (formErrors) return;
 
-    dispatch(actions.loginRequest({ email, password, prevPath }));
+    dispatch(actions.loginRequest({ email, password, navigate }));
   }
 
   return (

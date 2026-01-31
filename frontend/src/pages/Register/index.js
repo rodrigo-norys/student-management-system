@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { toast } from 'react-toastify'
+import { toast } from 'react-toastify';
 import { isEmail } from "validator";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from 'react-router-dom';
 
-import { Container } from "../../styles/GlobalStyles";
-import { Form } from "./styled";
+import { Container, Form, Title } from "./styled";
 import Loading from '../../components/Loading';
 import * as actions from '../../store/modules/auth/actions';
 
 export default function Register() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const id = useSelector(state => state.auth.user.id);
@@ -22,10 +23,9 @@ export default function Register() {
 
   useEffect(() => {
     if (!id) return;
-
     setName(storedName);
     setEmail(storedEmail);
-  }, [storedEmail, id, storedName]);
+  }, [id, storedName, storedEmail]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -46,30 +46,47 @@ export default function Register() {
 
     if (formErrors) return;
 
-    dispatch(actions.registerRequest({ name, email, password, id }));
+    dispatch(actions.registerRequest({ id, name, email, password, navigate }));
   }
 
   return (
     <Container>
       <Loading isLoading={isLoading} />
 
-      <h1>{id ? 'Edit account' : 'Create your account'}</h1>
+      <Title>{id ? 'Edit account' : 'Create your account'}</Title>
 
       <Form onSubmit={handleSubmit}>
         <label htmlFor="name">
-          Name:
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
-        </label>
-        <label htmlFor="email">
-          Email:
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Your email" />
-        </label>
-        <label htmlFor="password">
-          Password:
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" />
+          Name
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Your name"
+          />
         </label>
 
-        <button type="submit"> Save </button>
+        <label htmlFor="email">
+          Email
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Your email"
+          />
+        </label>
+
+        <label htmlFor="password">
+          Password
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder={id ? "Leave empty to keep current password" : "Your password"}
+          />
+        </label>
+
+        <button type="submit"> {id ? 'Save Changes' : 'Create Account'} </button>
       </Form>
     </Container>
   );

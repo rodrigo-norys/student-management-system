@@ -7,19 +7,24 @@ import axios from '../../../services/axios';
 import history from '../../../services/history';
 
 function* loginRequest({ payload }) {
+  const { email, password, navigate } = payload;
   try {
-    const response = yield call(axios.post, '/tokens', payload);
+    const response = yield call(axios.post, '/tokens', { email, password });
     yield put(actions.loginSuccess({ ...response.data }));
 
     toast.success('You are logged in');
 
     axios.defaults.headers.Authorization = `Bearer ${response.data.token}`;
 
-    history.push(payload.prevPath);
+    navigate(-1);
 
-  } catch (e) {
-    toast.error('Invalid user or password');
-
+  } catch (err) {
+    const status = get(err, 'response.status', 0);
+    if (status === 401) {
+      toast.error('Invalid user or password');
+      navigate('/');
+    }
+    delete axios.defaults.headers.Authorization;
     yield put(actions.loginFailure());
   }
 }
@@ -31,7 +36,7 @@ function persistRehydrate({ payload }) {
 }
 
 function* registerRequest({ payload }) {
-  const { id, name, email, password } = payload;
+  const { id, name, email, password, navigate } = payload;
 
   try {
     if (id) {
@@ -52,13 +57,13 @@ function* registerRequest({ payload }) {
 
       toast.success('Successfully account create');
       yield put(actions.registerCreatedSuccess({ name, email, password }));
-      history.push('/login');
+      navigate('/login');
     }
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     const status = get(e, 'response.status', 0);
 
-    if(status === 401) {
+    if (status === 401) {
       toast.error('You must sign in your account again');
       yield put(actions.loginFailure());
       return history.push('/login');
@@ -76,5 +81,5 @@ function* registerRequest({ payload }) {
 export default all([
   takeLatest(types.LOGIN_REQUEST, loginRequest),
   takeLatest(types.PERSIST_REHYDRATE, persistRehydrate),
-  takeLatest(types.REGISTER_REQUEST, registerRequest)
+  takeLatest(types.REGISTER_REQUEST, registerRequest),
 ]);

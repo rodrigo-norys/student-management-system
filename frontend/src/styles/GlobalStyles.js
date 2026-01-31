@@ -1,6 +1,6 @@
-import styled, { createGlobalStyle } from "styled-components";
-import * as colors from "../config/colors";
-import "react-toastify/dist/ReactToastify.css";
+import styled, { createGlobalStyle } from 'styled-components';
+import * as colors from '../config/colors';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default createGlobalStyle`
   * {
@@ -13,13 +13,14 @@ export default createGlobalStyle`
   body {
     font-family: sans-serif;
     background: ${colors.primaryDarkColor};
-    color: ${colors.primaryDarkColor};
+    color: #fff;
   }
 
   html, body, #root {
     height: 100%;
   }
 
+  // BOTÕES GERAIS
   button {
     cursor: pointer;
     background: ${colors.primaryColor};
@@ -32,16 +33,12 @@ export default createGlobalStyle`
   }
 
   button:hover {
-    filter: brightness(50%);
+    filter: brightness(85%);
   }
 
   a {
     text-decoration: none;
     color: ${colors.primaryColor};
-  }
-
-  ul {
-    list-style: none;
   }
 `;
 

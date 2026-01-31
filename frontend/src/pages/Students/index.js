@@ -1,17 +1,30 @@
 import { useEffect } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { get } from 'lodash';
-import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation } from 'react-icons/fa';
+import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaCamera } from 'react-icons/fa';
 
-import { Container } from '../../styles/GlobalStyles';
-import { StudentContainer, ProfilePicture, HeaderToolbar } from './styled';
+import {
+  Container,
+  HeaderToolbar,
+  StudentContainer,
+  StudentCard,
+  ProfilePicture,
+  PictureOverlay,
+  StudentName,
+  StudentEmail,
+  ActionRow,
+  NewStudentLink
+} from './styled.js';
 
 import * as actions from '../../store/modules/student/actions';
 import Loading from '../../components/Loading';
 import { useDispatch, useSelector } from 'react-redux';
 
+
 export default function Students() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const students = useSelector(state => state.student.students);
   const isLoading = useSelector(state => state.student.isLoading);
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -21,7 +34,7 @@ export default function Students() {
   }, [dispatch]);
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" replace />;
+    navigate('/login');
   }
 
   function handleDeleteAsk(e) {
@@ -38,10 +51,15 @@ export default function Students() {
 
   function StudentPhoto({ student }) {
     const photoUrl = get(student, 'Photos[0].url', false);
-
     return (
       <ProfilePicture>
-        {photoUrl ? <img src={student.Photos[0].url} alt="" /> : <FaUserCircle size={36} />}
+        <Link to={`/photos/${student.id}`}>
+        {photoUrl ? <img src={student.Photos[0].url} alt="" /> : <FaUserCircle size={85} />}
+        <PictureOverlay>
+           <FaCamera size={24} color="#fff" />
+           <span>Edit</span>
+        </PictureOverlay>
+        </Link>
       </ProfilePicture>
     );
   }
@@ -49,39 +67,43 @@ export default function Students() {
   return (
     <Container>
       <Loading isLoading={isLoading} />
+
       <HeaderToolbar>
         <h1>Students</h1>
-        <Link to={`/student/create`}>
-          <button type='button'>Add</button>
-        </Link>
+        <NewStudentLink to="/student/create">
+           Add Student
+        </NewStudentLink>
       </HeaderToolbar>
 
       <StudentContainer>
         {students.map(student => (
-          <div key={String(student.id)}>
+          <StudentCard key={String(student.id)}>
 
-          <StudentPhoto student={student} />
-          
-            <div className="info">
-              <span className="name">{student.name}</span>
-              <span className="email">{student.email}</span>
-            </div>
+            <StudentPhoto student={student} />
 
-            <div className="actions">
+            <StudentName>{student.name}</StudentName>
+            <StudentEmail>{student.email}</StudentEmail>
+
+            <ActionRow>
               <Link to={`/student/${student.id}/edit`}>
-                <FaEdit size={16} />
+                <FaEdit size={18} title="Edit" />
               </Link>
-              <Link to={`/student/${student.id}/delete`} onClick={handleDeleteAsk}>
-                <FaWindowClose size={16} />
+
+              <Link className="delete-btn" to={`/student/${student.id}/delete`} onClick={handleDeleteAsk}>
+                <FaWindowClose size={18} title="Delete" />
               </Link>
+
               <FaExclamation
-                size={16}
+                size={18}
                 display="none"
                 cursor="pointer"
                 onClick={(e) => handleDelete(e, student.id)}
+                color="#c30e0e"
+                title="Confirm Delete"
               />
-            </div>
-          </div>
+            </ActionRow>
+
+          </StudentCard>
         ))}
       </StudentContainer>
     </Container>

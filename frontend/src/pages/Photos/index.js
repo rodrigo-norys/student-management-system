@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react'; // Adicionei React
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { get } from 'lodash';
 import * as actions from '../../store/modules/photo/actions.js';
 import * as studentAction from '../../store/modules/student/actions.js';
 import Loading from '../../components/Loading';
@@ -51,7 +50,7 @@ export default function Photos() {
       <Form>
         <label htmlFor="photo">
           {photo || mainPhoto ? (
-            <img src={photo || mainPhoto} alt="Photo" />
+            <img src={photo || mainPhoto} alt="" />
           ) : (
             'Select'
           )}

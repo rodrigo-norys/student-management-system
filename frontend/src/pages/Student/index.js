@@ -11,8 +11,7 @@ import * as actions from '../../store/modules/student/actions.js';
 
 import Loading from '../../components/Loading';
 
-import { Container } from '../../styles/GlobalStyles';
-import { Form, ActionsContainer, ProfilePicture, Title } from './styled';
+import { Container, Title, Form, ProfilePicture, ActionsContainer, InputGroup } from './styled';
 
 export default function Student() {
   const { id } = useParams();
@@ -29,9 +28,10 @@ export default function Student() {
   const [name, setName] = useState('');
   const [last_name, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  let [age, setAge] = useState('');
-  let [weight, setWeight] = useState('');
-  let [height, setHeight] = useState('');
+  const [age, setAge] = useState('');
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+
 
   useEffect(() => {
     if (!student) {
@@ -58,15 +58,6 @@ export default function Student() {
   function handleSubmit(e) {
     e.preventDefault();
     let formErrors = false;
-
-    const age2 = parseInt(age);
-    age = age2;
-
-    const weight2 = parseFloat(weight);
-    weight = weight2;
-
-    const height2 = parseFloat(height);
-    height = height2;
 
     const shouldLeave = e.nativeEvent.submitter.name === 'leave';
     const shouldStay = e.nativeEvent.submitter.name === 'stay';
@@ -108,27 +99,84 @@ export default function Student() {
       <Loading isLoading={isLoading} />
       <Title>{id ? 'Edit Student' : 'Create Student'}</Title>
 
-      {id ?
+      {id ? (
         <ProfilePicture>
           {photo ? (
-            <img src={photo} alt="Student Photo" />
+            <img src={photo} alt="" />
           ) : (
-            <FaUserCircle size={180} />
+            <FaUserCircle size={150} color="#ddd" />
           )}
 
           <Link to={`/photos/${id}`}>
-            <FaEdit size={16} />
+            <FaEdit size={20} />
           </Link>
         </ProfilePicture>
-        : ''}
+      ) : ''}
 
       <Form onSubmit={handleSubmit}>
-        <input type='text' value={name} onChange={e => setName(e.target.value)} placeholder='Name' />
-        <input type='text' value={last_name} onChange={e => setLastName(e.target.value)} placeholder='Surname' />
-        <input type='email' value={email} onChange={e => setEmail(e.target.value)} placeholder='Email' />
-        <input type='number' value={age} onChange={e => setAge(e.target.value)} placeholder='Age' />
-        <input type='number' value={weight} onChange={e => setWeight(e.target.value)} placeholder='Weight (Use "." instead "," for decimal numbers)' />
-        <input type='number' value={height} onChange={e => setHeight(e.target.value)} placeholder='Height (Use "." instead "," for decimal numbers)' />
+
+        <label>
+          First Name
+          <input
+            type='text'
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder='José'
+          />
+        </label>
+
+        <label>
+          Last Name
+          <input
+            type='text'
+            value={last_name}
+            onChange={e => setLastName(e.target.value)}
+            placeholder='Silva'
+          />
+        </label>
+
+        <label>
+          Email Address
+          <input
+            type='email'
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder='jose@example.com'
+          />
+        </label>
+
+        <InputGroup>
+          <label>
+            Age
+            <input
+              type='number'
+              value={age}
+              onChange={e => setAge(e.target.value)}
+              placeholder='25'
+            />
+          </label>
+
+          <label>
+            Weight (kg)
+            <input
+              type='number'
+              value={weight}
+              onChange={e => setWeight(e.target.value)}
+              placeholder='80.5'
+            />
+          </label>
+
+          <label>
+            Height (m)
+            <input
+              type='number'
+              value={height}
+              onChange={e => setHeight(e.target.value)}
+              placeholder='1.75'
+            />
+          </label>
+        </InputGroup>
+
         <ActionsContainer>
           {foundStudent}
         </ActionsContainer>

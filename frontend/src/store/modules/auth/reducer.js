@@ -1,5 +1,4 @@
 import * as types from './types';
-import axios from '../../../services/axios';
 
 const initialState = {
   isLoggedIn: false,
@@ -10,49 +9,68 @@ const initialState = {
 
 // eslint-disable-next-line
 export default function (state = initialState, action) {
-  if (action.type === types.LOGIN_SUCCESS) {
-    const newState = { ...state };
-    newState.isLoggedIn = true;
-    newState.token = action.payload.token;
-    newState.user = action.payload.user;
-    newState.isLoading = false;
-
-    return newState;
-  }
-  if (action.type === types.LOGIN_FAILURE) {
-    delete axios.defaults.headers.Authorization;
-    const newState = { ...initialState };
-    return newState;
-  }
-  if (action.type === types.LOGIN_REQUEST) {
-    const newState = { ...state };
-    newState.isLoading = true;
-    return newState;
-  }
-  if (action.type === types.REGISTER_UPDATED_SUCCESS) {
-    const newState = { ...state };
-    newState.user = {
-      ...newState.user,
-      name: action.payload.name,
-      email: action.payload.email,
+  switch (action.type) {
+    ///////////// LOGIN /////////////
+    case types.LOGIN_REQUEST: {
+      return {
+        ...state,
+        isLoading: true,
+      }
     }
-    newState.isLoading = false;
-    return newState;
+
+    case types.LOGIN_SUCCESS: {
+      return {
+        ...state,
+        isLoggedIn: true,
+        token: action.payload.token,
+        user: action.payload.user,
+        isLoading: false,
+      };
+    }
+
+    case types.LOGIN_FAILURE: {
+      return {
+        ...state,
+        isLoggedIn: false,
+        isLoading: false,
+      };
+    }
+
+    ///////////// REGISTER /////////////
+    case types.REGISTER_REQUEST: {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+
+    case types.REGISTER_UPDATED_SUCCESS: {
+      return {
+        ...state,
+        user: {
+          name: action.payload.name,
+          email: action.payload.email,
+        },
+        isLoading: false,
+      };
+    }
+
+    case types.REGISTER_CREATED_SUCCESS: {
+      return {
+        ...state,
+        isLoading: false,
+      };
+    }
+
+    case types.REGISTER_FAILURE: {
+      return {
+        ...state,
+        isLoading: false,
+      };
+    }
+
+    default: {
+      return state;
+    }
   }
-  if (action.type === types.REGISTER_CREATED_SUCCESS) {
-    const newState = { ...state };
-    newState.isLoading = false;
-    return newState;
-  }
-  if (action.type === types.REGISTER_FAILURE) {
-    const newState = { ...state };
-    newState.isLoading = false;
-    return newState;
-  }
-  if (action.type === types.REGISTER_REQUEST) {
-    const newState = { ...state };
-    newState.isLoading = true;
-    return newState;
-  }
-  return state;
 }

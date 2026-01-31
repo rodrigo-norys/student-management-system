@@ -4,19 +4,17 @@ import jwt from 'jsonwebtoken';
 class TokenController {
   async create(req, res) {
     const { email = '', password = '' } = req.body;
-    const user = await User.findOne({ where: { email } });
-
-    const { id } = user;
-    const token = jwt.sign({ id, email }, process.env.TOKEN_SECRET, {
-      expiresIn: process.env.TOKEN_EXPIRATION
-    });
-
     if (!email || !password) {
       return res.status(401).json({
         errors: ['Invalid credencials']
       });
     }
 
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
     if (!user) {
       return res.status(401).json({
         errors: ['Invalid user']
@@ -29,7 +27,19 @@ class TokenController {
       });
     }
 
-    return res.json({ token, user: { name: user.name, id, email } });
+    const { id, name, email: userEmail } = user;
+    const token = jwt.sign({ id, email }, process.env.TOKEN_SECRET, {
+      expiresIn: process.env.TOKEN_EXPIRATION
+    });
+
+    return res.json({
+      token,
+      user: {
+        name,
+        id,
+        email: userEmail,
+      },
+    });
   }
 }
 

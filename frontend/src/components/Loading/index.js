@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
-import { Container } from './styled';
+import { Container } from './styled.js';
 
 export default function Loading({ isLoading }) {
   if (!isLoading) return <></>;
+
   return (
     <Container>
-      <div/>
-      <span>Loading...</span>
+      <div />
     </Container>
   );
 }
