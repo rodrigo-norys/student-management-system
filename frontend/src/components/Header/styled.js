@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Link } from 'react-router-dom';
 import { primaryColor } from "../../config/colors";
 
 export const Nav = styled.nav`
@@ -29,19 +30,41 @@ export const Logo = styled.div`
 export const Menu = styled.div`
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
+`;
 
-  a {
-    color: #fff;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    position: relative;
-    transition: opacity 0.2s;
+export const LinkLogin = styled(Link)`
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  padding: 5px 10px;
+  transition: opacity 0.2s;
 
-    &:hover {
-      opacity: 0.8;
-    }
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+export const LinkRegister = styled(Link)`
+  background: #fff;
+  color: ${primaryColor};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
   }
 `;
 

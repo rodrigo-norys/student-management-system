@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { FaCamera, FaCloudUploadAlt } from 'react-icons/fa';
 
 import * as actions from '../../store/modules/photo/actions.js';
 import * as studentAction from '../../store/modules/student/actions.js';
 import Loading from '../../components/Loading';
-import { Container } from '../../styles/GlobalStyles';
-import { Title, Form } from './styled';
+
+import { Container, Title, Form, Overlay, Placeholder } from './styled';
 
 export default function Photos() {
   const [photo, setPhoto] = useState('');
@@ -18,7 +19,9 @@ export default function Photos() {
     state.student.students.find(student => String(student.id) === String(id))
   );
   const isLoading = useSelector(state => state.student.isLoading);
-  const mainPhoto = student?.Photos?.[0]?.url || photo;
+
+  const mainPhoto = student?.Photos?.[0]?.url;
+  const preview = photo || mainPhoto;
 
   useEffect(() => {
     if (!student) {
@@ -44,15 +47,25 @@ export default function Photos() {
     <Container>
       <Loading isLoading={isLoading} />
 
-      <Title> Profile Picture </Title>
+      <Title>Profile Picture</Title>
 
       <Form>
         <label htmlFor="photo">
-          {photo || mainPhoto ? (
-            <img src={photo || mainPhoto} alt="" />
+          {preview ? (
+            <>
+              <img src={preview} alt="Profile" />
+              <Overlay>
+                 <FaCamera size={30} />
+                 <span>Change</span>
+              </Overlay>
+            </>
           ) : (
-            'Select'
+            <Placeholder>
+               <FaCloudUploadAlt size={50} />
+               <span>Select Photo</span>
+            </Placeholder>
           )}
+
           <input type="file" id="photo" onChange={handleChange} />
         </label>
       </Form>

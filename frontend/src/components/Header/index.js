@@ -1,16 +1,25 @@
-import { FaHome, FaSignInAlt, FaUserAlt, FaPowerOff, FaUserCircle } from 'react-icons/fa';
+import {
+  FaHome,
+  FaSignInAlt,
+  FaPowerOff,
+  FaUserCircle,
+  FaUserCog,
+  FaUserPlus
+} from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import * as actions from '../../store/modules/auth/actions';
-import { Nav, Menu, Logo, UserInfo } from './styled';
+import { Nav, Menu, Logo, UserInfo, LinkRegister, LinkLogin } from './styled';
 
 export default function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
   const user = useSelector(state => state.auth.user);
+  const id = useSelector(state => state.auth.user.id);
 
   const handleLogout = e => {
     e.preventDefault();
@@ -22,7 +31,7 @@ export default function Header() {
   return (
     <Nav>
       <Logo>
-        <Link to='/'>
+        <Link to={id ? "/" : "/login"}>
           <FaHome size={22} />
           <span>SisboSchool</span>
         </Link>
@@ -32,28 +41,31 @@ export default function Header() {
         {isLoggedIn ? (
           <>
             <Link to="/register">
-               <FaUserAlt size={20} title="My Account" />
+              <FaUserCog size={24} color="#fff" title="Update account" />
             </Link>
 
             <UserInfo>
               <FaUserCircle size={20} />
               <span>{user?.name || ''}</span>
-               <div style={{ width: 8, height: 8, background: '#44dd44', borderRadius: '50%' }} title="Online" />
+              <div style={{ width: 8, height: 8, background: '#44dd44', borderRadius: '50%' }} title="Online" />
             </UserInfo>
 
             <Link onClick={handleLogout} to="/logout">
-              <FaPowerOff size={20} title="Leave" />
+              <FaPowerOff size={22} color="#fff" title="Leave" />
             </Link>
           </>
         ) : (
           <>
-            <Link to='/register'>
-              <FaUserAlt size={20} title="Create Account"/>
-            </Link>
+            <LinkRegister to='/register'>
+              <FaUserPlus size={16} />
+              <span>Sign up</span>
+            </LinkRegister>
 
-            <Link to='/login'>
-              <FaSignInAlt size={20} />
-            </Link>
+            <LinkLogin to='/login'>
+              <FaSignInAlt size={16} />
+              <span>Sign in</span>
+            </LinkLogin>
+
           </>
         )}
       </Menu>
