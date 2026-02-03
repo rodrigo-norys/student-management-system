@@ -12,5 +12,10 @@ export const Form = styled.form`
     border-radius: 4px;
     border: 1px solid #ddd;
   }
-`;
 
+  `;
+
+export const Title = styled.h1`
+  color: #333;
+
+`

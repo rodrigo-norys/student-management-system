@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaHome, FaSignInAlt, FaUserAlt, FaPowerOff, FaUserCircle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -13,8 +12,6 @@ export default function Header() {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
   const user = useSelector(state => state.auth.user);
 
-
-  // VERIFICAR O LOGOUT //
   const handleLogout = e => {
     e.preventDefault();
     dispatch(actions.loginFailure());
@@ -51,7 +48,7 @@ export default function Header() {
         ) : (
           <>
             <Link to='/register'>
-              <FaUserAlt size={20} />
+              <FaUserAlt size={20} title="Create Account"/>
             </Link>
 
             <Link to='/login'>

@@ -33,6 +33,7 @@ export default function (state = initialState, action) {
         ...state,
         isLoggedIn: false,
         isLoading: false,
+        user: {},
       };
     }
 

@@ -30,12 +30,11 @@ export default function Students() {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
 
   useEffect(() => {
-    dispatch(actions.getStudentsRequest());
+    !isLoggedIn
+      ? navigate('/login')
+      : dispatch(actions.getStudentsRequest());
   }, [dispatch]);
 
-  if (!isLoggedIn) {
-    navigate('/login');
-  }
 
   function handleDeleteAsk(e) {
     e.preventDefault();
@@ -54,11 +53,11 @@ export default function Students() {
     return (
       <ProfilePicture>
         <Link to={`/photos/${student.id}`}>
-        {photoUrl ? <img src={student.Photos[0].url} alt="" /> : <FaUserCircle size={85} />}
-        <PictureOverlay>
-           <FaCamera size={24} color="#fff" />
-           <span>Edit</span>
-        </PictureOverlay>
+          {photoUrl ? <img src={student.Photos[0].url} alt="" /> : <FaUserCircle size={85} />}
+          <PictureOverlay>
+            <FaCamera size={24} color="#fff" />
+            <span>Edit</span>
+          </PictureOverlay>
         </Link>
       </ProfilePicture>
     );
@@ -71,7 +70,7 @@ export default function Students() {
       <HeaderToolbar>
         <h1>Students</h1>
         <NewStudentLink to="/student/create">
-           Add Student
+          Add Student
         </NewStudentLink>
       </HeaderToolbar>
 

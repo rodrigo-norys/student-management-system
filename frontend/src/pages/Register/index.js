@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { toast } from 'react-toastify';
 import { isEmail } from "validator";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from 'react-router-dom';
 
 import { Container, Form, Title } from "./styled";
 import Loading from '../../components/Loading';
 import * as actions from '../../store/modules/auth/actions';
 
 export default function Register() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const id = useSelector(state => state.auth.user.id);
@@ -20,6 +18,9 @@ export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const [emailFocus, setEmailFocus] = useState(false);
+  const [passwordFocus, setPasswordFocus] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -46,14 +47,14 @@ export default function Register() {
 
     if (formErrors) return;
 
-    dispatch(actions.registerRequest({ id, name, email, password, navigate }));
+    dispatch(actions.registerRequest({ id, name, email, password }));
   }
 
   return (
     <Container>
       <Loading isLoading={isLoading} />
 
-      <Title>{id ? 'Edit account' : 'Create your account'}</Title>
+      <Title>{id ? 'Edit account' : 'Create account'}</Title>
 
       <Form onSubmit={handleSubmit}>
         <label htmlFor="name">
@@ -73,6 +74,8 @@ export default function Register() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="Your email"
+            readOnly={!emailFocus}
+            onFocus={() => setEmailFocus(true)}
           />
         </label>
 
@@ -83,6 +86,8 @@ export default function Register() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             placeholder={id ? "Leave empty to keep current password" : "Your password"}
+            readOnly={!passwordFocus}
+            onFocus={() => setPasswordFocus(true)}
           />
         </label>
 

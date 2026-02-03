@@ -2,6 +2,7 @@ import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
 import { get } from 'lodash';
 
+import history from '../../../services/history';
 import axios from '../../../services/axios';
 
 import * as actions from './actions';
@@ -20,7 +21,7 @@ function* getStudentsRequest() {
 
 function* createStudentRequest({ payload }) {
   try {
-    const { id, name, last_name, email, age, weight, height, shouldLeave, shouldStay, navigate } = payload;
+    const { id, name, last_name, email, age, weight, height, shouldLeave, shouldStay } = payload;
     if (id) {
       yield call(axios.put, `/students/${id}`, {
         name, last_name, email, age, weight, height
@@ -37,8 +38,8 @@ function* createStudentRequest({ payload }) {
       toast.success('Successfully student created');
     }
 
-    if (shouldStay) navigate(0);
-    if (shouldLeave) navigate('/');
+    if (shouldStay) history.go(0)
+    if (shouldLeave) history.push('/');
 
   } catch (err) {
     const errors = get(err, 'response.data.errors', []);

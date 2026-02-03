@@ -7,7 +7,8 @@ export default function CustomHistoryRouter({ history, ...props }) {
     location: history.location,
   });
 
-  useLayoutEffect(() => history.listen(setState), [history]);
+  useLayoutEffect(() => history.listen(setState),
+  [history]);
 
   return (
     <Router

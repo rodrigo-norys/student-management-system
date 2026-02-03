@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { isEmail } from 'validator';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 
 import { Container } from '../../styles/GlobalStyles';
-import { Form } from './styled';
+import { Form, Title } from './styled';
 import * as actions from '../../store/modules/auth/actions.js';
 
 import Loading from '../../components/Loading';
 
-export default function Login(props) {
+export default function Login() {
   const dispatch = useDispatch();
 
   const isLoading = useSelector(state => state.auth.isLoading);
@@ -18,7 +17,6 @@ export default function Login(props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const navigate = useNavigate();
   function handleSubmit(e) {
     e.preventDefault();
     let formErrors = false;
@@ -33,13 +31,13 @@ export default function Login(props) {
     }
     if (formErrors) return;
 
-    dispatch(actions.loginRequest({ email, password, navigate }));
+    dispatch(actions.loginRequest({ email, password }));
   }
 
   return (
     <Container>
       <Loading isLoading={isLoading} />
-      <h1>Login</h1>
+      <Title>Login</Title>
       <Form onSubmit={handleSubmit}>
         <input type='text' value={email} onChange={e => setEmail(e.target.value)} placeholder='Your email' />
         <input type='password' value={password} onChange={e => setPassword(e.target.value)} placeholder='Your password' />

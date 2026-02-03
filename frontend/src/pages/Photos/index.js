@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import * as actions from '../../store/modules/photo/actions.js';
@@ -12,7 +12,6 @@ export default function Photos() {
   const [photo, setPhoto] = useState('');
   const { id } = useParams();
 
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const student = useSelector(state =>
@@ -38,7 +37,7 @@ export default function Photos() {
     formData.append('student_id', id);
     formData.append('photo', file);
 
-    dispatch(actions.updatePhotoRequest({ id, formData, navigate}));
+    dispatch(actions.updatePhotoRequest({ id, formData }));
   }
 
   return (
