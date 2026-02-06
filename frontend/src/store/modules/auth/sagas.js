@@ -44,7 +44,7 @@ function* registerRequest({ payload }) {
         password: password || undefined
       });
 
-      toast.success('Successfully account change');
+      toast.success('Account updated');
       yield put(actions.registerUpdatedSuccess({ name, email, password }));
     } else {
       yield call(axios.post, '/users', {
@@ -53,7 +53,7 @@ function* registerRequest({ payload }) {
         password
       });
 
-      toast.success('Successfully account create');
+      toast.success('Account created');
       yield put(actions.registerCreatedSuccess({ name, email, password }));
       history.push('/login');
     }
