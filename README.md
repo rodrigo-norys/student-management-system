@@ -2,7 +2,9 @@
 
 > Um sistema completo para gestão escolar, focado em controle acadêmico, enturmação e lançamento de notas.
 
-![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)
+![Badge em Desenvolvimento](https://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=ORANGE&style=for-the-badge)
+[![Badge MVP](https://img.shields.io/static/v1?label=MVP&message=ONLINE&color=GREEN&style=for-the-badge)](https://sisbodeveloper.com.br/)
+
 ![Badge Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![Badge React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Badge MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)
