@@ -15,22 +15,39 @@ Este projeto é uma aplicação Full Stack desenvolvida para gerenciar o fluxo d
 
 O sistema permite o cadastro de alunos, gestão de turmas, alocação de professores (grade horária) e o processamento de aprovação/reprovação automática com base nas notas lançadas.
 
-## 🗄️ Modelagem do Banco de Dados (EM DESEMVOLVIMENTO...)
+## 🗄️ Arquitetura do Banco de Dados
 
-O banco de dados foi projetado  para garantir a integridade e evitar redundâncias.
+O banco de dados foi modelado seguindo os princípios de **normalização** e **integridade referencial**, dividido em 4 camadas lógicas (Context Tiers) para facilitar a manutenção e escalabilidade.
 
-Abaixo, o Diagrama Entidade-Relacionamento (DER) utilizado:
+### 🗺️ Visão Macro (Relacionamentos Principais)
+> Diagrama gerado automaticamente via Mermaid.js
 
-<div align="center">
-  <img src="./docs/database/school_diagram.png" alt="Diagrama do Banco de Dados" width="800">
-</div>
+```mermaid
+erDiagram
+    %% TIER 1: SYSTEM
+    USERS ||--o{ STUDENTS : ""
+    USERS ||--o{ STAFF : ""
+    USERS }|--|| ACCESS_LEVELS : ""
 
-> **Nota Técnica:** O arquivo editável do MySQL Workbench (`.mwb`) está disponível na pasta [`/docs/database`](./docs/database).
+    %% TIER 2: PROFILES
+    UNITS ||--|| ADDRESSES : ""
+    STUDENTS }|--|{ GUARDIANS : ""
+    STAFF }|--|{ UNITS : ""
 
-### Principais Decisões de Arquitetura:
-* **Separação de Responsabilidades:** Dados de acesso (`users`) separados de dados de perfil (`students`, `staff`).
-* **Histórico Acadêmico:** Tabela `student_grades` atua como pivô, conectando o aluno à aula específica e registrando o desempenho individual.
-* **Grade Horária Flexível:** A tabela `class_schedules` permite que múltiplos professores lecionem diferentes matérias na mesma turma (relação N:N).
+    %% TIER 3 & 4: ACADEMIC & OPERATIONS
+    UNIT_CLASSES }|--|| UNITS : ""
+    CLASS_ALLOCATIONS }|--|| STAFF : ""
+    CLASS_ALLOCATIONS }|--|| SUBJECTS : ""
+    STUDENT_GRADES }|--|| CLASS_ALLOCATIONS : ""
+    STUDENT_GRADES }|--|| STUDENT_CLASSES : ""
+```
+> **🛠️ Recursos do Diagrama**
+> 1. Baixe o arquivo [`docs/database/school_schema_v1.json`](./docs/database/school_schema_v1.json).
+> 2. Acesse [drawdb.app](https://www.drawdb.app/editor).
+> 3. Clique em **File > Import** e carregue o arquivo.
+> 
+> O script de criação do banco está disponível em [`docs/database/init.sql`](./docs/database/init.sql).</br>
+> Para uma rápida visualização, pode acessar o PNG em [`docs/database/school_diagram.png`](./docs/database/school_diagram.png).
 
 ## ✨ Funcionalidades
 
@@ -62,3 +79,5 @@ student-management-system/
 ├── backend/         # API Node.js, Models e Controllers
 ├── frontend/        # Aplicação React
 └── docs/            # Documentação e Diagramas do Banco
+
+
