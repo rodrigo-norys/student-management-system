@@ -19,7 +19,7 @@ export default class Student extends Model {
         validate: {
           len: {
             args: [3, 30],
-            msg: 'Last name must be between 3 and 50 characters'
+            msg: 'Last name must be between 3 and 30 characters'
           }
         }
       },
@@ -69,8 +69,8 @@ export default class Student extends Model {
     return this;
   }
 
- static associate(models) {
-    this.hasMany(models.Photo, { foreignKey: 'student_id'});
+  static associate(models) {
+    this.hasMany(models.Photo, { foreignKey: 'student_id' });
     this.belongsTo(models.User, { foreignKey: 'user_id' });
   }
 }
