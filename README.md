@@ -51,7 +51,9 @@ Visualize a estrutura completa, relacionamentos e tipos de dados diretamente no 
 
 [![Ver Schema no DrawDB](https://img.shields.io/badge/VER_SCHEMA_COMPLETO-DrawDB-blue?style=for-the-badge&logo=database)](https://drawdb.vercel.app/editor?shareId=a7577e72fc3ab1a93bfe9f09ab3c4b5c)
 
-> **Backup:** O arquivo JSON da estrutura também está disponível em [`docs/database/school_schema_v1.json`](./docs/database/school_schema_v1.json).
+> **Backup:** </br>
+> O arquivo JSON da estrutura também está disponível em [`docs/database/school_schema_v2.0.0.json`](./docs/database/school_schema_v2.0.0.json).</br>
+> O arquivo SQL da estrutura também está disponível em</br> [`docs/database/init.sql`](./docs/database/init.sql).
 
 ### Diagrama Simplificado (Mermaid)
 ```mermaid
