@@ -4,16 +4,6 @@ import bcryptjs from "bcryptjs";
 export default class User extends Model {
   static init(sequelize) {
     super.init({
-      name: {
-        type: Sequelize.STRING,
-        defaultValue: '',
-        validate: {
-          len: {
-            args: [3, 255],
-            msg: 'Name must be between 3 and 255 characters'
-          }
-        }
-      },
       email: {
         type: Sequelize.STRING,
         defaultValue: '',
@@ -40,13 +30,55 @@ export default class User extends Model {
           }
         }
       },
+      avatar_url: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      url: {
+        type: Sequelize.VIRTUAL,
+        get() {
+          const avatar = this.getDataValue('avatar_url');
+          return avatar ? `${process.env.APP_URL}/images/${avatar}` : null;
+        },
+      },
+      access_level_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'access_levels',
+          key: 'id'
+        }
+      },
+      is_active: {
+        type: Sequelize.TINYINT,
+        defaultValue: 1,
+        validate: {
+          isIn: {
+            args: [[0, 1]],
+            msg: 'is_active must be TRUE or FALSE'
+          }
+        }
+      },
+      is_temporary: {
+        type: Sequelize.TINYINT,
+        defaultValue: 1,
+        validate: {
+          isIn: {
+            args: [[0, 1]],
+            msg: 'is_temporary must be TRUE or FALSE'
+          }
+        }
+      }
     }, {
       sequelize,
     });
 
     this.addHook('beforeSave', async (user) => {
-      if (user.password) user.password_hash = await bcryptjs.hash(user.password, 8);
+      if (user.password) {
+        user.password_hash = await bcryptjs.hash(user.password, 8);
+      }
     });
+
     return this;
   }
 
@@ -55,6 +87,14 @@ export default class User extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.Student, { foreignKey: 'user_id' });
+    this.hasMany(models.Student, {
+      foreignKey: 'user_id',
+      as: 'students'
+    });
+
+    this.belongsTo(models.AccessLevel, {
+      foreignKey: 'access_level_id',
+      as: 'access_level'
+    });
   }
 }

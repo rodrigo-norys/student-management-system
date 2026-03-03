@@ -1,4 +1,4 @@
-import { Sequelize, Model } from "sequelize";
+import Sequelize, { Model } from "sequelize";
 
 export default class Student extends Model {
   static init(sequelize) {
@@ -8,60 +8,87 @@ export default class Student extends Model {
         defaultValue: '',
         validate: {
           len: {
-            args: [3, 20],
-            msg: 'Name must be between 3 and 50 characters'
-          }
-        }
+            args: [3, 255],
+            msg: 'Name must be between 3 and 255 characters'
+          },
+        },
       },
       last_name: {
         type: Sequelize.STRING,
         defaultValue: '',
         validate: {
           len: {
-            args: [3, 30],
-            msg: 'Last name must be between 3 and 30 characters'
-          }
-        }
+            args: [3, 255],
+            msg: 'Last name must be between 3 and 255 characters'
+          },
+        },
       },
       email: {
         type: Sequelize.STRING,
         defaultValue: '',
+        unique: {
+          msg: 'Email already exists'
+        },
         validate: {
           isEmail: {
             msg: 'You must enter a valid email'
           }
-        }
+        },
       },
-      age: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0,
+      registration_number: {
+        type: Sequelize.STRING,
+        defaultValue: '',
+        unique: {
+          msg: 'Registration number already exists'
+        },
+        validate: {
+          notEmpty: {
+            msg: 'Registration number cannot be empty'
+          }
+        },
+      },
+      cpf: {
+        type: Sequelize.STRING,
+        defaultValue: '',
+        unique: {
+          msg: 'CPF already exists'
+        },
         validate: {
           len: {
-            args: [1, 2],
-            msg: 'You must enter a valid age'
-          },
-          isInt: {
-            msg: 'You must enter a number',
+            args: [11, 14],
+            msg: 'CPF must be between 11 and 14 characters'
           }
-        }
+        },
       },
-      weight: {
-        type: Sequelize.FLOAT,
-        defaultValue: 0,
+      birth_date: {
+        type: Sequelize.DATEONLY,
         validate: {
-          isFloat: {
-            msg: 'You must enter a valid weight'
+          isDate: {
+            msg: 'Invalid birth date',
           }
-        }
+        },
       },
-      height: {
-        type: Sequelize.FLOAT,
-        defaultValue: 0,
-        validate: {
-          isFloat: {
-            msg: 'You must enter a valid height'
-          }
-        }
+      avatar_url: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      url: {
+        type: Sequelize.VIRTUAL,
+        get() {
+          return `${process.env.APP_URL}/images/${this.getDataValue('avatar_url')}`;
+        },
+      },
+      blood_type: {
+        type: Sequelize.STRING,
+        defaultValue: ''
+      },
+      medical_notes: {
+        type: Sequelize.TEXT,
+        defaultValue: ''
+      },
+      user_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
     }, {
       sequelize,
@@ -70,7 +97,14 @@ export default class Student extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.Photo, { foreignKey: 'student_id' });
-    this.belongsTo(models.User, { foreignKey: 'user_id' });
+    this.belongsTo(models.User, {
+      foreignKey: 'user_id',
+      as: 'user',
+    });
+
+    this.hasMany(models.Address, {
+      foreignKey: 'student_id',
+      as: 'addresses',
+    });
   }
 }

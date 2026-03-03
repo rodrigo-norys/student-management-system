@@ -1,6 +1,6 @@
 import Sequelize, { Model } from "sequelize";
 
-export default class Addresses extends Model {
+export default class Address extends Model {
   static init(sequelize) {
     super.init({
       zip_code: {
@@ -76,9 +76,33 @@ export default class Addresses extends Model {
           }
         }
       },
+      student_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      guardian_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      staff_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      unit_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
     }, {
       sequelize,
     });
     return this;
+  }
+
+  static associate(models) {
+    this.belongsTo(models.Student,
+      {
+        foreignKey: 'student_id',
+        as: 'student'
+      });
   }
 }
