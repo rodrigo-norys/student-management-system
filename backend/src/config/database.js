@@ -10,7 +10,7 @@ const config = {
   database: process.env.DATABASE,
   host: process.env.DATABASE_HOST,
   port: process.env.DATABASE_PORT || 3306,
-  dialect: 'mariadb',
+  dialect: 'mysql',
   define: {
     timestamps: true,
     underscored: true,

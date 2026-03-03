@@ -1,25 +1,14 @@
 import multer from 'multer';
 import { extname, resolve } from 'path';
-import Student from "../models/Student";
 
 const random = () => Math.floor(Math.random() * 10000 + 10000);
 
 export default {
-  fileFilter: async (req, file, cb) => {
+  fileFilter: (req, file, cb) => {
     if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/webp') {
-      return cb(new multer.MulterError('File needs to be PNG or JPG'));
+      return cb(new multer.MulterError('FILE_TYPE_NOT_SUPPORTED'));
     }
-    try {
-      const { student_id } = req.params;
-      if (!student_id) return cb(new multer.MulterError('STUDENT_ID_MISSING'));
-
-      const student = await Student.findByPk(student_id);
-      if (!student) return cb(new multer.MulterError('STUDENT_NOT_FOUND'));
-
-      return cb(null, true);
-    } catch (e) {
-      return cb(new multer.MulterError('DATABASE_ERROR'));
-    }
+    return cb(null, true);
   },
 
   storage: multer.diskStorage({

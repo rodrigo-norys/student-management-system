@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 class TokenController {
   async create(req, res) {
-    const { email = '', password = '' } = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
       return res.status(401).json({
         errors: ['Invalid credencials']
@@ -15,6 +15,7 @@ class TokenController {
         email,
       },
     });
+
     if (!user) {
       return res.status(401).json({
         errors: ['Invalid user']
@@ -27,7 +28,7 @@ class TokenController {
       });
     }
 
-    const { id, name, email: userEmail } = user;
+    const { id, email: userEmail, access_level_id } = user;
     const token = jwt.sign({ id, email }, process.env.TOKEN_SECRET, {
       expiresIn: process.env.TOKEN_EXPIRATION
     });
@@ -35,9 +36,9 @@ class TokenController {
     return res.json({
       token,
       user: {
-        name,
         id,
         email: userEmail,
+        access_level_id
       },
     });
   }

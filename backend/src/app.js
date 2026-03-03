@@ -14,7 +14,6 @@ import homeRoutes from './routes/homeRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import tokenRoutes from './routes/tokenRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
-import photoRoutes from './routes/photoRoutes.js';
 
 class App {
   constructor() {
@@ -25,7 +24,7 @@ class App {
 
   middlewares() {
     this.app.use(cors());
-    this.app.use(delay(2000));
+    this.app.use(delay());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
     this.app.use('/images/', express.static(resolve(__dirname, '..', 'uploads', 'images')));
@@ -36,7 +35,6 @@ class App {
     this.app.use('/users', userRoutes);
     this.app.use('/tokens', tokenRoutes);
     this.app.use('/students', studentRoutes)
-    this.app.use('/photos', photoRoutes)
   }
 }
 
