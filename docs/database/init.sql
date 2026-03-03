@@ -1,9 +1,10 @@
 CREATE TABLE IF NOT EXISTS `access_levels` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(45) NOT NULL,
-	`description` VARCHAR(255) NOT NULL,
+	`name` VARCHAR(30) NOT NULL,
+	`description` VARCHAR(150) NOT NULL,
 	`manage_account` TINYINT NOT NULL,
 	`manage_record` TINYINT NOT NULL,
+	`manage_academic` TINYINT NOT NULL,
 	`manage_finance` TINYINT NOT NULL,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -15,8 +16,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT COMMENT 'FK to access access_levels',
 	`access_level_id` INTEGER NOT NULL,
 	`avatar_url` VARCHAR(255),
-	`email` VARCHAR(100) NOT NULL UNIQUE,
-	`password_hash` VARCHAR(255) NOT NULL,
+	`email` VARCHAR(150) NOT NULL UNIQUE,
+	`password_hash` VARCHAR(100) NOT NULL,
 	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`is_temporary` TINYINT NOT NULL DEFAULT 1 COMMENT '1 = to force change of password on first login',
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -29,6 +30,10 @@ CREATE INDEX `users_index_0`
 ON `users` (`email`);
 CREATE TABLE IF NOT EXISTS `addresses` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
+	`student_id` INTEGER,
+	`guardian_id` INTEGER,
+	`staff_id` INTEGER,
+	`unit_id` INTEGER UNIQUE,
 	`zip_code` VARCHAR(9) NOT NULL,
 	`street` VARCHAR(100) NOT NULL,
 	`number` VARCHAR(10) NOT NULL,
@@ -47,15 +52,14 @@ ON `addresses` (`zip_code`);
 CREATE TABLE IF NOT EXISTS `students` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`user_id` INTEGER NOT NULL UNIQUE,
-	`addresses_id` INTEGER NOT NULL,
-	`avatar_url` VARCHAR(255),
+	`avatar_url` VARCHAR(150),
 	`name` VARCHAR(50) NOT NULL,
 	`last_name` VARCHAR(100) NOT NULL,
 	`registration_number` VARCHAR(20) NOT NULL UNIQUE,
 	`birth_date` DATE NOT NULL,
 	`cpf` VARCHAR(14) NOT NULL UNIQUE,
 	`blood_type` VARCHAR(3),
-	`medical_notes` TEXT(200),
+	`medical_notes` VARCHAR(255),
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
@@ -69,7 +73,6 @@ ON `students` (`name`, `last_name`);
 CREATE TABLE IF NOT EXISTS `guardians` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`user_id` INTEGER NOT NULL UNIQUE,
-	`addresses_id` INTEGER NOT NULL,
 	`avatar_url` VARCHAR(255),
 	`name` VARCHAR(50) NOT NULL,
 	`last_name` VARCHAR(50) NOT NULL,
@@ -88,7 +91,6 @@ CREATE INDEX `guardians_index_1`
 ON `guardians` (`name`, `last_name`);
 CREATE TABLE IF NOT EXISTS `units` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`addresses_id` INTEGER NOT NULL UNIQUE,
 	`name` VARCHAR(50) NOT NULL,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -118,7 +120,6 @@ ON `unit_classes` (`grade_level`);
 CREATE TABLE IF NOT EXISTS `staff` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`user_id` INTEGER NOT NULL UNIQUE,
-	`addresses_id` INTEGER NOT NULL,
 	`avatar_url` VARCHAR(255),
 	`full_name` VARCHAR(150) NOT NULL UNIQUE,
 	`cpf` VARCHAR(14) NOT NULL UNIQUE,
@@ -225,26 +226,14 @@ ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `students`
 ADD FOREIGN KEY(`user_id`) REFERENCES `users`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE `students`
-ADD FOREIGN KEY(`addresses_id`) REFERENCES `addresses`(`id`)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `guardians`
 ADD FOREIGN KEY(`user_id`) REFERENCES `users`(`id`)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE `guardians`
-ADD FOREIGN KEY(`addresses_id`) REFERENCES `addresses`(`id`)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE `units`
-ADD FOREIGN KEY(`addresses_id`) REFERENCES `addresses`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `unit_classes`
 ADD FOREIGN KEY(`unit_id`) REFERENCES `units`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `staff`
 ADD FOREIGN KEY(`user_id`) REFERENCES `users`(`id`)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE `staff`
-ADD FOREIGN KEY(`addresses_id`) REFERENCES `addresses`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `class_allocations`
 ADD FOREIGN KEY(`staff_id`) REFERENCES `staff`(`id`)
@@ -278,4 +267,16 @@ ADD FOREIGN KEY(`class_allocation_id`) REFERENCES `class_allocations`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `student_grades`
 ADD FOREIGN KEY(`student_classes_id`) REFERENCES `student_classes`(`id`)
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE `students`
+ADD FOREIGN KEY(`id`) REFERENCES `addresses`(`student_id`)
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE `guardians`
+ADD FOREIGN KEY(`id`) REFERENCES `addresses`(`guardian_id`)
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE `staff`
+ADD FOREIGN KEY(`id`) REFERENCES `addresses`(`staff_id`)
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE `units`
+ADD FOREIGN KEY(`id`) REFERENCES `addresses`(`unit_id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;

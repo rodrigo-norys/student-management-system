@@ -28,7 +28,7 @@
           "notNull": true,
           "primary": false,
           "default": "",
-          "size": 45,
+          "size": 30,
           "check": ""
         },
         {
@@ -41,7 +41,7 @@
           "notNull": true,
           "primary": false,
           "default": "",
-          "size": 255,
+          "size": 150,
           "check": ""
         },
         {
@@ -67,6 +67,20 @@
           "primary": false,
           "default": "",
           "check": ""
+        },
+        {
+          "id": "vfF8_QjFbwvrezOETb5nO",
+          "name": "manage_academic",
+          "type": "TINYINT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "Vm--17j1focs8MKBxTpaW",
@@ -168,7 +182,7 @@
           "notNull": true,
           "primary": false,
           "default": "",
-          "size": 100,
+          "size": 150,
           "check": ""
         },
         {
@@ -181,7 +195,7 @@
           "notNull": true,
           "primary": false,
           "default": "",
-          "size": 255,
+          "size": 100,
           "check": ""
         },
         {
@@ -268,6 +282,62 @@
           "primary": true,
           "default": "",
           "check": ""
+        },
+        {
+          "id": "wr7wzeDpagDxYJSfSlN28",
+          "name": "student_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "vv3qX7pekKa85w-XVLrpn",
+          "name": "guardian_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "tSQ_nfNBTtBPzPu1LnHUQ",
+          "name": "staff_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "tUBgdMimzKvuiQAJZHzqu",
+          "name": "unit_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "x5pcaI_IE57g36meQo6pe",
@@ -402,7 +472,7 @@
       "id": "HW19mKIm2iP4HOSeNzxyN",
       "x": 1248,
       "y": -408,
-      "locked": true
+      "locked": false
     },
     {
       "name": "students",
@@ -434,18 +504,6 @@
           "check": ""
         },
         {
-          "id": "9uSRCTaid8qXazM8pqWu_",
-          "name": "addresses_id",
-          "type": "INTEGER",
-          "comment": "",
-          "unique": false,
-          "increment": false,
-          "notNull": true,
-          "primary": false,
-          "default": "",
-          "check": ""
-        },
-        {
           "id": "S6KE875-oF0gvBAfLLUAL",
           "name": "avatar_url",
           "type": "VARCHAR",
@@ -455,7 +513,7 @@
           "notNull": false,
           "primary": false,
           "default": "",
-          "size": 255,
+          "size": 150,
           "check": ""
         },
         {
@@ -540,14 +598,14 @@
         {
           "id": "kNuWqVDs48OMROC1slrtl",
           "name": "medical_notes",
-          "type": "TEXT",
+          "type": "VARCHAR",
           "comment": "",
           "unique": false,
           "increment": false,
           "notNull": false,
           "primary": false,
           "default": "",
-          "size": 200,
+          "size": 255,
           "check": ""
         },
         {
@@ -600,7 +658,7 @@
       ],
       "id": "JgmyRSdJAAeHk_eGcGHYF",
       "x": 1248,
-      "y": 120,
+      "y": 240,
       "locked": false
     },
     {
@@ -626,18 +684,6 @@
           "type": "INTEGER",
           "comment": "",
           "unique": true,
-          "increment": false,
-          "notNull": true,
-          "primary": false,
-          "default": "",
-          "check": ""
-        },
-        {
-          "id": "jn2vL2NEg2MZQD9Iog_uQ",
-          "name": "addresses_id",
-          "type": "INTEGER",
-          "comment": "",
-          "unique": false,
           "increment": false,
           "notNull": true,
           "primary": false,
@@ -772,7 +818,7 @@
       ],
       "id": "-iyu-qCx_PN4Qje6Ub9nM",
       "x": 816,
-      "y": 120,
+      "y": 240,
       "locked": false
     },
     {
@@ -789,18 +835,6 @@
           "increment": true,
           "notNull": true,
           "primary": true,
-          "default": "",
-          "check": ""
-        },
-        {
-          "id": "DnoTVUP0iMAPAlGw9JS-4",
-          "name": "addresses_id",
-          "type": "INTEGER",
-          "comment": "",
-          "unique": true,
-          "increment": false,
-          "notNull": true,
-          "primary": false,
           "default": "",
           "check": ""
         },
@@ -858,7 +892,7 @@
       ],
       "id": "U4KNYJDaWmrg0x1IJ6r4V",
       "x": 96,
-      "y": 120,
+      "y": 240,
       "locked": false
     },
     {
@@ -994,7 +1028,7 @@
       ],
       "id": "3dE5cUqyAcinZs985syPg",
       "x": 96,
-      "y": 792,
+      "y": 888,
       "locked": false
     },
     {
@@ -1020,18 +1054,6 @@
           "type": "INTEGER",
           "comment": "",
           "unique": true,
-          "increment": false,
-          "notNull": true,
-          "primary": false,
-          "default": "",
-          "check": ""
-        },
-        {
-          "id": "P12OaxPTKovgBejnBWx5n",
-          "name": "addresses_id",
-          "type": "INTEGER",
-          "comment": "",
-          "unique": false,
           "increment": false,
           "notNull": true,
           "primary": false,
@@ -1189,7 +1211,7 @@
       "indices": [],
       "id": "0ST0ZEKSRIK1gQbZBNBFv",
       "x": 456,
-      "y": 120,
+      "y": 240,
       "locked": false
     },
     {
@@ -1422,7 +1444,7 @@
       ],
       "id": "3u_VgZ1so5ZRDosa-edoU",
       "x": 456,
-      "y": 1368,
+      "y": 1464,
       "locked": false
     },
     {
@@ -1522,7 +1544,7 @@
       ],
       "id": "NXvmRfNCwoEGogal7Gsro",
       "x": 1248,
-      "y": 1368,
+      "y": 1464,
       "locked": false
     },
     {
@@ -1595,7 +1617,7 @@
       ],
       "id": "SrCbKu2cTvlPOCLXPKZm6",
       "x": 456,
-      "y": 792,
+      "y": 888,
       "locked": false
     },
     {
@@ -1694,7 +1716,7 @@
       ],
       "id": "5cf4tNEvcjopDPBq1B3hZ",
       "x": 1248,
-      "y": 792,
+      "y": 888,
       "locked": false
     },
     {
@@ -1858,7 +1880,7 @@
       ],
       "id": "n13WBpdGBPFtek3BL4Fgy",
       "x": 816,
-      "y": 792,
+      "y": 888,
       "locked": false
     }
   ],
@@ -1886,45 +1908,12 @@
       "cardinality": "one_to_one"
     },
     {
-      "name": "fk_students_addresses_id_addresses",
-      "startTableId": "JgmyRSdJAAeHk_eGcGHYF",
-      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
-      "endFieldId": "jGOBym8v6klxwZ8HjJAaZ",
-      "startFieldId": "9uSRCTaid8qXazM8pqWu_",
-      "id": 2,
-      "updateConstraint": "No action",
-      "deleteConstraint": "No action",
-      "cardinality": "many_to_one"
-    },
-    {
       "name": "fk_guardians_user_id_users",
       "startTableId": "-iyu-qCx_PN4Qje6Ub9nM",
       "endTableId": "jDiBCe3aqveD86VEdgk_b",
       "endFieldId": "eFCWz6MmEGjinKNxYQqrv",
       "startFieldId": "zZSy65u_D-AAqcie1SXk4",
       "id": 3,
-      "updateConstraint": "No action",
-      "deleteConstraint": "No action",
-      "cardinality": "one_to_one"
-    },
-    {
-      "name": "fk_guardians_addresses_id_addresses",
-      "startTableId": "-iyu-qCx_PN4Qje6Ub9nM",
-      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
-      "endFieldId": "jGOBym8v6klxwZ8HjJAaZ",
-      "startFieldId": "jn2vL2NEg2MZQD9Iog_uQ",
-      "id": 4,
-      "updateConstraint": "No action",
-      "deleteConstraint": "No action",
-      "cardinality": "many_to_one"
-    },
-    {
-      "name": "fk_units_addresses_id_addresses",
-      "startTableId": "U4KNYJDaWmrg0x1IJ6r4V",
-      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
-      "endFieldId": "jGOBym8v6klxwZ8HjJAaZ",
-      "startFieldId": "DnoTVUP0iMAPAlGw9JS-4",
-      "id": 5,
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
       "cardinality": "one_to_one"
@@ -1950,17 +1939,6 @@
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
       "cardinality": "one_to_one"
-    },
-    {
-      "name": "fk_staff_addresses_id_addresses",
-      "startTableId": "0ST0ZEKSRIK1gQbZBNBFv",
-      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
-      "endFieldId": "jGOBym8v6klxwZ8HjJAaZ",
-      "startFieldId": "P12OaxPTKovgBejnBWx5n",
-      "id": 8,
-      "updateConstraint": "No action",
-      "deleteConstraint": "No action",
-      "cardinality": "many_to_one"
     },
     {
       "name": "fk_class_schedules_staff_id_staff",
@@ -2082,6 +2060,50 @@
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
       "cardinality": "many_to_one"
+    },
+    {
+      "startTableId": "JgmyRSdJAAeHk_eGcGHYF",
+      "startFieldId": "bpHFhNk2OxWZM6ONgySBG",
+      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
+      "endFieldId": "wr7wzeDpagDxYJSfSlN28",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "fk_students_id_addresses",
+      "id": "tQrEIBa-J4iBAIKZNRSQm"
+    },
+    {
+      "startTableId": "-iyu-qCx_PN4Qje6Ub9nM",
+      "startFieldId": "D-J-428tI8sWeYvP3nKwA",
+      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
+      "endFieldId": "vv3qX7pekKa85w-XVLrpn",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "fk_guardians_id_addresses",
+      "id": "hJeFkeCrWsfMkTJYbQ-cY"
+    },
+    {
+      "startTableId": "0ST0ZEKSRIK1gQbZBNBFv",
+      "startFieldId": "7PQdKnGj-_V4nl-JB1rJn",
+      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
+      "endFieldId": "tSQ_nfNBTtBPzPu1LnHUQ",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "fk_staff_id_addresses",
+      "id": "IzbXLBqmMWJo4w1-xnVms"
+    },
+    {
+      "startTableId": "U4KNYJDaWmrg0x1IJ6r4V",
+      "startFieldId": "LENdFxyFzRetTf6MsY2uZ",
+      "endTableId": "HW19mKIm2iP4HOSeNzxyN",
+      "endFieldId": "tUBgdMimzKvuiQAJZHzqu",
+      "cardinality": "one_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "fk_units_id_addresses",
+      "id": "AXbpvtN5HDUVqGnqOpDJH"
     }
   ],
   "notes": [
@@ -2090,7 +2112,7 @@
       "x": 1488,
       "y": -432,
       "title": "Relationship Map",
-      "content": "\nTier 1: Access & Base \nusers.access_level_id > access_levels.id (N:1)\nunits.addresses_id - addresses.id (1:1)\n\nTier 2: Actors (User & Address Links) \nstaff.user_id - users.id (1:1) \nstaff.addresses_id > addresses.id (N:1) \nstudents.user_id - users.id (1:1) \nstudents.addresses_id > addresses.id (N:1) \nguardians.user_id - users.id (1:1) \nguardians.addresses_id > addresses.id (N:1)\n\nTier 3: Structure & Links \nunit_classes.unit_id > units.id (N:1) \nstaff_units.staff_id > staff.id (N:1) \nstaff_units.unit_id > units.id (N:1) \nstudent_guardians.student_id > students.id (N:1) \nstudent_guardians.guardian_id > guardians.id (N:1)\n\nTier 4: Operations & Allocations \nstudent_classes.unit_class_id > unit_classes.id (N:1) \nstudent_classes.student_id > students.id (N:1) \nclass_allocations.staff_id > staff.id (N:1) \nclass_allocations.unit_class_id > unit_classes.id (N:1) \nclass_allocations.subjects_id > subjects.id (N:1)\n\nTier 5: Results (Grades) \nstudent_grades.class_schedules_id > class_allocations.id (N:1) \nstudent_grades.student_classes_id > student_classes.id (N:1)",
+      "content": "\nTier 1: Access & Base\nusers.access_level_id > access_levels.id (N:1)\naddresses.unit_id - units.id (1:1)\n\nTier 2: Actors (User & Address Links)\nstaff.user_id - users.id (1:1)\naddresses.staff_id > staff.id (N:1)\nstudents.user_id - users.id (1:1)\naddresses.student_id > students.id (N:1)\nguardians.user_id - users.id (1:1)\naddresses.guardian_id > guardians.id (N:1)\n\nTier 3: Structure & Links\nunit_classes.unit_id > units.id (N:1)\nstaff_units.staff_id > staff.id (N:1)\nstaff_units.unit_id > units.id (N:1)\nstudent_guardians.student_id > students.id (N:1)\nstudent_guardians.guardian_id > guardians.id (N:1)\n\nTier 4: Operations & Allocations\nstudent_classes.unit_class_id > unit_classes.id (N:1)\nstudent_classes.student_id > students.id (N:1)\nclass_allocations.staff_id > staff.id (N:1)\nclass_allocations.unit_class_id > unit_classes.id (N:1)\nclass_allocations.subjects_id > subjects.id (N:1)\n\nTier 5: Results (Grades)\nstudent_grades.class_allocation_id > class_allocations.id (N:1)\nstudent_grades.student_classes_id > student_classes.id (N:1)",
       "locked": false,
       "color": "#ECEFF1",
       "height": 762,
@@ -2104,7 +2126,7 @@
       "x": 96,
       "y": -441.2972439839105,
       "width": 1373.3610622053966,
-      "height": 453.0858112912678,
+      "height": 609.2972439839104,
       "color": "#ffebeb",
       "locked": false
     },
@@ -2112,29 +2134,29 @@
       "id": 1,
       "name": "Tier 2: Profiles & Entities",
       "x": 96,
-      "y": 86.70275601608944,
+      "y": 192,
       "width": 1373.3610622053966,
-      "height": 591.3882944958609,
+      "height": 576,
       "color": "#E8F5E9",
       "locked": false
     },
     {
       "id": 2,
       "name": "Tier 3: Assignments & Allocations",
-      "x": 95.03255944761105,
-      "y": 757.9458659758657,
-      "width": 1372.8411879005255,
-      "height": 486.5024768927201,
+      "x": 96,
+      "y": 840,
+      "width": 1371.8737473481365,
+      "height": 504,
       "color": "#E3F2FD",
       "locked": false
     },
     {
       "id": 3,
       "name": "Tier 4: Academic Records",
-      "x": 93.55160886735155,
-      "y": 1333.3053776841539,
-      "width": 1374.3221384807848,
-      "height": 306.5567701137095,
+      "x": 96,
+      "y": 1416,
+      "width": 1371.8737473481365,
+      "height": 336,
       "color": "#F3E5F5",
       "locked": false
     }

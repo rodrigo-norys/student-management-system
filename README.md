@@ -52,41 +52,46 @@ Visualize a estrutura completa, relacionamentos e tipos de dados diretamente no 
 [![Ver Schema no DrawDB](https://img.shields.io/badge/VER_SCHEMA_COMPLETO-DrawDB-blue?style=for-the-badge&logo=database)](https://drawdb.vercel.app/editor?shareId=a7577e72fc3ab1a93bfe9f09ab3c4b5c)
 
 > **Backup:** </br>
-> O arquivo JSON da estrutura também está disponível em [`docs/database/school_schema_v2.0.0.json`](./docs/database/school_schema_v2.0.0.json).</br>
-> O arquivo SQL da estrutura também está disponível em</br> [`docs/database/init.sql`](./docs/database/init.sql).
+> O arquivo JSON da estrutura também está disponível em [`docs/database/school_schema.json`](./docs/database/school_schema.json).</br>
+> O arquivo SQL da estrutura também está disponível em [`docs/database/init.sql`](./docs/database/init.sql).
 
 ### Diagrama Simplificado (Mermaid)
 ```mermaid
 erDiagram
-    %% TIER 1: SYSTEM & BASE
-    USERS }|--|| ACCESS_LEVELS : "access_level_id"
-    UNITS ||--|| ADDRESSES : "addresses_id"
+    %% 1. A ORIGEM DO SISTEMA 
+    ACCESS_LEVELS ||--|{ USERS : "access_level_id"
+    SUBJECTS ||--|{ CLASS_ALLOCATIONS : "subjects_id"
 
-    %% TIER 2: ACTORS (Links com User e Address)
-    STAFF ||--|| USERS : "user_id"
-    STAFF }|--|| ADDRESSES : "addresses_id"
-    STUDENTS ||--|| USERS : "user_id"
-    STUDENTS }|--|| ADDRESSES : "addresses_id"
-    GUARDIANS ||--|| USERS : "user_id"
-    GUARDIANS }|--|| ADDRESSES : "addresses_id"
+    %% 2. USERS -> ATORES
+    USERS ||--|| STUDENTS : "user_id"
+    USERS ||--|| STAFF : "user_id"
+    USERS ||--|| GUARDIANS : "user_id"
 
-    %% TIER 3: STRUCTURE & LINKS
-    UNIT_CLASSES }|--|| UNITS : "unit_id"
-    STAFF_UNITS }|--|| STAFF : "staff_id"
-    STAFF_UNITS }|--|| UNITS : "unit_id"
-    STUDENT_GUARDIANS }|--|| STUDENTS : "student_id"
-    STUDENT_GUARDIANS }|--|| GUARDIANS : "guardian_id"
+    %% 3. ATORES -> ENDEREÇOS
+    STUDENTS ||--|{ ADDRESSES : "student_id"
+    STAFF ||--|{ ADDRESSES : "staff_id"
+    GUARDIANS ||--|{ ADDRESSES : "guardian_id"
+    UNITS ||--|| ADDRESSES : "unit_id"
 
-    %% TIER 4: OPERATIONS & ALLOCATIONS
-    STUDENT_CLASSES }|--|| UNIT_CLASSES : "unit_class_id"
-    STUDENT_CLASSES }|--|| STUDENTS : "student_id"
-    CLASS_ALLOCATIONS }|--|| STAFF : "staff_id"
-    CLASS_ALLOCATIONS }|--|| UNIT_CLASSES : "unit_class_id"
-    CLASS_ALLOCATIONS }|--|| SUBJECTS : "subjects_id"
+    %% 4. RELAÇÕES DE UNIDADE E STAFF
+    UNITS ||--|{ UNIT_CLASSES : "unit_id"
+    UNITS ||--|{ STAFF_UNITS : "unit_id"
+    STAFF ||--|{ STAFF_UNITS : "staff_id"
 
-    %% TIER 5: RESULTS
-    STUDENT_GRADES }|--|| CLASS_ALLOCATIONS : "class_schedules_id"
-    STUDENT_GRADES }|--|| STUDENT_CLASSES : "student_classes_id"
+    %% 5. VÍNCULOS FAMILIARES
+    STUDENTS ||--|{ STUDENT_GUARDIANS : "student_id"
+    GUARDIANS ||--|{ STUDENT_GUARDIANS : "guardian_id"
+
+    %% 6. SALA DE AULA 
+    STUDENTS ||--|{ STUDENT_CLASSES : "student_id"
+    UNIT_CLASSES ||--|{ STUDENT_CLASSES : "unit_class_id"
+    
+    STAFF ||--|{ CLASS_ALLOCATIONS : "staff_id"
+    UNIT_CLASSES ||--|{ CLASS_ALLOCATIONS : "unit_class_id"
+
+    %% 7. O FIM DO FLUXO 
+    STUDENT_CLASSES ||--|{ STUDENT_GRADES : "student_classes_id"
+    CLASS_ALLOCATIONS ||--|{ STUDENT_GRADES : "class_allocation_id"
 ```
 ## 🚀 Infraestrutura & Deploy
 Diferente de projetos acadêmicos comuns, esta aplicação está hospedada em um ambiente de produção real (VPS), aplicando conceitos de DevOps e administração de servidores:
@@ -150,6 +155,4 @@ student-management-system/
 
 
 
-[LinkedIn](https://www.google.com/search?q=https://linkedin.com/in/rodrigo-norys) | [Portfólio](https://sisbodeveloper.com.br)
-
-
+[LinkedIn](https://linkedin.com/in/rodrigo-norys) | [Portfólio](https://sisbodeveloper.com.br)
