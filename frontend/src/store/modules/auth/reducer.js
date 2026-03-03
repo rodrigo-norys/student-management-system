@@ -4,7 +4,8 @@ const initialState = {
   isLoggedIn: false,
   token: false,
   user: {},
-  isLoading: false
+  isLoading: false,
+  isPowerUser: false
 };
 
 // eslint-disable-next-line

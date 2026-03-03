@@ -23,9 +23,10 @@ export function createStudentFailure(studentData) {
 }
 
 // GET STUDENTS
-export function getStudentsRequest() {
+export function getStudentsRequest(id) {
   return {
     type: types.GET_STUDENTS_REQUEST,
+    payload: id,
   };
 }
 
@@ -83,5 +84,25 @@ export function deleteStudentFailure(id) {
   return {
     type: types.DELETE_STUDENT_FAILURE,
     payload: id,
+  };
+}
+
+export function getCepRequest(payload) {
+  return {
+    type: types.GET_CEP_REQUEST,
+    payload,
+  };
+}
+
+export function getCepSuccess(payload) {
+  return {
+    type: types.GET_CEP_SUCCESS,
+    payload,
+  };
+}
+
+export function getCepFailure() {
+  return {
+    type: types.GET_CEP_FAILURE,
   };
 }

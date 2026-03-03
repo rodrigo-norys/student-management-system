@@ -4,6 +4,7 @@ import * as photoTypes from '../photo/types';
 const initialState = {
   students: [],
   isLoading: false,
+  addressSuggestion: null,
 }
 
 // eslint-disable-next-line
@@ -17,11 +18,23 @@ export default function (state = initialState, action) {
       };
     }
     case types.GET_STUDENTS_SUCCESS: {
-      return {
-        ...state,
-        students: action.payload,
-        isLoading: false,
-      };
+      const newState = { ...state };
+
+      if (Array.isArray(action.payload)) {
+        newState.students = action.payload;
+      } else {
+        const studentIndex = newState.students.findIndex(
+          (student) => student.id === action.payload.id
+        );
+
+        if (studentIndex >= 0) {
+          newState.students[studentIndex] = action.payload;
+        } else {
+          newState.students.push(action.payload);
+        }
+      }
+      newState.isLoading = false;
+      return newState;
     }
     case types.GET_STUDENTS_FAILURE: {
       return {
@@ -41,18 +54,16 @@ export default function (state = initialState, action) {
 
     case types.CREATE_STUDENT_SUCCESS:
     case types.UPDATE_STUDENT_SUCCESS: {
-      const { id, name, last_name, email, age, weight, height } = action.payload;
+      const { id } = action.payload;
       const { students } = state;
-      const exists = students.find(student => String(student.id) === String(id));
-      let newStudents;
+      const exists = students.some(student => String(student.id) === String(id));
 
-      if (exists) {
-        newStudents = students.map(newStudent =>
-          String(newStudent.id) === String(id) ? { id, name, last_name, email, age, weight, height } : newStudent
-        );
-      } else {
-        newStudents = [...students, { id, name, last_name, email, age, weight, height }];
-      }
+      const newStudents = exists
+        ? students.map(student => String(student.id) === String(id)
+          ? { ...student, ...action.payload }
+          : student
+        )
+        : [...students, action.payload];
 
       return {
         ...state,
@@ -103,26 +114,40 @@ export default function (state = initialState, action) {
 
     case photoTypes.UPDATE_PHOTO_SUCCESS: {
       const { id, photo } = action.payload;
-      const students = state.students;
-      const studentsToNotUpdate = students.filter(student => String(student.id) !== String(id));
-
-      const studentToUpdate = students.find(student => {
-        if (String(student.id) === String(id)) {
-          return {
-            ...student,
-            Photos: [{ url: photo }],
-          }
-        } else {
-          return {
-            students: [...students],
-          }
-        }
-      });
 
       return {
         ...state,
-        students: [...studentsToNotUpdate, { studentToUpdate }],
+        students: state.students.map((student) => {
+          if (String(student.id) === String(id)) {
+            return {
+              ...student,
+              avatar_url: photo,
+            };
+          }
+          return student;
+        }),
+        isLoading: false,
       };
+    }
+
+    case types.GET_CEP_REQUEST: {
+      const newState = { ...state };
+      newState.isLoading = true;
+      return newState;
+    }
+
+    case types.GET_CEP_SUCCESS: {
+      const newState = { ...state };
+      newState.addressSuggestion = action.payload;
+      newState.isLoading = false;
+      return newState;
+    }
+
+    case types.GET_CEP_FAILURE: {
+      const newState = { ...state };
+      newState.isLoading = false;
+      newState.addressSuggestion = null;
+      return newState;
     }
 
     default: {

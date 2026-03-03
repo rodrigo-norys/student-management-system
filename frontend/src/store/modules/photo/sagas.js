@@ -10,37 +10,35 @@ import axios from '../../../services/axios';
 function* updatePhotoRequest({ payload }) {
   const { formData, id } = payload;
   try {
-    const response = yield call(axios.post, `/photos/${id}`, formData)
+    const response = yield call(axios.patch, `/students/avatar/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
 
     yield put(actions.updatePhotoSuccess({
       id,
-      photo: response.data.url
+      photo: response.data.avatar_url
     }));
 
-    toast.success('Successfully');
+    toast.success('Photo updated successfully!');
     history.push(`/student/${id}/edit`);
 
   } catch (err) {
     const status = get(err, 'response.status', 0);
-    if (status === 500) {
-      toast.error('Internal server error. Please check the backend console.');
-    } else if (status === 401) {
-      toast.error('Session expired, please log in again.');
-      history.push('/');
-      yield put(loginActions.loginFailure());
-    } else {
-      const errors = get(err, 'response.data.errors', []);
-      errors.map(error => toast.error(error));
-    }
     const errors = get(err, 'response.data.errors', []);
 
-    if (errors.length > 0) {
+    if (status === 401) {
+      toast.error('Session expired, please log in again.');
+      yield put(loginActions.loginFailure());
+      history.push('/login');
+    } else if (errors.length > 0) {
       errors.map(error => toast.error(error));
     } else {
       toast.error('An unexpected error occurred.');
     }
+    yield put(actions.updatePhotoFailure());
   }
-  yield put(actions.updatePhotoFailure());
 }
 
 export default all([
