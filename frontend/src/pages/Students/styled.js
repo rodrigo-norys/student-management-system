@@ -133,13 +133,46 @@ export const StudentName = styled.h3`
 export const StudentEmail = styled.span`
   font-size: 14px;
   color: #888;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   text-align: center;
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
+`;
+
+export const StudentDetails = styled.div`
+  width: 100%;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #eee;
+`;
+
+export const DetailRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+
+  span:first-child {
+    font-weight: bold;
+    color: #777;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  span:last-child {
+    color: #333;
+    font-weight: 600;
+    font-family: 'monospace';
+  }
 `;
 
 export const ActionRow = styled.div`

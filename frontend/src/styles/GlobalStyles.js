@@ -20,7 +20,6 @@ export default createGlobalStyle`
     height: 100%;
   }
 
-  // BOTÕES GERAIS
   button {
     cursor: pointer;
     background: ${colors.primaryColor};

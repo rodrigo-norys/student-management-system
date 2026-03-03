@@ -5,7 +5,7 @@ import { isEmail } from "validator";
 
 import { Container, Form, Title } from "./styled";
 import Loading from '../../components/Loading';
-import * as actions from '../../store/modules/auth/actions';
+import * as actions from '../../store/modules/auth/actions.js';
 
 export default function Register() {
   const dispatch = useDispatch();
@@ -32,10 +32,6 @@ export default function Register() {
     e.preventDefault();
     let formErrors = false;
 
-    if (name.length < 3 || name.length > 50) {
-      formErrors = true;
-      toast.error('Name must be between 3 and 50 characters');
-    }
     if (!isEmail(email)) {
       formErrors = true;
       toast.error('Invalid email');
@@ -57,15 +53,6 @@ export default function Register() {
       <Title>{id ? 'Edit account' : 'Create account'}</Title>
 
       <Form onSubmit={handleSubmit}>
-        <label htmlFor="name">
-          Name
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Your name"
-          />
-        </label>
 
         <label htmlFor="email">
           Email

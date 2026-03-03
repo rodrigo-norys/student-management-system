@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FaCamera, FaCloudUploadAlt } from 'react-icons/fa';
 
 import * as actions from '../../store/modules/photo/actions.js';
-import * as studentAction from '../../store/modules/student/actions.js';
 import Loading from '../../components/Loading';
 
 import { Container, Title, Form, Overlay, Placeholder } from './styled';
@@ -20,14 +19,17 @@ export default function Photos() {
   );
   const isLoading = useSelector(state => state.student.isLoading);
 
-  const mainPhoto = student?.Photos?.[0]?.url;
+  const baseURL = `${process.env.REACT_APP_API_URL}/images/`;
+  const mainPhoto = student?.avatar_url ? `${baseURL}${student.avatar_url}` : '';
+
   const preview = photo || mainPhoto;
 
   useEffect(() => {
-    if (!student) {
-      dispatch(studentAction.getStudentsRequest());
+    if (photo && student?.avatar_url) {
+      URL.revokeObjectURL(photo);
+      setPhoto('');
     }
-  }, [id, student, dispatch]);
+  }, [photo, student?.avatar_url]);
 
   function handleChange(e) {
     const file = e.target.files[0];
@@ -38,7 +40,7 @@ export default function Photos() {
 
     const formData = new FormData();
     formData.append('student_id', id);
-    formData.append('photo', file);
+    formData.append('avatar', file);
 
     dispatch(actions.updatePhotoRequest({ id, formData }));
   }
@@ -55,14 +57,14 @@ export default function Photos() {
             <>
               <img src={preview} alt="Profile" />
               <Overlay>
-                 <FaCamera size={30} />
-                 <span>Change</span>
+                <FaCamera size={30} />
+                <span>Change</span>
               </Overlay>
             </>
           ) : (
             <Placeholder>
-               <FaCloudUploadAlt size={50} />
-               <span>Select Photo</span>
+              <FaCloudUploadAlt size={50} />
+              <span>Select Photo</span>
             </Placeholder>
           )}
 

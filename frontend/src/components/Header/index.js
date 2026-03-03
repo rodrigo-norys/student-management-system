@@ -1,24 +1,16 @@
-import {
-  FaHome,
-  FaSignInAlt,
-  FaPowerOff,
-  FaUserCircle,
-  FaUserCog,
-  FaUserPlus
-} from 'react-icons/fa';
+import {FaHome,FaPowerOff,FaUserCircle,FaUserCog,FaUserPlus} from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import * as actions from '../../store/modules/auth/actions';
-import { Nav, Menu, Logo, UserInfo, LinkRegister, LinkLogin } from './styled';
+import { Nav, Menu, Logo, UserInfo, LinkRegister } from './styled';
 
 export default function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
-  const user = useSelector(state => state.auth.user);
   const id = useSelector(state => state.auth.user.id);
 
   const handleLogout = e => {
@@ -46,28 +38,26 @@ export default function Header() {
 
             <UserInfo>
               <FaUserCircle size={20} />
-              <span>{user?.name || ''}</span>
-              <div style={{ width: 8, height: 8, background: '#44dd44', borderRadius: '50%' }} title="Online" />
+              <span>{'name' || ''}</span>
+              <div style={{
+                width: 8,
+                height: 8,
+                background: '#44dd44',
+                borderRadius: '50%'
+              }}
+                title="Online" />
             </UserInfo>
 
-            <Link onClick={handleLogout} to="/logout">
-              <FaPowerOff size={22} color="#fff" title="Leave" />
-            </Link>
-          </>
-        ) : (
-          <>
             <LinkRegister to='/register'>
               <FaUserPlus size={16} />
               <span>Sign up</span>
             </LinkRegister>
 
-            <LinkLogin to='/login'>
-              <FaSignInAlt size={16} />
-              <span>Sign in</span>
-            </LinkLogin>
-
+            <Link onClick={handleLogout} to="/logout">
+              <FaPowerOff size={22} color="#fff" title="Leave" />
+            </Link>
           </>
-        )}
+        ) : (<></>)}
       </Menu>
     </Nav>
   );

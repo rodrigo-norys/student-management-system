@@ -46,8 +46,7 @@ export const Form = styled.form`
   input {
     display: none;
   }
-
-  // A Foto
+  
   img {
     width: 100%;
     height: 100%;

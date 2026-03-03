@@ -1,19 +1,10 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { get } from 'lodash';
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaCamera } from 'react-icons/fa';
 
 import {
-  Container,
-  HeaderToolbar,
-  StudentContainer,
-  StudentCard,
-  ProfilePicture,
-  PictureOverlay,
-  StudentName,
-  StudentEmail,
-  ActionRow,
-  NewStudentLink
+  Container, HeaderToolbar, StudentContainer, StudentCard, ProfilePicture, PictureOverlay,
+  StudentName, StudentEmail, StudentDetails, DetailRow, ActionRow, NewStudentLink
 } from './styled.js';
 
 import * as actions from '../../store/modules/student/actions';
@@ -33,7 +24,7 @@ export default function Students() {
     !isLoggedIn
       ? navigate('/login')
       : dispatch(actions.getStudentsRequest());
-  }, [dispatch]);
+  }, [isLoggedIn, navigate, dispatch]);
 
 
   function handleDeleteAsk(e) {
@@ -49,11 +40,11 @@ export default function Students() {
   }
 
   function StudentPhoto({ student }) {
-    const photoUrl = get(student, 'Photos[0].url', false);
+    const mainPhoto = `${process.env.REACT_APP_API_URL}/images/${student.avatar_url}`
     return (
       <ProfilePicture>
-        <Link to={`/photos/${student.id}`}>
-          {photoUrl ? <img src={student.Photos[0].url} alt="" /> : <FaUserCircle size={85} />}
+        <Link to={`/avatar/${student.id}`}>
+          {mainPhoto ? <img src={mainPhoto} alt="" /> : <FaUserCircle size={85} />}
           <PictureOverlay>
             <FaCamera size={24} color="#fff" />
             <span>Edit</span>
@@ -80,8 +71,25 @@ export default function Students() {
 
             <StudentPhoto student={student} />
 
-            <StudentName>{student.name}</StudentName>
+            <StudentName>{student.name} {student.last_name}</StudentName>
             <StudentEmail>{student.email}</StudentEmail>
+
+            <StudentDetails>
+              <DetailRow>
+                <span>Registration Number</span>
+                <span>{student.registration_number}</span>
+              </DetailRow>
+
+              <DetailRow>
+                <span>CPF</span>
+                <span>{student.cpf}</span>
+              </DetailRow>
+
+              <DetailRow>
+                <span>Blood Type</span>
+                <span>{student.blood_type}</span>
+              </DetailRow>
+            </StudentDetails>
 
             <ActionRow>
               <Link to={`/student/${student.id}/edit`}>
@@ -100,6 +108,11 @@ export default function Students() {
                 color="#c30e0e"
                 title="Confirm Delete"
               />
+              
+              <Link to={`/student/${student.id}/`}>
+                <FaUserCircle size={18} color="#3f51b5" title="Perfil" />
+              </Link>
+
             </ActionRow>
 
           </StudentCard>
