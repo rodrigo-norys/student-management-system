@@ -1,4 +1,4 @@
-import {FaHome,FaPowerOff,FaUserCircle,FaUserCog,FaUserPlus} from 'react-icons/fa';
+import { FaHome, FaPowerOff, FaUserCircle, FaUserCog, FaUserPlus } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -11,7 +11,7 @@ export default function Header() {
   const dispatch = useDispatch();
 
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
-  const id = useSelector(state => state.auth.user.id);
+  const user = useSelector(state => state.auth.user);
 
   const handleLogout = e => {
     e.preventDefault();
@@ -23,14 +23,14 @@ export default function Header() {
   return (
     <Nav>
       <Logo>
-        <Link to={id ? "/" : "/login"}>
+        <Link to={user.id ? "/" : "/login"}>
           <FaHome size={22} />
           <span>SisboSchool</span>
         </Link>
       </Logo>
 
       <Menu>
-        {isLoggedIn ? (
+        {isLoggedIn ?
           <>
             <Link to="/register">
               <FaUserCog size={24} color="#fff" title="Update account" />
@@ -38,7 +38,7 @@ export default function Header() {
 
             <UserInfo>
               <FaUserCircle size={20} />
-              <span>{'name' || ''}</span>
+              <span>{user.email ? user.email.split('@')[0] : ''}</span>
               <div style={{
                 width: 8,
                 height: 8,
@@ -48,16 +48,18 @@ export default function Header() {
                 title="Online" />
             </UserInfo>
 
-            <LinkRegister to='/register'>
-              <FaUserPlus size={16} />
-              <span>Sign up</span>
-            </LinkRegister>
+            {user.access_level_id < 3 ?
+              <LinkRegister to='/register'>
+                <FaUserPlus size={16} />
+                <span>Sign up</span>
+              </LinkRegister>
+              : <></>}
 
             <Link onClick={handleLogout} to="/logout">
               <FaPowerOff size={22} color="#fff" title="Leave" />
             </Link>
           </>
-        ) : (<></>)}
+          : <></>}
       </Menu>
     </Nav>
   );
