@@ -543,6 +543,19 @@
           "check": ""
         },
         {
+          "id": "QhGfII1LF4d5Bqz2WlvWL",
+          "name": "email",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 150
+        },
+        {
           "id": "uHb2c569W0EvQCFCqqQ4D",
           "name": "registration_number",
           "type": "VARCHAR",
@@ -700,7 +713,7 @@
           "notNull": false,
           "primary": false,
           "default": "",
-          "size": 255,
+          "size": 150,
           "check": ""
         },
         {
@@ -1085,6 +1098,19 @@
           "default": "",
           "size": 150,
           "check": ""
+        },
+        {
+          "id": "15wtx3qZkh-rlMZoxesWg",
+          "name": "email",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 150
         },
         {
           "id": "6p0sPD8_wBVlPdaJnYGTA",
@@ -2110,7 +2136,7 @@
     {
       "id": 0,
       "x": 1488,
-      "y": -432,
+      "y": -456,
       "title": "Relationship Map",
       "content": "\nTier 1: Access & Base\nusers.access_level_id > access_levels.id (N:1)\naddresses.unit_id - units.id (1:1)\n\nTier 2: Actors (User & Address Links)\nstaff.user_id - users.id (1:1)\naddresses.staff_id > staff.id (N:1)\nstudents.user_id - users.id (1:1)\naddresses.student_id > students.id (N:1)\nguardians.user_id - users.id (1:1)\naddresses.guardian_id > guardians.id (N:1)\n\nTier 3: Structure & Links\nunit_classes.unit_id > units.id (N:1)\nstaff_units.staff_id > staff.id (N:1)\nstaff_units.unit_id > units.id (N:1)\nstudent_guardians.student_id > students.id (N:1)\nstudent_guardians.guardian_id > guardians.id (N:1)\n\nTier 4: Operations & Allocations\nstudent_classes.unit_class_id > unit_classes.id (N:1)\nstudent_classes.student_id > students.id (N:1)\nclass_allocations.staff_id > staff.id (N:1)\nclass_allocations.unit_class_id > unit_classes.id (N:1)\nclass_allocations.subjects_id > subjects.id (N:1)\n\nTier 5: Results (Grades)\nstudent_grades.class_allocation_id > class_allocations.id (N:1)\nstudent_grades.student_classes_id > student_classes.id (N:1)",
       "locked": false,
@@ -2124,9 +2150,9 @@
       "id": 0,
       "name": "Tier 1: System Configuration",
       "x": 96,
-      "y": -441.2972439839105,
+      "y": -456,
       "width": 1373.3610622053966,
-      "height": 609.2972439839104,
+      "height": 633.2972439839104,
       "color": "#ffebeb",
       "locked": false
     },
@@ -2136,7 +2162,7 @@
       "x": 96,
       "y": 192,
       "width": 1373.3610622053966,
-      "height": 576,
+      "height": 624,
       "color": "#E8F5E9",
       "locked": false
     },
@@ -2154,9 +2180,9 @@
       "id": 3,
       "name": "Tier 4: Academic Records",
       "x": 96,
-      "y": 1416,
+      "y": 1368,
       "width": 1371.8737473481365,
-      "height": 336,
+      "height": 384,
       "color": "#F3E5F5",
       "locked": false
     }

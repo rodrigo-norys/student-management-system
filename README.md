@@ -24,7 +24,11 @@ O grande diferencial técnico reside na **Modelagem do Banco de Dados** (dispon�
 #### ✅ Implementado (MVP Atual)
 - **Autenticação Base:** Estrutura de usuários (`users`) pronta e integrada para login seguro.
 - **Gestão Discente:** Tabela de Alunos (`students`) funcional, permitindo cadastro e persistência de dados.
-- **Gestão de Mídia:** Sistema de upload e armazenamento de fotos de perfil (`photos`) integrado ao banco.
+- **Endereços Múltiplos:** Relacionamento dinâmico permitindo até 3 endereços por aluno. Sincronização inteligente no backend (Update/Create/Delete) operando dentro de transações atômicas no Sequelize.
+- **Integração de API Externa:** Busca automática de logradouro via CEP (BrasilAPI) com preenchimento dinâmico e integrado ao estado global do formulário.
+- **Gerenciamento de Estado Global:** Arquitetura consolidada utilizando Redux e Redux Saga para controle de side-effects e chamadas assíncronas (Axios).
+- **Validação e Higienização de Dados:** Validação declarativa no frontend (máscaras de CPF, e-mail, campos obrigatórios) antes da persistência, garantindo a integridade do banco de dados.
+- **Gestão de Mídia:** Upload e vinculação de foto de perfil (Avatar) diretamente ao cadastro do aluno.
 - **Versionamento de Banco:** Controle de migrações ativo e auditável via `sequelizemeta`.
 
 #### 🚧 Em Desenvolvimento / Modelado
