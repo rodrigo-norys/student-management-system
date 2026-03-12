@@ -15,8 +15,8 @@ function* getStudentsRequest({ payload }) {
       ? yield call(axios.get, `/students/${payload}`)
       : yield call(axios.get, '/students');
     yield put(actions.getStudentsSuccess(response.data));
-  } catch (err) {
-    const errors = get(err, 'response.data.errors', []);
+  } catch (e) {
+    const errors = get(e, 'response.data.errors', []);
     errors.map(error => toast.error(error));
     yield put(actions.getStudentsFailure());
   }
@@ -35,21 +35,11 @@ function* getCep({ payload }) {
 function* createStudentRequest({ payload }) {
   try {
     const {
-      id, name, last_name, email,
-      registration_number, cpf, birth_date,
-      avatar_url, blood_type, medical_notes,
-
-      zip_code, street, number, complement, neighborhood, city, state,
-      shouldLeave, shouldStay
+      id,
+      shouldLeave,
+      shouldStay,
+      ...studentData
     } = payload;
-
-    const studentData = {
-      name, last_name, email,
-      registration_number, cpf, birth_date,
-      avatar_url, blood_type, medical_notes,
-
-      zip_code, street, number, complement, neighborhood, city, state
-    };
 
     if (id) {
       const response = yield call(axios.put, `/students/${id}`, studentData);

@@ -10,6 +10,7 @@ const initialState = {
 // eslint-disable-next-line
 export default function (state = initialState, action) {
   switch (action.type) {
+
     ///////////// GET STUDENTS /////////////
     case types.GET_STUDENTS_REQUEST: {
       return {
@@ -17,6 +18,7 @@ export default function (state = initialState, action) {
         isLoading: true,
       };
     }
+
     case types.GET_STUDENTS_SUCCESS: {
       const newState = { ...state };
 
@@ -36,6 +38,7 @@ export default function (state = initialState, action) {
       newState.isLoading = false;
       return newState;
     }
+
     case types.GET_STUDENTS_FAILURE: {
       return {
         ...state,
@@ -43,7 +46,7 @@ export default function (state = initialState, action) {
       };
     }
 
-    ///////////// CREATE STUDENT /////////////
+    ///////////// CREATE / UPDATE STUDENT /////////////
     case types.CREATE_STUDENT_REQUEST:
     case types.UPDATE_STUDENT_REQUEST: {
       return {
@@ -56,6 +59,7 @@ export default function (state = initialState, action) {
     case types.UPDATE_STUDENT_SUCCESS: {
       const { id } = action.payload;
       const { students } = state;
+
       const exists = students.some(student => String(student.id) === String(id));
 
       const newStudents = exists
@@ -87,6 +91,7 @@ export default function (state = initialState, action) {
         isLoading: true,
       };
     }
+
     case types.DELETE_STUDENT_SUCCESS: {
       const studentId = action.payload;
       return {
@@ -97,6 +102,7 @@ export default function (state = initialState, action) {
         isLoading: false,
       };
     }
+
     case types.DELETE_STUDENT_FAILURE: {
       return {
         ...state,
@@ -130,24 +136,28 @@ export default function (state = initialState, action) {
       };
     }
 
+    ///////////// CEP / ADDRESS SUGGESTION /////////////
     case types.GET_CEP_REQUEST: {
-      const newState = { ...state };
-      newState.isLoading = true;
-      return newState;
+      return {
+        ...state,
+        isLoading: true,
+      };
     }
 
     case types.GET_CEP_SUCCESS: {
-      const newState = { ...state };
-      newState.addressSuggestion = action.payload;
-      newState.isLoading = false;
-      return newState;
+      return {
+        ...state,
+        addressSuggestion: action.payload,
+        isLoading: false,
+      };
     }
 
     case types.GET_CEP_FAILURE: {
-      const newState = { ...state };
-      newState.isLoading = false;
-      newState.addressSuggestion = null;
-      return newState;
+      return {
+        ...state,
+        isLoading: false,
+        addressSuggestion: null,
+      };
     }
 
     default: {
