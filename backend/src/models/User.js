@@ -4,6 +4,18 @@ import bcryptjs from "bcryptjs";
 export default class User extends Model {
   static init(sequelize) {
     super.init({
+      access_level_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'access_levels',
+          key: 'id'
+        }
+      },
+      avatar_url: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       email: {
         type: Sequelize.STRING,
         defaultValue: '',
@@ -30,24 +42,12 @@ export default class User extends Model {
           }
         }
       },
-      avatar_url: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
       url: {
         type: Sequelize.VIRTUAL,
         get() {
           const avatar = this.getDataValue('avatar_url');
           return avatar ? `${process.env.APP_URL}/images/${avatar}` : null;
         },
-      },
-      access_level_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'access_levels',
-          key: 'id'
-        }
       },
       is_active: {
         type: Sequelize.TINYINT,

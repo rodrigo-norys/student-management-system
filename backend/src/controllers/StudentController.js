@@ -11,7 +11,7 @@ class StudentController {
 
     try {
       const {
-        zip_code, street, number, complement, neighborhood, city, state,
+        addresses,
         ...studentData
       } = req.body;
 
@@ -23,49 +23,31 @@ class StudentController {
         { transaction },
       );
 
-      await Address.create(
-        {
-          zip_code, street, number, complement, neighborhood, city, state,
-          student_id: newStudent.id
-        },
-        { transaction },
-      );
+      if (addresses && addresses.length > 0) {
+        const addressesToSave = addresses.map((addr) => ({
+          ...addr,
+          student_id: newStudent.id,
+        }));
+
+        await Address.bulkCreate(addressesToSave, { transaction });
+      }
 
       await transaction.commit();
 
       const fullStudent = await Student.findByPk(newStudent.id, {
         attributes: ['id', 'name', 'last_name', 'email', 'cpf', 'registration_number', 'birth_date', 'blood_type', 'medical_notes'],
-        include: [
-          {
+        include: [{
             model: Address,
             as: 'addresses',
             attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-          },
-        ],
+            order: [['id', 'ASC']],
+          }],
       });
 
       return res.json(fullStudent);
     } catch (e) {
-      if (e instanceof Sequelize.ValidationError) {
-        return res.status(400).json({
-          errors: e.errors.map((err) => err.message),
-        });
-      }
-
-      if (e instanceof Sequelize.ForeignKeyConstraintError) {
-        return res.status(400).json({
-          errors: ['The provided relation or ID does not exist in the database.'],
-        });
-      }
-
-      if (e instanceof Sequelize.DatabaseError) {
-        return res.status(500).json({
-          errors: ['A database error occurred. Please contact the administrator.'],
-        });
-      }
-      return res.status(500).json({
-        errors: ['Internal server error.'],
-      });
+      if (transaction) await transaction.rollback();
+      return this.handleErrors(e, res);
     }
   }
 
@@ -78,13 +60,12 @@ class StudentController {
         },
         attributes: ['id', 'name', 'last_name', 'email', 'avatar_url', 'registration_number', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
         order: [['name', 'ASC']],
-        include: [
-          {
-            model: Address,
-            as: 'addresses',
-            attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-          },
-        ],
+        include: [{
+          model: Address,
+          as: 'addresses',
+          attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
+          order: [['id', 'ASC']],
+        }]
       });
       return res.json(students);
     } catch (e) {
@@ -108,12 +89,13 @@ class StudentController {
           id,
           user_id: req.userId
         },
-        attributes: ['id', 'name', 'last_name', 'email', 'avatar_url', 'registration_number', 'blood_type', 'medical_notes', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
+        attributes: ['id', 'name', 'last_name', 'email', 'avatar_url', 'registration_number', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
         include: [{
           model: Address,
           as: 'addresses',
           attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-        }],
+          order: [['id', 'ASC']],
+        }]
       });
 
       if (!student)
@@ -148,71 +130,41 @@ class StudentController {
         });
       }
 
-      const {
-        zip_code, street, number, complement, neighborhood, city, state,
-        ...studentData
-      } = req.body;
+      const { addresses, ...studentData } = req.body;
 
       await student.update(studentData, { transaction });
 
-      if (zip_code || street || number || neighborhood || city || state) {
-        const address = await Address.findOne({
-          where: {
-            student_id: student.id
-          },
+      if (addresses) {
+        await Address.destroy({
+          where: { student_id: id },
           transaction
         });
 
-        if (address) {
-          await address.update(
-            { zip_code, street, number, complement, neighborhood, city, state },
-            { transaction },
-          );
-        } else {
-          await Address.create(
-            {
-              zip_code, street, number, complement, neighborhood, city, state,
-              student_id: student.id
-            },
-            { transaction }
-          );
+        if (addresses.length > 0) {
+          const addressesToSave = addresses.map((addr) => ({
+            ...addr,
+            student_id: id,
+          }));
+          await Address.bulkCreate(addressesToSave, { transaction });
         }
       }
 
       await transaction.commit();
+
       const updatedStudent = await Student.findByPk(id,
         {
           include:
             [{
               model: Address,
-              as: 'addresses'
+              as: 'addresses',
+              attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
+              order: [['id', 'ASC']],
             }]
         });
       return res.json(updatedStudent);
     } catch (e) {
       if (transaction) await transaction.rollback();
-
-      if (e instanceof Sequelize.ValidationError) {
-        return res.status(400).json({
-          errors: e.errors.map((err) => err.message),
-        });
-      }
-
-      if (e instanceof Sequelize.ForeignKeyConstraintError) {
-        return res.status(400).json({
-          errors: ['The provided relation or ID does not exist in the database.'],
-        });
-      }
-
-      if (e instanceof Sequelize.DatabaseError) {
-        return res.status(500).json({
-          errors: ['A database error occurred. Please contact the administrator.'],
-        });
-      }
-
-      return res.status(500).json({
-        errors: ['Internal server error.'],
-      });
+      return this.handleErrors(e, res);
     }
   }
 
@@ -252,6 +204,30 @@ class StudentController {
         errors: ['Internal server error while trying to delete student.'],
       });
     }
+  }
+
+  handleErrors(e, res) {
+    if (e instanceof Sequelize.ValidationError) {
+      return res.status(400).json({
+        errors: e.errors.map((err) => err.message),
+      });
+    }
+
+    if (e instanceof Sequelize.ForeignKeyConstraintError) {
+      return res.status(400).json({
+        errors: ['The provided relation or ID does not exist in the database.'],
+      });
+    }
+
+    if (e instanceof Sequelize.DatabaseError) {
+      return res.status(500).json({
+        errors: ['A database error occurred. Please contact the administrator.'],
+      });
+    }
+
+    return res.status(500).json({
+      errors: ['Internal server error.'],
+    });
   }
 }
 

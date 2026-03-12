@@ -37,6 +37,10 @@ export default class AccessLevel extends Model {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
+      manage_academic: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
       manage_finance: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
