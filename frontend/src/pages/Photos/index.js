@@ -23,6 +23,7 @@ export default function Photos() {
   const mainPhoto = student?.avatar_url ? `${baseURL}${student.avatar_url}` : '';
 
   const preview = photo || mainPhoto;
+  console.log(preview)
 
   useEffect(() => {
     if (photo && student?.avatar_url) {

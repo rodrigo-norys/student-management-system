@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaCamera } from 'react-icons/fa';
+
+import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import {
   Container, HeaderToolbar, StudentContainer, StudentCard, ProfilePicture, PictureOverlay,
@@ -9,7 +12,6 @@ import {
 
 import * as actions from '../../store/modules/student/actions';
 import Loading from '../../components/Loading';
-import { useDispatch, useSelector } from 'react-redux';
 
 
 export default function Students() {
@@ -82,7 +84,7 @@ export default function Students() {
 
               <DetailRow>
                 <span>CPF</span>
-                <span>{student.cpf}</span>
+                <span>{cpfValidator.format(student.cpf)}</span>
               </DetailRow>
 
               <DetailRow>
@@ -108,7 +110,7 @@ export default function Students() {
                 color="#c30e0e"
                 title="Confirm Delete"
               />
-              
+
               <Link to={`/student/${student.id}/`}>
                 <FaUserCircle size={18} color="#3f51b5" title="Perfil" />
               </Link>
