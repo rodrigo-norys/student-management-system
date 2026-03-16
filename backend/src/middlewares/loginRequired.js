@@ -5,9 +5,7 @@ export default async (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
-    return res.status(401).json({
-      errors: ['Login required']
-    });
+    return res.status(401).json({errors: ['Login required']});
   }
 
   const [text, token] = authorization.split(' ');
@@ -24,17 +22,13 @@ export default async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(401).json({
-        errors: ['Invalid user']
-      });
+      return res.status(401).json({errors: ['Invalid user']});
     }
 
     req.userId = id;
     req.userEmail = email;
     return next();
   } catch (e) {
-    return res.status(401).json({
-      errors: ['Expired or invalid token']
-    });
+    return res.status(401).json({errors: ['Expired or invalid token']});
   }
 }

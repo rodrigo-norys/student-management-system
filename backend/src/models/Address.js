@@ -104,5 +104,11 @@ export default class Address extends Model {
         foreignKey: 'student_id',
         as: 'student'
       });
+
+    this.belongsTo(models.Staff,
+      {
+        foreignKey: 'staff_id',
+        as: 'staff'
+      });
   }
 }

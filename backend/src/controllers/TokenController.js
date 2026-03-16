@@ -5,9 +5,7 @@ class TokenController {
   async create(req, res) {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(401).json({
-        errors: ['Invalid credencials']
-      });
+      return res.status(401).json({ errors: ['Invalid credencials'] });
     }
 
     const user = await User.findOne({
@@ -17,15 +15,11 @@ class TokenController {
     });
 
     if (!user) {
-      return res.status(401).json({
-        errors: ['Invalid user']
-      });
+      return res.status(401).json({ errors: ['Invalid user'] });
     }
 
     if (!(await user.passwordIsValid(password))) {
-      return res.status(401).json({
-        errors: ['Invalid password']
-      });
+      return res.status(401).json({ errors: ['Invalid password'] });
     }
 
     const { id, email: userEmail, access_level_id } = user;

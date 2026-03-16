@@ -8,15 +8,11 @@ class AvatarController {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          errors: ['Missing ID.'],
-        });
+        return res.status(400).json({ errors: ['Missing ID.'] });
       }
 
       if (!req.file) {
-        return res.status(400).json({
-          errors: ['File is required.']
-        });
+        return res.status(400).json({ errors: ['File is required.'] });
       }
 
       const { filename } = req.file;
@@ -24,9 +20,7 @@ class AvatarController {
       const student = await Student.findByPk(id);
 
       if (!student) {
-        return res.status(404).json({
-          errors: ['Student not found or unauthorized.']
-        });
+        return res.status(404).json({ errors: ['Student not found or unauthorized.'] });
       }
 
       const oldAvatar = student.avatar_url;
@@ -45,9 +39,7 @@ class AvatarController {
       return res.json(student);
     } catch (e) {
       console.log(e);
-      return res.status(400).json({
-        errors: ['Error updating avatar.'],
-      });
+      return res.status(400).json({errors: ['Error updating avatar.']});
     }
   }
 }
