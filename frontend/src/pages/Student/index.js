@@ -53,9 +53,15 @@ export default function Student() {
       return;
     }
 
-    const addressList = student.addresses && student.addresses.length > 0
-      ? student.addresses
+    let addressList = student.addresses && student.addresses.length > 0
+      ? [...student.addresses]
       : [{ ...emptyAddress }];
+
+    addressList.sort((a, b) => {
+      if (!a.id) return 1;
+      if (!b.id) return -1;
+      return a.id - b.id;
+    });
 
     setForm({
       name: student.name || '',
@@ -79,6 +85,7 @@ export default function Student() {
         state: address.state || '',
       }))
     });
+
   }, [id, student, dispatch]);
 
   useEffect(() => {
@@ -104,7 +111,7 @@ export default function Student() {
   }, [addressSuggestion, activeAddressIndex]);
 
   // --- ZIP CODE MASK --- \\
-  const maskCEP = (value) => {
+  function maskCEP(value) {
     return value
       .replace(/\D/g, "")
       .replace(/^(\d{5})(\d)/, "$1-$2")
@@ -112,7 +119,7 @@ export default function Student() {
   };
 
   // --- HANDLERS --- \\
-  const handleChange = (e) => {
+  function handleChange (e) {
     let { name, value } = e.target;
 
     if (name === 'cpf') value = value.replace(/\D/g, '');
@@ -122,7 +129,7 @@ export default function Student() {
     }));
   };
 
-  const handleAddressChange = (index, e) => {
+  function handleAddressChange(index, e) {
     const { name, value } = e.target;
     setForm(prev => {
       const updatedAddresses = [...prev.addresses];
@@ -137,7 +144,7 @@ export default function Student() {
     });
   };
 
-  const handleCepChange = (index, e) => {
+  function handleCepChange (index, e) {
     const value = e.target.value;
     const cleanValue = value.replace(/\D/g, '');
     const maskedValue = maskCEP(value);
@@ -160,7 +167,7 @@ export default function Student() {
     }
   };
 
-  const addAddress = () => {
+  function addAddress() {
     if (form.addresses.length < 3) {
       setForm(prev => ({
         ...prev,
@@ -172,7 +179,7 @@ export default function Student() {
     }
   };
 
-  const removeAddress = (indexToRemove) => {
+  function removeAddress(indexToRemove) {
     setForm(prev => ({
       ...prev,
       addresses: prev.addresses.filter((_, index) =>
@@ -181,7 +188,7 @@ export default function Student() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     e.preventDefault();
     let formErrors = false;
 
@@ -341,7 +348,7 @@ export default function Student() {
         <AddressesWrapper>
           {form.addresses.map((address, index) => (
             <AddressCard key={index}>
-              {index > 0 && (
+              {index >= 0 && (
                 <RemoveAddressButton
                   type="button"
                   onClick={() => removeAddress(index)}

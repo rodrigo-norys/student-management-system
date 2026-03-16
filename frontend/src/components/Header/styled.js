@@ -4,11 +4,17 @@ import { primaryColor } from "../../config/colors";
 
 export const Nav = styled.nav`
   background: ${primaryColor};
-  padding: 0 20px;
+  padding: 0 clamp(10px, 3vw, 20px);
   height: 64px;
+  width: 100%;
+  box-sizing: border-box;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: nowrap;
+  overflow: hidden;
+
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   position: sticky;
   top: 0;
@@ -16,55 +22,54 @@ export const Nav = styled.nav`
 `;
 
 export const Logo = styled.div`
+  flex-shrink: 0;
   a {
     display: flex;
     align-items: center;
     color: #fff;
-    font-size: 20px;
+    font-size: clamp(14px, 4vw, 20px);
     font-weight: bold;
     text-decoration: none;
     gap: 8px;
+    white-space: nowrap;
   }
 `;
 
 export const Menu = styled.div`
   display: flex;
   align-items: center;
-  gap: 15px;
-`;
+  gap: clamp(5px, 2vw, 15px);
+  flex-wrap: nowrap;
+  min-width: 0;
 
-export const LinkLogin = styled(Link)`
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 15px;
-  text-decoration: none;
-  padding: 5px 10px;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.8;
+  > a {
+    display: flex;
+    align-items: center;
+    color: #fff;
+    transition: opacity 0.2s;
+    &:hover { opacity: 0.8; }
   }
 `;
 
 export const LinkRegister = styled(Link)`
   background: #fff;
-  color: ${primaryColor};
+  color: ${primaryColor} !important;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 5px;
+  padding: clamp(4px, 1vw, 8px) clamp(8px, 2vw, 16px);
   border-radius: 4px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: clamp(12px, 1.5vw, 14px);
   text-decoration: none;
-  transition: all 0.2s;
+  white-space: nowrap;
 
   &:hover {
-    background: #f0f0f0;
-    transform: translateY(-2px);
+    filter: brightness(90%);
+  }
+
+  @media (max-width: 500px) {
+    span { display: none; }
   }
 `;
 
@@ -77,8 +82,18 @@ export const UserInfo = styled.div`
   padding: 5px 10px;
   border-radius: 4px;
 
+  min-width: 0;
+
   span {
-    font-size: 14px;
+    font-size: clamp(12px, 1.5vw, 14px);
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 15vw;
+  }
+
+  @media (max-width: 400px) {
+    span { display: none; }
   }
 `;

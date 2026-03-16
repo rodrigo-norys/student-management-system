@@ -51,7 +51,7 @@ export default function Header() {
             {user.access_level_id < 3 ?
               <LinkRegister to='/register'>
                 <FaUserPlus size={16} />
-                <span>Sign up</span>
+                <span>New User</span>
               </LinkRegister>
               : <></>}
 
