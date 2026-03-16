@@ -8,8 +8,8 @@ export default class Student extends Model {
         defaultValue: '',
         validate: {
           len: {
-            args: [3, 255],
-            msg: 'Name must be between 3 and 255 characters'
+            args: [3, 50],
+            msg: 'Name must be between 3 and 50 characters'
           },
         },
       },
@@ -18,8 +18,8 @@ export default class Student extends Model {
         defaultValue: '',
         validate: {
           len: {
-            args: [3, 255],
-            msg: 'Last name must be between 3 and 255 characters'
+            args: [3, 100],
+            msg: 'Last name must be between 3 and 100 characters'
           },
         },
       },
@@ -32,6 +32,10 @@ export default class Student extends Model {
         validate: {
           isEmail: {
             msg: 'You must enter a valid email'
+          },
+          len: {
+            args: [5, 150],
+            msg: 'Email must be between 5 and 150 characters'
           }
         },
       },
@@ -44,6 +48,10 @@ export default class Student extends Model {
         validate: {
           notEmpty: {
             msg: 'Registration number cannot be empty'
+          },
+          len: {
+            args: [1, 20],
+            msg: 'Registration number must be up to 20 characters'
           }
         },
       },
@@ -71,6 +79,12 @@ export default class Student extends Model {
       avatar_url: {
         type: Sequelize.STRING,
         allowNull: true,
+        validate: {
+          len: {
+            args: [0, 150],
+            msg: 'Avatar URL/Path must be up to 150 characters'
+          }
+        }
       },
       url: {
         type: Sequelize.VIRTUAL,
@@ -80,15 +94,27 @@ export default class Student extends Model {
       },
       blood_type: {
         type: Sequelize.STRING,
-        defaultValue: ''
+        defaultValue: '',
+        validate: {
+          len: {
+            args: [0, 3],
+            msg: 'Blood type must be up to 3 characters'
+          }
+        }
       },
       medical_notes: {
-        type: Sequelize.TEXT,
-        defaultValue: ''
+        type: Sequelize.STRING,
+        defaultValue: '',
+        validate: {
+          len: {
+            args: [0, 255],
+            msg: 'Medical notes must be up to 255 characters'
+          }
+        }
       },
       user_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
     }, {
       sequelize,

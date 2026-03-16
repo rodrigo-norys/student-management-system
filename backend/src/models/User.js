@@ -15,6 +15,12 @@ export default class User extends Model {
       avatar_url: {
         type: Sequelize.STRING,
         allowNull: true,
+        validate: {
+          len: {
+            args: [0, 255],
+            msg: 'Avatar URL must be up to 255 characters'
+          }
+        }
       },
       email: {
         type: Sequelize.STRING,
@@ -25,12 +31,22 @@ export default class User extends Model {
         validate: {
           isEmail: {
             msg: 'Enter a valid email'
+          },
+          len: {
+            args: [5, 150],
+            msg: 'Email must be between 5 and 150 characters'
           }
         }
       },
       password_hash: {
         type: Sequelize.STRING,
-        defaultValue: ''
+        defaultValue: '',
+        validate: {
+          len: {
+            args: [0, 100],
+            msg: 'Password hash limit exceeded'
+          }
+        }
       },
       password: {
         type: Sequelize.VIRTUAL,

@@ -1,19 +1,37 @@
-import AccessLevel from '../models/AccessLevel.js';
 import User from '../models/User.js';
-
+import AccessLevel from '../models/AccessLevel.js';
+import Student from '../models/Student.js';
 import Sequelize from 'sequelize';
+import database from '../database/index.js';
 
 class UserController {
   // create
   async create(req, res) {
+    const transaction = await database.transaction();
+
     try {
       const {
-        access_level_id, email, avatar_url, password, is_active, is_temporary
+        access_level_id, email, avatar_url, password, is_active, is_temporary, student_id
       } = req.body;
 
       const newUser = await User.create({
         access_level_id, email, avatar_url, password, is_active, is_temporary,
-      });
+      }, { transaction });
+
+      if (student_id) {
+        const student = await Student.findByPk(student_id, { transaction });
+
+        if (student) {
+          await student.update({ user_id: newUser.id }, { transaction });
+        } else {
+          await transaction.rollback();
+          return res.status(404).json({
+            errors: ['Student not found to link this access account.']
+          });
+        }
+      }
+
+      await transaction.commit();
 
       const {
         id,
@@ -30,28 +48,10 @@ class UserController {
         is_active: isActive,
         is_temporary: isTemporay
       });
+
     } catch (e) {
-      if (e instanceof Sequelize.ValidationError) {
-        return res.status(400).json({
-          errors: e.errors.map((err) => err.message),
-        });
-      }
-
-      if (e instanceof Sequelize.ForeignKeyConstraintError) {
-        return res.status(400).json({
-          errors: ['The provided relation or ID does not exist in the database.'],
-        });
-      }
-
-      if (e instanceof Sequelize.DatabaseError) {
-        return res.status(500).json({
-          errors: ['A database error occurred. Please contact the administrator.'],
-        });
-      }
-
-      return res.status(500).json({
-        errors: ['Internal server error.'],
-      });
+      if (transaction) await transaction.rollback();
+      return this.handleErrors(e, res);
     }
   }
 
@@ -71,9 +71,7 @@ class UserController {
       });
       return res.json(allUsers);
     } catch (e) {
-      return res.status(500).json({
-        errors: ['Internal server error.']
-      });
+      return this.handleErrors(e, res);
     }
   }
 
@@ -119,16 +117,7 @@ class UserController {
       return res.json(userToShow);
 
     } catch (e) {
-      if (e instanceof Sequelize.DatabaseError) {
-        return res.status(500).json({
-          errors: ['A database error occurred.'],
-        });
-      }
-
-      console.error(e);
-      return res.status(500).json({
-        errors: ['Internal server error. Please try again later.'],
-      });
+      return this.handleErrors(e, res);
     }
   }
 
@@ -196,27 +185,7 @@ class UserController {
       return res.json(updatedUser);
 
     } catch (e) {
-      if (e instanceof Sequelize.ValidationError) {
-        return res.status(400).json({
-          errors: e.errors.map((err) => err.message),
-        });
-      }
-
-      if (e instanceof Sequelize.ForeignKeyConstraintError) {
-        return res.status(400).json({
-          errors: ['The provided relation or ID does not exist in the database.'],
-        });
-      }
-
-      if (e instanceof Sequelize.DatabaseError) {
-        return res.status(500).json({
-          errors: ['A database error occurred. Please contact the administrator.'],
-        });
-      }
-
-      return res.status(500).json({
-        errors: ['Internal server error.'],
-      });
+      return this.handleErrors(e, res);
     }
   }
 
@@ -237,6 +206,7 @@ class UserController {
           errors: ['User not found.'],
         });
       }
+
       const requester = await User.findByPk(req.userId);
       if (requester.access_level_id > 2 || Number(id) === Number(req.userId)) {
         return res.status(403).json({
@@ -264,16 +234,37 @@ class UserController {
       });
 
     } catch (e) {
-      if (e instanceof Sequelize.DatabaseError) {
-        return res.status(500).json({
-          errors: ['A database error occurred.'],
-        });
-      }
-
-      return res.status(500).json({
-        errors: ['Internal server error while trying to delete user.'],
-      });
+      return this.handleErrors(e, res);
     }
   }
+
+  // Centralized Error Handler
+  handleErrors(e, res) {
+    if (e instanceof Sequelize.ValidationError) {
+      return res.status(400).json({
+        errors: e.errors.map((err) => err.message),
+      });
+    }
+
+    if (e instanceof Sequelize.ForeignKeyConstraintError) {
+      return res.status(400).json({
+        errors: ['The provided relation or ID does not exist in the database.'],
+      });
+    }
+
+    if (e instanceof Sequelize.DatabaseError) {
+      return res.status(500).json({
+        errors: ['A database error occurred. Please contact the administrator.'],
+      });
+    }
+
+    // Console log to help debug backend silently without exposing details to frontend
+    console.error('UserController Error:', e);
+
+    return res.status(500).json({
+      errors: ['Internal server error.'],
+    });
+  }
 }
+
 export default new UserController();

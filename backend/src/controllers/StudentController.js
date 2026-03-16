@@ -1,4 +1,5 @@
 import Student from '../models/Student.js';
+import User from '../models/User.js';
 import Address from '../models/Address.js';
 
 import Sequelize from 'sequelize';
@@ -10,22 +11,19 @@ class StudentController {
     const transaction = await database.transaction();
 
     try {
-      const {
-        addresses,
-        ...studentData
-      } = req.body;
+      const { addresses, ...studentData } = req.body;
 
       const newStudent = await Student.create(
         {
           ...studentData,
-          user_id: req.userId
+          user_id: null
         },
         { transaction },
       );
 
       if (addresses && addresses.length > 0) {
-        const addressesToSave = addresses.map((addr) => ({
-          ...addr,
+        const addressesToSave = addresses.map((address) => ({
+          ...address,
           student_id: newStudent.id,
         }));
 
@@ -37,11 +35,11 @@ class StudentController {
       const fullStudent = await Student.findByPk(newStudent.id, {
         attributes: ['id', 'name', 'last_name', 'email', 'cpf', 'registration_number', 'birth_date', 'blood_type', 'medical_notes'],
         include: [{
-            model: Address,
-            as: 'addresses',
-            attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-            order: [['id', 'ASC']],
-          }],
+          model: Address,
+          as: 'addresses',
+          attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
+          order: [['id', 'ASC']],
+        }],
       });
 
       return res.json(fullStudent);
@@ -54,24 +52,32 @@ class StudentController {
   // index
   async index(req, res) {
     try {
+      const whereClause = req.userAccessLevel === 5
+        ? { user_id: req.userId }
+        : {};
+
       const students = await Student.findAll({
-        where: {
-          user_id: req.userId
-        },
-        attributes: ['id', 'name', 'last_name', 'email', 'avatar_url', 'registration_number', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
+        where: whereClause,
+        attributes: ['id', 'avatar_url', 'name', 'last_name', 'email', 'registration_number', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
         order: [['name', 'ASC']],
-        include: [{
-          model: Address,
-          as: 'addresses',
-          attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-          order: [['id', 'ASC']],
-        }]
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'email', 'access_level_id'],
+          },
+          {
+            model: Address,
+            as: 'addresses',
+            attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
+            order: [['id', 'ASC']],
+          }
+        ]
       });
+
       return res.json(students);
     } catch (e) {
-      return res.status(500).json({
-        errors: ['Internal server error.']
-      });
+      return this.handleErrors(e, res);
     }
   }
 
@@ -79,17 +85,10 @@ class StudentController {
   async show(req, res) {
     try {
       const { id } = req.params;
-      if (!id || isNaN(id))
-        return res.status(400).json({
-          errors: ['Missing ID.']
-        });
+      if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing ID.'] });
 
-      const student = await Student.findOne({
-        where: {
-          id,
-          user_id: req.userId
-        },
-        attributes: ['id', 'name', 'last_name', 'email', 'avatar_url', 'registration_number', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
+      const student = await Student.findByPk(id, {
+        attributes: ['id', 'avatar_url', 'name', 'last_name', 'email', 'registration_number', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
         include: [{
           model: Address,
           as: 'addresses',
@@ -98,36 +97,31 @@ class StudentController {
         }]
       });
 
-      if (!student)
-        return res.status(404).json({
-          errors: ['Student not found.']
-        });
+      if (!student) return res.status(404).json({ errors: ['Student not found.'] });
+
+      if (req.userAccessLevel === 5 && Number(student.user_id) !== Number(req.userId)) {
+        return res.status(403).json({ error: 'You only have permission to view your own records.' });
+      }
+
       return res.json(student);
     } catch (e) {
-      return res.status(500).json({
-        errors: ['Internal server error. Please try again later.'],
-      });
+      return this.handleErrors(e, res);
     }
   }
 
   // update
   async update(req, res) {
     const transaction = await database.transaction();
+
     try {
       const { id } = req.params;
-      const student = await Student.findOne({
-        where: {
-          id,
-          user_id: req.userId
-        },
-        transaction
-      });
 
+      if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing or ivalid ID.'] });
+
+      const student = await Student.findByPk(id, { transaction });
       if (!student) {
         await transaction.rollback();
-        return res.status(404).json({
-          errors: ['Student not found.']
-        });
+        return res.status(404).json({ errors: ['Student not found.'] });
       }
 
       const { addresses, ...studentData } = req.body;
@@ -135,14 +129,16 @@ class StudentController {
       await student.update(studentData, { transaction });
 
       if (addresses) {
-        await Address.destroy({
-          where: { student_id: id },
-          transaction
-        });
+        await Address.destroy(
+          {
+            where: { student_id: id },
+            transaction
+          }
+        );
 
         if (addresses.length > 0) {
-          const addressesToSave = addresses.map((addr) => ({
-            ...addr,
+          const addressesToSave = addresses.map((address) => ({
+            ...address,
             student_id: id,
           }));
           await Address.bulkCreate(addressesToSave, { transaction });
@@ -151,16 +147,16 @@ class StudentController {
 
       await transaction.commit();
 
-      const updatedStudent = await Student.findByPk(id,
-        {
-          include:
-            [{
-              model: Address,
-              as: 'addresses',
-              attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-              order: [['id', 'ASC']],
-            }]
-        });
+      const updatedStudent = await Student.findByPk(id, {
+        attributes: ['id', 'name', 'last_name', 'email', 'avatar_url', 'registration_number', 'cpf', 'birth_date', 'blood_type', 'medical_notes'],
+        include: [{
+          model: Address,
+          as: 'addresses',
+          attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
+        }],
+        order: [[{ model: Address, as: 'addresses' }, 'id', 'ASC']]
+      });
+
       return res.json(updatedStudent);
     } catch (e) {
       if (transaction) await transaction.rollback();
@@ -171,38 +167,27 @@ class StudentController {
   // delete
   async delete(req, res) {
     const transaction = await database.transaction();
-
     try {
       const { id } = req.params;
-      const student = await Student.findOne({
-        where:
-        {
-          id,
-          user_id: req.userId
-        },
-        transaction
-      });
+      if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing ID.'] });
+
+      const student = await Student.findByPk(id, { transaction });
 
       if (!student) {
         await transaction.rollback();
-        return res.status(404).json({
-          errors: ['Student not found.']
-        });
+        return res.status(404).json({ errors: ['Student not found.'] });
       }
 
       await student.destroy({ transaction });
-
       await transaction.commit();
+
       return res.json({
         deleted: true,
         message: 'Student successfully deleted.'
       });
     } catch (e) {
       if (transaction) await transaction.rollback();
-
-      return res.status(500).json({
-        errors: ['Internal server error while trying to delete student.'],
-      });
+      return this.handleErrors(e, res);
     }
   }
 
