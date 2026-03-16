@@ -20,11 +20,13 @@ export default function (state = initialState, action) {
     }
 
     case types.LOGIN_SUCCESS: {
+      const { user } = action.payload;
       return {
         ...state,
         isLoggedIn: true,
         token: action.payload.token,
-        user: action.payload.user,
+        user,
+        isPowerUser: user.access_level_id <= 2,
         isLoading: false,
       };
     }
@@ -32,9 +34,10 @@ export default function (state = initialState, action) {
     case types.LOGIN_FAILURE: {
       return {
         ...state,
+        user: {},
         isLoggedIn: false,
         isLoading: false,
-        user: {},
+        isPowerUser: false,
       };
     }
 
@@ -47,14 +50,20 @@ export default function (state = initialState, action) {
     }
 
     case types.REGISTER_UPDATED_SUCCESS: {
-      return {
-        ...state,
-        user: {
-          name: action.payload.name,
+      const newState = { ...state };
+
+      if (action.payload.id === newState.user.id) {
+        newState.user = {
+          ...newState.user,
           email: action.payload.email,
-        },
-        isLoading: false,
-      };
+          access_level_id: action.payload.access_level_id,
+        };
+
+        newState.isPowerUser = action.payload.access_level_id <= 2;
+      }
+
+      newState.isLoading = false;
+      return newState;
     }
 
     case types.REGISTER_CREATED_SUCCESS: {

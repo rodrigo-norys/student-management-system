@@ -6,79 +6,145 @@ import { isEmail } from "validator";
 import { Container, Form, Title } from "./styled";
 import Loading from '../../components/Loading';
 import * as actions from '../../store/modules/auth/actions.js';
+import * as studentActions from '../../store/modules/student/actions.js';
 
-export default function Register() {
+export default function UserManager() {
   const dispatch = useDispatch();
 
-  const id = useSelector(state => state.auth.user.id);
-  const storedName = useSelector(state => state.auth.user.name);
-  const storedEmail = useSelector(state => state.auth.user.email);
+  const students = useSelector(state => state.student.students);
   const isLoading = useSelector(state => state.auth.isLoading);
 
-  const [name, setName] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [targetUserId, setTargetUserId] = useState(null);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accessLevel, setAccessLevel] = useState('5');
 
   const [emailFocus, setEmailFocus] = useState(false);
   const [passwordFocus, setPasswordFocus] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-    setName(storedName);
-    setEmail(storedEmail);
-  }, [id, storedName, storedEmail]);
+    if (!selectedStudentId) {
+      setTargetUserId(null);
+      setEmail('');
+      setAccessLevel('5');
+      return;
+    }
 
-  async function handleSubmit(e) {
+    const student = students.find(s => String(s.id) === String(selectedStudentId));
+
+    if (student && student.user) {
+      setTargetUserId(student.user.id);
+      setEmail(student.user.email);
+      setAccessLevel(String(student.user.access_level_id));
+    } else {
+      setTargetUserId(null);
+      setEmail('');
+      setAccessLevel('5');
+    }
+
+    setPassword('');
+  }, [selectedStudentId, students]);
+
+  useEffect(() => {
+    dispatch(studentActions.getStudentsRequest());
+  }, [dispatch]);
+  function handleSubmit(e) {
     e.preventDefault();
-    let formErrors = false;
 
-    if (!isEmail(email)) {
-      formErrors = true;
-      toast.error('Invalid email');
+    const validations = [
+      { condition: !selectedStudentId, message: 'Please select a person first!' },
+      { condition: !isEmail(email), message: 'Invalid email' },
+      { condition: !targetUserId && (password.length < 6 || password.length > 50), message: 'Password must be between 6 and 50 characters' },
+      { condition: !accessLevel, message: 'Please select an access level' },
+    ];
+
+    const error = validations.find(rule => rule.condition);
+
+    if (error) {
+      toast.error(error.message);
+      return;
     }
-    if (!id && (password.length < 6 || password.length > 50)) {
-      formErrors = true;
-      toast.error('Password must be between 6 and 50 characters');
-    }
 
-    if (formErrors) return;
-
-    dispatch(actions.registerRequest({ id, name, email, password }));
+    dispatch(actions.registerRequest({
+      id: targetUserId,
+      email,
+      password,
+      student_id: selectedStudentId,
+      access_level_id: Number(accessLevel),
+    }));
   }
-
+  console.log('Estudante selecionado:', students.find(s => String(s.id) === String(selectedStudentId)));
   return (
     <Container>
       <Loading isLoading={isLoading} />
 
-      <Title>{id ? 'Edit account' : 'Create account'}</Title>
+      <Title>Access Management</Title>
 
       <Form onSubmit={handleSubmit}>
-
-        <label htmlFor="email">
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Your email"
-            readOnly={!emailFocus}
-            onFocus={() => setEmailFocus(true)}
-          />
+        <label htmlFor="personSelect">
+          Select Student
+          <select
+            id="personSelect"
+            value={selectedStudentId}
+            onChange={e => setSelectedStudentId(e.target.value)}
+          >
+            <option value="">-- Select a student --</option>
+            {students.map(student => (
+              <option key={student.id} value={student.id}>
+                {student.name} {student.last_name}
+              </option>
+            ))}
+          </select>
         </label>
 
-        <label htmlFor="password">
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder={id ? "Leave empty to keep current password" : "Your password"}
-            readOnly={!passwordFocus}
-            onFocus={() => setPasswordFocus(true)}
-          />
-        </label>
+        {selectedStudentId && (
+          <>
+            <div style={{ margin: '15px 0', color: '#666', fontSize: '14px' }}>
+              <strong>Status:</strong> {targetUserId ? '🟢 Edit Mode' : '🔵 Creation Mode'}
+            </div>
 
-        <button type="submit"> {id ? 'Save Changes' : 'Create Account'} </button>
+            <label htmlFor="accessLevel">
+              Access Level
+              <select id="accessLevel" value={accessLevel} onChange={e => setAccessLevel(e.target.value)}>
+                <option value="1">1 - Full Access (System Owner)</option>
+                <option value="2">2 - Technical Admin (IT Support)</option>
+                <option value="3">3 - Finance Admin (Billing/Payments)</option>
+                <option value="4">4 - Academic Admin (Pedagogical)</option>
+                <option value="5">5 - Basic Access (Read-only)</option>
+              </select>
+            </label>
+
+            <label htmlFor="email">
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Access email"
+                readOnly={!emailFocus}
+                onFocus={() => setEmailFocus(true)}
+              />
+            </label>
+
+            <label htmlFor="password">
+              Password
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder={targetUserId ? "Keep empty to remain the same" : "Create password"}
+                readOnly={!passwordFocus}
+                onFocus={() => setPasswordFocus(true)}
+              />
+            </label>
+
+            <button type="submit">
+              {targetUserId ? 'Update Access' : 'Create Access'}
+            </button>
+          </>
+        )}
       </Form>
     </Container>
   );

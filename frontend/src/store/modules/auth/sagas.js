@@ -1,11 +1,12 @@
 import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
 import { get } from 'lodash';
-import * as actions from './actions';
-import * as types from './types';
 import axios from '../../../services/axios';
 import history from '../../../services/history';
 
+import * as actions from './actions';
+import * as studentActions from '../student/actions';
+import * as types from './types';
 function* loginRequest({ payload }) {
   const { email, password } = payload;
   try {
@@ -20,7 +21,7 @@ function* loginRequest({ payload }) {
     const status = get(err, 'response.status', 0);
     if (status === 401) {
       toast.error('Invalid user or password');
-     history.push('/');
+      history.push('/');
     }
     delete axios.defaults.headers.Authorization;
     yield put(actions.loginFailure());
@@ -34,29 +35,33 @@ function persistRehydrate({ payload }) {
 }
 
 function* registerRequest({ payload }) {
-  const { id, name, email, password } = payload;
+  const { id, email, password, student_id, access_level_id } = payload;
 
   try {
     if (id) {
       yield call(axios.put, '/users', {
         email,
-        name,
-        password: password || undefined
+        password: password || undefined,
+        access_level_id,
+        student_id,
       });
 
       toast.success('Account updated');
-      yield put(actions.registerUpdatedSuccess({ name, email, password }));
+      yield put(actions.registerUpdatedSuccess({ email, password, access_level_id }));
     } else {
       yield call(axios.post, '/users', {
         email,
-        name,
-        password
+        password,
+        access_level_id,
+        student_id,
       });
 
       toast.success('Account created');
-      yield put(actions.registerCreatedSuccess({ name, email, password }));
-      history.push('/login');
+      yield put(actions.registerCreatedSuccess({ email, password, access_level_id }));
+
+      history.push('/users-management');
     }
+    yield put(studentActions.getStudentsRequest());
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     const status = get(e, 'response.status', 0);
