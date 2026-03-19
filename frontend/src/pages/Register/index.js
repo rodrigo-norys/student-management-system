@@ -75,7 +75,6 @@ export default function UserManager() {
       access_level_id: Number(accessLevel),
     }));
   }
-  console.log('Estudante selecionado:', students.find(s => String(s.id) === String(selectedStudentId)));
   return (
     <Container>
       <Loading isLoading={isLoading} />

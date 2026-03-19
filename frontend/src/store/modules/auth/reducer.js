@@ -2,14 +2,12 @@ import * as types from './types';
 
 const initialState = {
   isLoggedIn: false,
-  token: false,
   user: {},
   isLoading: false,
   isPowerUser: false
 };
 
-// eslint-disable-next-line
-export default function (state = initialState, action) {
+export default function auth (state = initialState, action) {
   switch (action.type) {
     ///////////// LOGIN /////////////
     case types.LOGIN_REQUEST: {
@@ -23,9 +21,8 @@ export default function (state = initialState, action) {
       const { user } = action.payload;
       return {
         ...state,
-        isLoggedIn: true,
-        token: action.payload.token,
         user,
+        isLoggedIn: true,
         isPowerUser: user.access_level_id <= 2,
         isLoading: false,
       };
@@ -33,11 +30,15 @@ export default function (state = initialState, action) {
 
     case types.LOGIN_FAILURE: {
       return {
-        ...state,
-        user: {},
-        isLoggedIn: false,
+        ...initialState,
         isLoading: false,
-        isPowerUser: false,
+      };
+    }
+
+    ///////////// LOGOUT /////////////
+    case types.LOGOUT_SUCCESS: {
+      return {
+        ...initialState,
       };
     }
 

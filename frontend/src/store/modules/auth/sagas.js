@@ -7,6 +7,7 @@ import history from '../../../services/history';
 import * as actions from './actions';
 import * as studentActions from '../student/actions';
 import * as types from './types';
+
 function* loginRequest({ payload }) {
   const { email, password } = payload;
   try {
@@ -15,7 +16,6 @@ function* loginRequest({ payload }) {
 
     toast.success('You are logged in');
 
-    axios.defaults.headers.Authorization = `Bearer ${response.data.token}`;
     history.push('/');
   } catch (err) {
     const status = get(err, 'response.status', 0);
@@ -23,15 +23,8 @@ function* loginRequest({ payload }) {
       toast.error('Invalid user or password');
       history.push('/');
     }
-    delete axios.defaults.headers.Authorization;
     yield put(actions.loginFailure());
   }
-}
-
-function persistRehydrate({ payload }) {
-  const token = get(payload, 'auth.token', '');
-  if (!token) return;
-  axios.defaults.headers.Authorization = `Bearer ${token}`;
 }
 
 function* registerRequest({ payload }) {
@@ -81,8 +74,22 @@ function* registerRequest({ payload }) {
   }
 }
 
+function* logoutRequest() {
+  try {
+    yield call(axios.delete, '/tokens');
+    yield put(actions.logoutSuccess());
+    
+    toast.info('Logged out successfully.');
+    history.push('/login');
+  } catch (err) {
+    toast.error('Error logging out.');
+    yield put(actions.logoutSuccess());
+    history.push('/login');
+  }
+}
+
 export default all([
   takeLatest(types.LOGIN_REQUEST, loginRequest),
-  takeLatest(types.PERSIST_REHYDRATE, persistRehydrate),
+  takeLatest(types.LOGOUT_REQUEST, logoutRequest),
   takeLatest(types.REGISTER_REQUEST, registerRequest),
 ]);
