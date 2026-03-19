@@ -1,4 +1,4 @@
-require('dotenv').config();
+import 'dotenv/config';
 
 const timezone = process.env.NODE_ENV === 'production'
   ? 'America/Sao_Paulo'
@@ -24,7 +24,7 @@ const config = {
   timezone: timezone,
 };
 
-module.exports = {
+export default {
   development: config,
   production: config,
   test: config,

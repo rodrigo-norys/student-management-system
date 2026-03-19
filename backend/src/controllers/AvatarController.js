@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { resolve } from 'path';
-import Student from '../models/Student';
+import Student from '../models/Student.js';
 
 class AvatarController {
   async create(req, res) {
