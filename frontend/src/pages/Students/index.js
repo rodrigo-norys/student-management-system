@@ -1,8 +1,7 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaCamera } from 'react-icons/fa';
-
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import {
@@ -13,48 +12,33 @@ import {
 import * as actions from '../../store/modules/student/actions';
 import Loading from '../../components/Loading';
 
-
 export default function Students() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const students = useSelector(state => state.student.students);
-  const isLoading = useSelector(state => state.student.isLoading);
-  const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
+  const { students = [], isLoading = false } = useSelector(state => state.student || {});
+  const { isLoggedIn = false } = useSelector(state => state.auth || {});
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
-    !isLoggedIn
-      ? navigate('/login')
-      : dispatch(actions.getStudentsRequest());
+    if (!isLoggedIn) {
+      navigate('/login');
+    } else {
+      dispatch(actions.getStudentsRequest());
+    }
   }, [isLoggedIn, navigate, dispatch]);
 
-
-  function handleDeleteAsk(e) {
+  const handleDeleteAsk = (e, id) => {
     e.preventDefault();
-    const exclamation = e.currentTarget.nextSibling;
-    exclamation.setAttribute('display', 'block');
-    e.currentTarget.remove();
+    setConfirmDeleteId(id);
   };
 
-  function handleDelete(e, id) {
+  const handleDelete = (e, id) => {
     e.preventDefault();
     dispatch(actions.deleteStudentRequest(id));
-  }
-
-  function StudentPhoto({ student }) {
-    const mainPhoto = `${process.env.REACT_APP_API_URL}/images/${student.avatar_url}`
-    return (
-      <ProfilePicture>
-        <Link to={`/avatar/${student.id}`}>
-          {mainPhoto ? <img src={mainPhoto} alt="" /> : <FaUserCircle size={85} />}
-          <PictureOverlay>
-            <FaCamera size={24} color="#fff" />
-            <span>Edit</span>
-          </PictureOverlay>
-        </Link>
-      </ProfilePicture>
-    );
-  }
+    setConfirmDeleteId(null);
+  };
 
   return (
     <Container>
@@ -62,63 +46,77 @@ export default function Students() {
 
       <HeaderToolbar>
         <h1>Students</h1>
-        <NewStudentLink to="/student/create">
-          Add Student
-        </NewStudentLink>
+        <NewStudentLink to="/student/create">Add Student</NewStudentLink>
       </HeaderToolbar>
 
       <StudentContainer>
-        {students.map(student => (
-          <StudentCard key={String(student.id)}>
+        {students.map(student => {
+          const hasAvatar = !!student.avatar_url;
+          const mainPhoto = hasAvatar ? `${process.env.REACT_APP_API_URL}/images/${student.avatar_url}` : null;
 
-            <StudentPhoto student={student} />
+          return (
+            <StudentCard key={String(student.id)}>
 
-            <StudentName>{student.name} {student.last_name}</StudentName>
-            <StudentEmail>{student.email}</StudentEmail>
+              <ProfilePicture>
+                <Link to={`/avatar/${student.id}`}>
+                  {hasAvatar ? <img src={mainPhoto} alt={student.name} /> : <FaUserCircle size={85} />}
+                  <PictureOverlay>
+                    <FaCamera size={24} color="#fff" />
+                    <span>Edit</span>
+                  </PictureOverlay>
+                </Link>
+              </ProfilePicture>
 
-            <StudentDetails>
-              <DetailRow>
-                <span>Registration Number</span>
-                <span>{student.registration_number}</span>
-              </DetailRow>
+              <StudentName>{student.name} {student.last_name}</StudentName>
+              <StudentEmail>{student.email}</StudentEmail>
 
-              <DetailRow>
-                <span>CPF</span>
-                <span>{cpfValidator.format(student.cpf)}</span>
-              </DetailRow>
+              <StudentDetails>
+                <DetailRow>
+                  <span>Registration</span>
+                  <span>{student.registration_number}</span>
+                </DetailRow>
 
-              <DetailRow>
-                <span>Blood Type</span>
-                <span>{student.blood_type}</span>
-              </DetailRow>
-            </StudentDetails>
+                <DetailRow>
+                  <span>CPF</span>
+                  <span>{cpfValidator.format(student.cpf)}</span>
+                </DetailRow>
 
-            <ActionRow>
-              <Link to={`/student/${student.id}/edit`}>
-                <FaEdit size={18} title="Edit" />
-              </Link>
+                <DetailRow>
+                  <span>Blood Type</span>
+                  <span>{student.blood_type || 'N/A'}</span>
+                </DetailRow>
+              </StudentDetails>
 
-              <Link className="delete-btn" to={`/student/${student.id}/delete`} onClick={handleDeleteAsk}>
-                <FaWindowClose size={18} title="Delete" />
-              </Link>
+              <ActionRow>
+                <Link to={`/student/${student.id}/edit`}>
+                  <FaEdit size={18} title="Edit" />
+                </Link>
 
-              <FaExclamation
-                size={18}
-                display="none"
-                cursor="pointer"
-                onClick={(e) => handleDelete(e, student.id)}
-                color="#c30e0e"
-                title="Confirm Delete"
-              />
+                {confirmDeleteId === student.id ? (
+                  <FaExclamation
+                    size={18}
+                    cursor="pointer"
+                    onClick={(e) => handleDelete(e, student.id)}
+                    color="#c30e0e"
+                    title="Confirm Delete"
+                  />
+                ) : (
+                  <Link
+                    className="delete-btn"
+                    to={`/student/${student.id}/delete`}
+                    onClick={(e) => handleDeleteAsk(e, student.id)}
+                  >
+                    <FaWindowClose size={18} title="Delete" />
+                  </Link>
+                )}
 
-              <Link to={`/student/${student.id}/`}>
-                <FaUserCircle size={18} color="#3f51b5" title="Perfil" />
-              </Link>
-
-            </ActionRow>
-
-          </StudentCard>
-        ))}
+                <Link to={`/student/${student.id}/`}>
+                  <FaUserCircle size={18} color="#3f51b5" title="Profile" />
+                </Link>
+              </ActionRow>
+            </StudentCard>
+          );
+        })}
       </StudentContainer>
     </Container>
   );

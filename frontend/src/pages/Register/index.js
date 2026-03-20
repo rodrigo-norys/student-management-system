@@ -3,16 +3,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { toast } from 'react-toastify';
 import { isEmail } from "validator";
 
-import { Container, Form, Title } from "./styled";
-import Loading from '../../components/Loading';
 import * as actions from '../../store/modules/auth/actions.js';
 import * as studentActions from '../../store/modules/student/actions.js';
+import { Container, Form, Title } from "./styled";
+import Loading from '../../components/Loading';
 
 export default function UserManager() {
   const dispatch = useDispatch();
 
-  const students = useSelector(state => state.student.students);
-  const isLoading = useSelector(state => state.auth.isLoading);
+  const { students = [] } = useSelector(state => state.student || {});
+  const { isLoading = false } = useSelector(state => state.auth || {});
 
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [targetUserId, setTargetUserId] = useState(null);
@@ -24,19 +24,25 @@ export default function UserManager() {
   const [emailFocus, setEmailFocus] = useState(false);
   const [passwordFocus, setPasswordFocus] = useState(false);
 
+  // Busca inicial dos estudantes
+  useEffect(() => {
+    dispatch(studentActions.getStudentsRequest());
+  }, [dispatch]);
+
   useEffect(() => {
     if (!selectedStudentId) {
       setTargetUserId(null);
       setEmail('');
       setAccessLevel('5');
+      setPassword('');
       return;
     }
 
-    const student = students.find(s => String(s.id) === String(selectedStudentId));
+    const student = students.find(stud => String(stud.id) === String(selectedStudentId));
 
-    if (student && student.user) {
+    if (student?.user) {
       setTargetUserId(student.user.id);
-      setEmail(student.user.email);
+      setEmail(student.email);
       setAccessLevel(String(student.user.access_level_id));
     } else {
       setTargetUserId(null);
@@ -47,10 +53,7 @@ export default function UserManager() {
     setPassword('');
   }, [selectedStudentId, students]);
 
-  useEffect(() => {
-    dispatch(studentActions.getStudentsRequest());
-  }, [dispatch]);
-  function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const validations = [
@@ -74,7 +77,8 @@ export default function UserManager() {
       student_id: selectedStudentId,
       access_level_id: Number(accessLevel),
     }));
-  }
+  };
+
   return (
     <Container>
       <Loading isLoading={isLoading} />
@@ -106,7 +110,11 @@ export default function UserManager() {
 
             <label htmlFor="accessLevel">
               Access Level
-              <select id="accessLevel" value={accessLevel} onChange={e => setAccessLevel(e.target.value)}>
+              <select
+                id="accessLevel"
+                value={accessLevel}
+                onChange={e => setAccessLevel(e.target.value)}
+              >
                 <option value="1">1 - Full Access (System Owner)</option>
                 <option value="2">2 - Technical Admin (IT Support)</option>
                 <option value="3">3 - Finance Admin (Billing/Payments)</option>
@@ -118,6 +126,7 @@ export default function UserManager() {
             <label htmlFor="email">
               Email
               <input
+                id="email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -130,6 +139,7 @@ export default function UserManager() {
             <label htmlFor="password">
               Password
               <input
+                id="password"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -139,8 +149,11 @@ export default function UserManager() {
               />
             </label>
 
-            <button type="submit">
-              {targetUserId ? 'Update Access' : 'Create Access'}
+            <button type="submit" disabled={isLoading}>
+              {isLoading
+                ? 'Processing...'
+                : (targetUserId ? 'Update Access' : 'Create Access')
+              }
             </button>
           </>
         )}

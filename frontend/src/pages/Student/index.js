@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaUserCircle, FaEdit } from 'react-icons/fa';
-
 import { isEmail } from 'validator';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
@@ -16,6 +15,8 @@ import {
   CenteredSectionTitle, AddressCardTitle, RemoveAddressButton
 } from './styled';
 
+const UFs = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 const emptyAddress = {
   id: null, zip_code: '', street: '', number: '',
@@ -25,24 +26,29 @@ const emptyAddress = {
 const initialState = {
   name: '', last_name: '', email: '', registration_number: '', cpf: '',
   birth_date: '', avatar_url: '', blood_type: '', medical_notes: '',
-
   addresses: [{ ...emptyAddress }]
 };
 
-export default function Student() {
-  const [form, setForm] = useState(initialState);
-  const [activeAddressIndex, setActiveAddressIndex] = useState(null);
-  const { id } = useParams();
+const maskCEP = (value) => {
+  return value
+    .replace(/\D/g, "")
+    .replace(/^(\d{5})(\d)/, "$1-$2")
+    .replace(/(-\d{3})\d+?$/, "$1");
+};
 
+export default function Student() {
+  const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // --- SELECTORS --- \\
-  const isLoading = useSelector(state => state.student.isLoading);
+  const [form, setForm] = useState(initialState);
+  const [activeAddressIndex, setActiveAddressIndex] = useState(null);
+
+  // Selectors
+  const { isLoading = false, addressSuggestion = null } = useSelector(state => state.student || {});
   const student = useSelector(state =>
-    state.student.students.find(stud => String(stud.id) === String(id))
+    state.student?.students?.find(stud => String(stud.id) === String(id))
   );
-  const addressSuggestion = useSelector(state => state.student.addressSuggestion);
 
   // --- EFFECTS --- \\
   useEffect(() => {
@@ -56,7 +62,6 @@ export default function Student() {
     let addressList = student.addresses && student.addresses.length > 0
       ? [...student.addresses]
       : [{ ...emptyAddress }];
-
     addressList.sort((a, b) => {
       if (!a.id) return 1;
       if (!b.id) return -1;
@@ -69,30 +74,18 @@ export default function Student() {
       email: student.email || '',
       registration_number: student.registration_number || '',
       cpf: student.cpf || '',
-      birth_date: student.birth_date ? student.birth_date.split('T')[0] : '',
+      birth_date: student.birth_date?.split('T')[0] || '',
       avatar_url: student.avatar_url || '',
       blood_type: student.blood_type || '',
       medical_notes: student.medical_notes || '',
-
-      addresses: addressList.map(address => ({
-        id: address.id || null,
-        zip_code: address.zip_code || '',
-        street: address.street || '',
-        number: address.number || '',
-        complement: address.complement || '',
-        neighborhood: address.neighborhood || '',
-        city: address.city || '',
-        state: address.state || '',
-      }))
+      addresses: addressList
     });
-
   }, [id, student, dispatch]);
 
   useEffect(() => {
     if (addressSuggestion && activeAddressIndex !== null) {
       setForm(prev => {
         const updatedAddresses = [...prev.addresses];
-
         updatedAddresses[activeAddressIndex] = {
           ...updatedAddresses[activeAddressIndex],
           street: addressSuggestion.street || updatedAddresses[activeAddressIndex].street,
@@ -100,65 +93,40 @@ export default function Student() {
           city: addressSuggestion.city || updatedAddresses[activeAddressIndex].city,
           state: addressSuggestion.state || updatedAddresses[activeAddressIndex].state,
         };
-
-        return {
-          ...prev,
-          addresses: updatedAddresses
-        };
+        return { ...prev, addresses: updatedAddresses };
       });
       setActiveAddressIndex(null);
     }
   }, [addressSuggestion, activeAddressIndex]);
 
-  // --- ZIP CODE MASK --- \\
-  function maskCEP(value) {
-    return value
-      .replace(/\D/g, "")
-      .replace(/^(\d{5})(\d)/, "$1-$2")
-      .replace(/(-\d{3})\d+?$/, "$1");
-  };
-
   // --- HANDLERS --- \\
-  function handleChange (e) {
+  const handleChange = (e) => {
     let { name, value } = e.target;
-
     if (name === 'cpf') value = value.replace(/\D/g, '');
-    setForm((prev) => ({
+
+    setForm(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
-  function handleAddressChange(index, e) {
+  const handleAddressChange = (index, e) => {
     const { name, value } = e.target;
     setForm(prev => {
       const updatedAddresses = [...prev.addresses];
-      updatedAddresses[index] = {
-        ...updatedAddresses[index],
-        [name]: value
-      };
-      return {
-        ...prev,
-        addresses: updatedAddresses
-      };
+      updatedAddresses[index] = { ...updatedAddresses[index], [name]: value };
+      return { ...prev, addresses: updatedAddresses };
     });
   };
 
-  function handleCepChange (index, e) {
+  const handleCepChange = (index, e) => {
     const value = e.target.value;
     const cleanValue = value.replace(/\D/g, '');
-    const maskedValue = maskCEP(value);
 
     setForm(prev => {
       const updatedAddresses = [...prev.addresses];
-      updatedAddresses[index] = {
-        ...updatedAddresses[index],
-        zip_code: maskedValue
-      };
-      return {
-        ...prev,
-        addresses: updatedAddresses
-      };
+      updatedAddresses[index] = { ...updatedAddresses[index], zip_code: maskCEP(value) };
+      return { ...prev, addresses: updatedAddresses };
     });
 
     if (cleanValue.length === 8) {
@@ -167,28 +135,23 @@ export default function Student() {
     }
   };
 
-  function addAddress() {
+  const addAddress = () => {
     if (form.addresses.length < 3) {
       setForm(prev => ({
         ...prev,
-        addresses: [
-          ...prev.addresses,
-          { ...emptyAddress }
-        ]
+        addresses: [...prev.addresses, { ...emptyAddress }]
       }));
     }
   };
 
-  function removeAddress(indexToRemove) {
+  const removeAddress = (indexToRemove) => {
     setForm(prev => ({
       ...prev,
-      addresses: prev.addresses.filter((_, index) =>
-        index !== indexToRemove
-      )
+      addresses: prev.addresses.filter((_, index) => index !== indexToRemove)
     }));
   };
 
-  function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
     let formErrors = false;
 
@@ -216,7 +179,7 @@ export default function Student() {
     form.addresses.forEach((address, index) => {
       const addrNum = index + 1;
       const addressRules = [
-        { condition: address.zip_code.replace(/\D/g, '').length !== 8, message: `Address ${addrNum}: Invalid CEP. Must contain 8 digits.` },
+        { condition: address.zip_code.replace(/\D/g, '').length !== 8, message: `Address ${addrNum}: Invalid CEP.` },
         { condition: address.street.length < 3, message: `Address ${addrNum}: Street must have at least 3 characters.` },
         { condition: !address.number, message: `Address ${addrNum}: House/Building number is required.` },
         { condition: address.neighborhood.length < 2, message: `Address ${addrNum}: Neighborhood is required.` },
@@ -234,48 +197,33 @@ export default function Student() {
 
     if (formErrors) return;
 
-    dispatch(actions.createStudentRequest({
-      id,
-      ...form,
-      shouldLeave,
-      shouldStay
-    }));
+    dispatch(actions.createStudentRequest({ id, ...form, shouldLeave, shouldStay }));
   };
 
-  // --- RENDER VARIABLES --- \\
   const mainPhoto = `${process.env.REACT_APP_API_URL}/images/${form.avatar_url}`;
-
-  const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  const UFs = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 
   const renderButtons = id ? (
     <>
-      <button type="submit">Update & Finish</button>
-      <button type="submit" name="leave">Update & New</button>
+      <button type="submit" disabled={isLoading}>Update & Finish</button>
+      <button type="submit" name="leave" disabled={isLoading}>Update & New</button>
     </>
   ) : (
     <>
-      <button type="submit" name="stay">Save & New</button>
-      <button type="submit" name="leave">Save & Finish</button>
+      <button type="submit" name="stay" disabled={isLoading}>Save & New</button>
+      <button type="submit" name="leave" disabled={isLoading}>Save & Finish</button>
     </>
   );
 
   return (
     <Container>
       <Loading isLoading={isLoading} />
-
       <Form onSubmit={handleSubmit}>
-
         <CenteredWrapper>
           <HeaderContent>
             <Title>{id ? 'Edit Student' : 'Create Student'}</Title>
-
             {id && (
-              <ViewProfileButton
-                type="button"
-                onClick={() => navigate(`/student/${id}/`)}>
-                <FaUserCircle size={18} />
-                View Profile
+              <ViewProfileButton type="button" onClick={() => navigate(`/student/${id}/`)}>
+                <FaUserCircle size={18} /> View Profile
               </ViewProfileButton>
             )}
           </HeaderContent>
@@ -295,7 +243,6 @@ export default function Student() {
 
           <SectionTitle>Personal Data</SectionTitle>
 
-          {/* FIRST NAME & LAST NAME */}
           <InputGroup>
             <label>First Name
               <input type='text' name='name' value={form.name} onChange={handleChange} maxLength="50" placeholder='Ex: Rodrigo' />
@@ -309,23 +256,21 @@ export default function Student() {
             <input type='email' name='email' value={form.email} onChange={handleChange} maxLength="150" placeholder='rodrigo@example.com' />
           </label>
 
-          {/* REGISTRATION NUMBER & CPF */}
           <InputGroup>
             <label>Registration
               <input type='text' name='registration_number' value={form.registration_number} onChange={handleChange} maxLength="20" />
             </label>
             <label>CPF
-              <input type='text' name='cpf' value={cpfValidator.format(form.cpf)} onChange={handleChange} maxLength="14" placeholder='00000000000' />            </label>
+              <input type='text' name='cpf' value={cpfValidator.format(form.cpf)} onChange={handleChange} maxLength="14" placeholder='000.000.000-00' />
+            </label>
           </InputGroup>
 
-          {/* BIRTH DATE & BLOOD TYPE */}
           <InputGroup>
             <label>Birth Date
               <input type='date' name='birth_date' value={form.birth_date} onChange={handleChange} maxLength="10" />
             </label>
-
             <label>Blood Type
-              <select name='blood_type' value={form.blood_type} onChange={handleChange} maxLength="3">
+              <select name='blood_type' value={form.blood_type} onChange={handleChange}>
                 <option value=''>Select</option>
                 {bloodTypes.map(blood => (
                   <option key={blood} value={blood}>{blood}</option>
@@ -348,7 +293,8 @@ export default function Student() {
         <AddressesWrapper>
           {form.addresses.map((address, index) => (
             <AddressCard key={index}>
-              {index >= 0 && (
+
+              {form.addresses.length > 1 && (
                 <RemoveAddressButton
                   type="button"
                   onClick={() => removeAddress(index)}
@@ -358,7 +304,6 @@ export default function Student() {
 
               <AddressCardTitle>Address {index + 1}</AddressCardTitle>
 
-              {/* ZIP CODE & STREET */}
               <InputGroup>
                 <label style={{ flex: 1 }}>Zip Code
                   <input type='text' name='zip_code' value={address.zip_code} onChange={(e) => handleCepChange(index, e)} maxLength="9" placeholder="00000-000" />
@@ -368,7 +313,6 @@ export default function Student() {
                 </label>
               </InputGroup>
 
-              {/* NUMBER & COMPLEMENT */}
               <InputGroup>
                 <label style={{ flex: 1 }}>Number
                   <input type='text' name='number' value={address.number} onChange={(e) => handleAddressChange(index, e)} maxLength="10" />
@@ -378,7 +322,6 @@ export default function Student() {
                 </label>
               </InputGroup>
 
-              {/* NEIGHBOR, CITY & UF */}
               <InputGroup>
                 <label style={{ flex: 2 }}>Neighborhood
                   <input type='text' name='neighborhood' value={address.neighborhood} onChange={(e) => handleAddressChange(index, e)} maxLength="100" />
@@ -387,7 +330,7 @@ export default function Student() {
                   <input type='text' name='city' value={address.city} onChange={(e) => handleAddressChange(index, e)} maxLength="100" />
                 </label>
                 <label style={{ flex: 0.6 }}>UF
-                  <select name='state' value={address.state} onChange={(e) => handleAddressChange(index, e)} maxLength="2">
+                  <select name='state' value={address.state} onChange={(e) => handleAddressChange(index, e)}>
                     <option value="">Select</option>
                     {UFs.map(uf => (
                       <option key={uf} value={uf}>{uf}</option>
