@@ -1,15 +1,16 @@
 import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
 
-export default function reducers() {
-  const persistReducers = persistReducer(
+
+export default function createPersistedReducers(reducers) {
+  const persistedReducers = persistReducer(
     {
       key: 'API-CONSUME',
       storage,
-      whitelist: []
+      whitelist: [],
     },
     reducers
   );
 
-  return persistReducers;
+  return persistedReducers;
 }

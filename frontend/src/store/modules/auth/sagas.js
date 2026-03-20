@@ -32,7 +32,7 @@ function* registerRequest({ payload }) {
 
   try {
     if (id) {
-      yield call(axios.put, '/users', {
+      yield call(axios.put, `/users/${payload.id}`, {
         email,
         password: password || undefined,
         access_level_id,
@@ -78,7 +78,7 @@ function* logoutRequest() {
   try {
     yield call(axios.delete, '/tokens');
     yield put(actions.logoutSuccess());
-    
+
     toast.info('Logged out successfully.');
     history.push('/login');
   } catch (err) {
