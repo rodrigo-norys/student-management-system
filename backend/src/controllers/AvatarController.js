@@ -1,6 +1,11 @@
 import fs from 'fs';
-import { resolve } from 'path';
 import Student from '../models/Student.js';
+
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 class AvatarController {
   async create(req, res) {

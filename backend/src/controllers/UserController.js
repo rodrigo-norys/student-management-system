@@ -127,51 +127,42 @@ class UserController {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          errors: ['Missing ID.'],
-        });
+        return res.status(400).json({ errors: ['Missing ID.'] });
       }
 
       const userToUpdate = await User.findByPk(id);
 
       if (!userToUpdate) {
-        return res.status(404).json({
-          errors: ['User not found.']
-        });
+        return res.status(404).json({ errors: ['User not found.'] });
       }
 
       const requester = await User.findByPk(req.userId, {
-        include: [{
-          model: AccessLevel,
-          as: 'access_level'
-        }]
+        include: [{ model: AccessLevel, as: 'access_level' }]
       });
 
       if (requester.access_level_id > 2) {
-        return res.status(403).json({
-          error: 'You dont have permission to edit users.'
-        });
+        return res.status(403).json({ error: 'You dont have permission to edit users.' });
       }
 
       if (requester.access_level_id > userToUpdate.access_level_id) {
-        return res.status(403).json({
-          error: 'You cannot edit someone with a higher rank.'
-        });
+        return res.status(403).json({ error: 'You cannot edit someone with a higher rank.' });
       }
 
       const {
-        email, avatar_url, access_level_id, is_active, is_temporary
+        email, avatar_url, access_level_id, is_active, is_temporary, password
       } = req.body;
 
       if (requester.access_level_id > 1 && Number(access_level_id) === 1) {
-        return res.status(403).json({
-          error: 'You cannot transform an user in super admin'
-        });
+        return res.status(403).json({ error: 'You cannot transform an user in super admin' });
       }
 
-      await userToUpdate.update({
-        email, avatar_url, access_level_id, is_active, is_temporary
-      });
+      const updateData = { email, avatar_url, access_level_id, is_active, is_temporary };
+
+      if (password) {
+        updateData.password = password;
+      }
+
+      await userToUpdate.update(updateData);
 
       const updatedUser = await User.findByPk(id, {
         attributes: ['id', 'email', 'avatar_url', 'access_level_id', 'is_active', 'is_temporary'],
@@ -238,7 +229,6 @@ class UserController {
     }
   }
 
-  // Centralized Error Handler
   handleErrors(e, res) {
     if (e instanceof Sequelize.ValidationError) {
       return res.status(400).json({
@@ -257,9 +247,6 @@ class UserController {
         errors: ['A database error occurred. Please contact the administrator.'],
       });
     }
-
-    // Console log to help debug backend silently without exposing details to frontend
-    console.error('UserController Error:', e);
 
     return res.status(500).json({
       errors: ['Internal server error.'],
