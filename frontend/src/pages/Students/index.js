@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaCamera } from 'react-icons/fa';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
+
+import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaCamera, FaTh, FaList, FaSearch } from 'react-icons/fa';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import {
-  Container, HeaderToolbar, StudentContainer, StudentCard, ProfilePicture, PictureOverlay,
-  StudentName, StudentEmail, StudentDetails, DetailRow, ActionRow, NewStudentLink
+  Container, HeaderToolbar, ControlsArea, SearchInput, ViewToggle, ToggleButton,
+  NoResultsMessage, StudentContainer, StudentCard, ProfilePicture, PictureOverlay,
+  StudentName, StudentEmail, StudentDetails, DetailRow, ActionRow, NewStudentLink, ProfileLink
 } from './styled.js';
 
 import * as actions from '../../store/modules/student/actions';
@@ -20,6 +23,9 @@ export default function Students() {
   const { isLoggedIn = false } = useSelector(state => state.auth || {});
 
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isGridView, setIsGridView] = useState(true);
+  const [animationParent] = useAutoAnimate();
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -40,6 +46,17 @@ export default function Students() {
     setConfirmDeleteId(null);
   };
 
+  const filteredStudents = students.filter(student => {
+    const searchLower = searchTerm.toLowerCase();
+    const fullName = `${student.name} ${student.last_name || ''}`.toLowerCase();
+    return (
+      fullName.includes(searchLower) ||
+      student.email.toLowerCase().includes(searchLower) ||
+      student.registration_number.includes(searchLower) ||
+      student.cpf.includes(searchLower)
+    );
+  });
+
   return (
     <Container>
       <Loading isLoading={isLoading} />
@@ -49,74 +66,109 @@ export default function Students() {
         <NewStudentLink to="/student/create">Add Student</NewStudentLink>
       </HeaderToolbar>
 
-      <StudentContainer>
-        {students.map(student => {
-          const hasAvatar = !!student.avatar_url;
-          const mainPhoto = hasAvatar ? `${process.env.REACT_APP_API_URL}/images/${student.avatar_url}` : null;
+      <ControlsArea>
+        <SearchInput>
+          <FaSearch color="#999" />
+          <input
+            type="text"
+            placeholder="Search by name, email or registration..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </SearchInput>
 
-          return (
-            <StudentCard key={String(student.id)}>
+        <ViewToggle>
+          <ToggleButton
+            $active={isGridView}
+            onClick={() => setIsGridView(true)}
+            title="Grid View"
+          >
+            <FaTh size={18} />
+          </ToggleButton>
+          <ToggleButton
+            $active={!isGridView}
+            onClick={() => setIsGridView(false)}
+            title="List View"
+          >
+            <FaList size={18} />
+          </ToggleButton>
+        </ViewToggle>
+      </ControlsArea>
 
-              <ProfilePicture>
-                <Link to={`/avatar/${student.id}`}>
-                  {hasAvatar ? <img src={mainPhoto} alt={student.name} /> : <FaUserCircle size={85} />}
-                  <PictureOverlay>
-                    <FaCamera size={24} color="#fff" />
-                    <span>Edit</span>
-                  </PictureOverlay>
-                </Link>
-              </ProfilePicture>
+      <StudentContainer ref={animationParent} $isGrid={isGridView}>
+        {filteredStudents.length > 0 ? (
+          filteredStudents.map(student => {
+            const hasAvatar = !!student.avatar_url;
+            const mainPhoto = hasAvatar ? `${process.env.REACT_APP_API_URL}/images/${student.avatar_url}` : null;
 
-              <StudentName>{student.name} {student.last_name}</StudentName>
-              <StudentEmail>{student.email}</StudentEmail>
+            return (
+              <StudentCard key={String(student.id)} $isGrid={isGridView}>
 
-              <StudentDetails>
-                <DetailRow>
-                  <span>Registration</span>
-                  <span>{student.registration_number}</span>
-                </DetailRow>
+                <ProfilePicture>
+                  <ProfileLink to={`/avatar/${student.id}`}>
+                    {hasAvatar
+                      ? <img src={mainPhoto} alt={student.name} />
+                      : <FaUserCircle size={85} />}
+                    <PictureOverlay>
+                      <FaCamera size={24} color="#fff" />
+                      <span>Edit</span>
+                    </PictureOverlay>
+                  </ProfileLink>
+                </ProfilePicture>
 
-                <DetailRow>
-                  <span>CPF</span>
-                  <span>{cpfValidator.format(student.cpf)}</span>
-                </DetailRow>
+                <div className="card-content">
+                  <StudentName>{student.name} {student.last_name}</StudentName>
+                  <StudentEmail>{student.email}</StudentEmail>
 
-                <DetailRow>
-                  <span>Blood Type</span>
-                  <span>{student.blood_type || 'N/A'}</span>
-                </DetailRow>
-              </StudentDetails>
+                  <StudentDetails $isGrid={isGridView}>
+                    <DetailRow $isGrid={isGridView}>
+                      <span>Registration</span>
+                      <span>{student.registration_number}</span>
+                    </DetailRow>
+                    <DetailRow $isGrid={isGridView}>
+                      <span>CPF</span>
+                      <span>{cpfValidator.format(student.cpf)}</span>
+                    </DetailRow>
+                    <DetailRow $isGrid={isGridView}>
+                      <span>Blood Type</span>
+                      <span>{student.blood_type || 'N/A'}</span>
+                    </DetailRow>
+                  </StudentDetails>
+                </div>
 
-              <ActionRow>
-                <Link to={`/student/${student.id}/edit`}>
-                  <FaEdit size={18} title="Edit" />
-                </Link>
+                <ActionRow $isGrid={isGridView}>
+                  <ProfileLink to={`/student/${student.id}/edit`}>
+                    <FaEdit size={18} title="Edit" />
+                  </ProfileLink>
 
-                {confirmDeleteId === student.id ? (
-                  <FaExclamation
-                    size={18}
-                    cursor="pointer"
-                    onClick={(e) => handleDelete(e, student.id)}
-                    color="#c30e0e"
-                    title="Confirm Delete"
-                  />
-                ) : (
-                  <Link
-                    className="delete-btn"
-                    to={`/student/${student.id}/delete`}
-                    onClick={(e) => handleDeleteAsk(e, student.id)}
-                  >
-                    <FaWindowClose size={18} title="Delete" />
-                  </Link>
-                )}
+                  {confirmDeleteId === student.id ? (
+                    <FaExclamation
+                      size={18} cursor="pointer"
+                      onClick={(e) => handleDelete(e, student.id)}
+                      color="#c30e0e"
+                      title="Confirm Delete"
+                    />
+                  ) : (
+                    <ProfileLink
+                      className="delete-btn"
+                      to={`/student/${student.id}/delete`}
+                      onClick={(e) => handleDeleteAsk(e, student.id)}>
+                      <FaWindowClose size={18} title="Delete" />
+                    </ProfileLink>
+                  )}
 
-                <Link to={`/student/${student.id}/`}>
-                  <FaUserCircle size={18} color="#3f51b5" title="Profile" />
-                </Link>
-              </ActionRow>
-            </StudentCard>
-          );
-        })}
+                  <ProfileLink to={`/student/${student.id}/`}>
+                    <FaUserCircle size={18} color="#3f51b5" title="Profile" />
+                  </ProfileLink>
+                </ActionRow>
+              </StudentCard>
+            );
+          })
+        ) : (
+          <NoResultsMessage>
+            No students found matching "{searchTerm}".
+          </NoResultsMessage>
+        )}
       </StudentContainer>
     </Container>
   );
