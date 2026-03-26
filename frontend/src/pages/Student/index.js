@@ -36,7 +36,7 @@ const maskCEP = (value) => {
     .replace(/(-\d{3})\d+?$/, "$1");
 };
 
-export default function Student() {
+export default function StudentForm() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -44,13 +44,11 @@ export default function Student() {
   const [form, setForm] = useState(initialState);
   const [activeAddressIndex, setActiveAddressIndex] = useState(null);
 
-  // Selectors
   const { isLoading = false, addressSuggestion = null } = useSelector(state => state.student || {});
   const student = useSelector(state =>
     state.student?.students?.find(stud => String(stud.id) === String(id))
   );
 
-  // --- EFFECTS --- \\
   useEffect(() => {
     if (!id) return;
 
@@ -99,7 +97,6 @@ export default function Student() {
     }
   }, [addressSuggestion, activeAddressIndex]);
 
-  // --- HANDLERS --- \\
   const handleChange = (e) => {
     let { name, value } = e.target;
     if (name === 'cpf') value = value.replace(/\D/g, '');
@@ -114,8 +111,14 @@ export default function Student() {
     const { name, value } = e.target;
     setForm(prev => {
       const updatedAddresses = [...prev.addresses];
-      updatedAddresses[index] = { ...updatedAddresses[index], [name]: value };
-      return { ...prev, addresses: updatedAddresses };
+      updatedAddresses[index] = {
+        ...updatedAddresses[index],
+        [name]: value
+      };
+      return {
+        ...prev,
+        addresses: updatedAddresses
+      };
     });
   };
 
@@ -125,8 +128,14 @@ export default function Student() {
 
     setForm(prev => {
       const updatedAddresses = [...prev.addresses];
-      updatedAddresses[index] = { ...updatedAddresses[index], zip_code: maskCEP(value) };
-      return { ...prev, addresses: updatedAddresses };
+      updatedAddresses[index] = {
+        ...updatedAddresses[index],
+        zip_code: maskCEP(value)
+      };
+      return {
+        ...prev,
+        addresses: updatedAddresses
+      };
     });
 
     if (cleanValue.length === 8) {
@@ -139,7 +148,10 @@ export default function Student() {
     if (form.addresses.length < 3) {
       setForm(prev => ({
         ...prev,
-        addresses: [...prev.addresses, { ...emptyAddress }]
+        addresses: [
+          ...prev.addresses,
+          { ...emptyAddress }
+        ]
       }));
     }
   };
@@ -197,22 +209,20 @@ export default function Student() {
 
     if (formErrors) return;
 
-    dispatch(actions.createStudentRequest({ id, ...form, shouldLeave, shouldStay }));
+    (id)
+      ? dispatch(actions.updateStudentRequest({ id, ...form, shouldLeave, shouldStay }))
+      : dispatch(actions.createStudentRequest({ ...form, shouldLeave, shouldStay }));
+
   };
 
-  const mainPhoto = `${process.env.REACT_APP_API_URL}/images/${form.avatar_url}`;
+  const mainPhoto = `${process.env.REACT_APP_API_URL}/images/students/${form.avatar_url}`;
 
-  const renderButtons = id ? (
-    <>
-      <button type="submit" disabled={isLoading}>Update & Finish</button>
-      <button type="submit" name="leave" disabled={isLoading}>Update & New</button>
-    </>
-  ) : (
-    <>
+  const renderButtons = id
+    ? <button type="submit" name="leave" disabled={isLoading}>Update</button>
+    : <>
       <button type="submit" name="stay" disabled={isLoading}>Save & New</button>
       <button type="submit" name="leave" disabled={isLoading}>Save & Finish</button>
-    </>
-  );
+    </>;
 
   return (
     <Container>
@@ -230,12 +240,11 @@ export default function Student() {
 
           {id && (
             <ProfilePicture>
-              {form.avatar_url ? (
-                <img src={mainPhoto} alt={form.name} />
-              ) : (
-                <FaUserCircle size={150} color="#ddd" />
-              )}
-              <Link to={`/avatar/${id}`}>
+              {form.avatar_url
+                ? <img src={mainPhoto} alt={form.name} />
+                : <FaUserCircle size={150} color="#ddd" />
+              }
+              <Link to={`/avatar/students/${id}`}>
                 <FaEdit size={20} />
               </Link>
             </ProfilePicture>

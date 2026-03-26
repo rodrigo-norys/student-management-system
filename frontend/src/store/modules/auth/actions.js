@@ -22,6 +22,13 @@ export function loginFailure(payload) {
   };
 }
 
+// VALIDATE SESSION
+export function validateSessionRequest() {
+  return {
+    type: types.VALIDATE_SESSION_REQUEST,
+  };
+}
+
 // REGISTER
 export function registerRequest(payload) {
   return {

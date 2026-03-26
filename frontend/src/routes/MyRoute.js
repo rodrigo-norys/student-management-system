@@ -4,19 +4,28 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
+import Loading from '../components/Loading';
+
 export default function MyRoute({ children, isClosed = false }) {
   const location = useLocation();
 
-  const { isLoggedIn = false, user = {} } = useSelector(state => state.auth || {});
+  const {
+    isLoggedIn = false,
+    isPowerUser = false,
+    isCheckingSession = true,
+  } = useSelector(state => state.auth || {});
 
   const isRegisterPath = location.pathname === '/register';
-  const hasAdminPower = user?.access_level_id <= 2;
 
   useEffect(() => {
-    if (isLoggedIn && isRegisterPath && !hasAdminPower) {
+    if (!isCheckingSession && isLoggedIn && isRegisterPath && !isPowerUser) {
       toast.error('Access Denied. You do not have permission.');
     }
-  }, [isLoggedIn, isRegisterPath, hasAdminPower]);
+  }, [isLoggedIn, isRegisterPath, isPowerUser, isCheckingSession]);
+
+  if (isCheckingSession) {
+    return <Loading isLoading={isCheckingSession} />;
+  }
 
   if (isClosed && !isLoggedIn) {
     return (
@@ -28,7 +37,7 @@ export default function MyRoute({ children, isClosed = false }) {
     );
   }
 
-  if (isLoggedIn && isRegisterPath && !hasAdminPower) {
+  if (isLoggedIn && isRegisterPath && !isPowerUser) {
     return <Navigate to="/" replace />;
   }
 

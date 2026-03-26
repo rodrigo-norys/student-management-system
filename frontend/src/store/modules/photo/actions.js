@@ -1,22 +1,22 @@
 import * as types from './types';
 
-export function updatePhotoRequest(updatedPhoto) {
+export function updatePhotoRequest(payload) {
   return {
     type: types.UPDATE_PHOTO_REQUEST,
-    payload: updatedPhoto,
+    payload,
   };
 }
 
-export function updatePhotoSuccess(updatedPhoto) {
+export function updatePhotoSuccess(payload) {
   return {
     type: types.UPDATE_PHOTO_SUCCESS,
-    payload: updatedPhoto,
+    payload,
   };
 }
 
-export function updatePhotoFailure(updatedPhoto) {
+export function updatePhotoFailure(payload) {
   return {
     type: types.UPDATE_PHOTO_FAILURE,
-    payload: updatedPhoto,
+    payload,
   };
 }

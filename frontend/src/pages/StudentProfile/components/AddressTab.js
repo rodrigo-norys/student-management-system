@@ -15,8 +15,8 @@ export default function AddressTab({ student }) {
 
       {addressList.length > 0 ? (
         <AddressGrid>
-          {addressList.map((addr, index) => (
-            <AddressCard key={addr.id}>
+          {addressList.map((address, index) => (
+            <AddressCard key={address.id}>
               <div className="card-header">
                 <h3>Address {index + 1}</h3>
               </div>
@@ -24,24 +24,24 @@ export default function AddressTab({ student }) {
               <div className="card-body">
                 <div>
                   <Label><FaRoad /> Street Address</Label>
-                  <Value>{addr.street}, {addr.number}</Value>
+                  <Value>{address.street}, {address.number}</Value>
                 </div>
 
-                {addr.complement && (
+                {address.complement && (
                   <div>
                     <Label>Complement</Label>
-                    <Value>{addr.complement}</Value>
+                    <Value>{address.complement}</Value>
                   </div>
                 )}
 
                 <div>
                   <Label><FaCity /> Neighborhood / City</Label>
-                  <Value>{addr.neighborhood} - {addr.city} / {addr.state}</Value>
+                  <Value>{address.neighborhood} - {address} / {address.state}</Value>
                 </div>
 
                 <div>
                   <Label>Zip Code</Label>
-                  <Value>{addr.zip_code}</Value>
+                  <Value>{address.zip_code}</Value>
                 </div>
               </div>
             </AddressCard>

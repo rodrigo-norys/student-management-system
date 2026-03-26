@@ -10,7 +10,7 @@ import Loading from '../../components/Loading';
 import { Container, Title, Form, Overlay, Placeholder } from './styled';
 
 export default function Photos() {
-  const { id } = useParams();
+  const { id, userType } = useParams();
   const dispatch = useDispatch();
 
   const { isLoading = false } = useSelector(state => state.photo || {});
@@ -21,7 +21,7 @@ export default function Photos() {
 
   const [tempPhotoUrl, setTempPhotoUrl] = useState('');
 
-  const baseURL = `${process.env.REACT_APP_API_URL}/images/`;
+  const baseURL = `${process.env.REACT_APP_API_URL}/images/${userType}/`;
   const currentAvatarUrl = student?.avatar_url ? `${baseURL}${student.avatar_url}` : '';
   const preview = tempPhotoUrl || currentAvatarUrl;
 
@@ -48,7 +48,7 @@ export default function Photos() {
     formData.append('student_id', id);
     formData.append('avatar', file);
 
-    dispatch(actions.updatePhotoRequest({ id, formData }));
+    dispatch(actions.updatePhotoRequest({ id, userType, formData }));
   };
 
   return (
@@ -61,7 +61,7 @@ export default function Photos() {
         <label htmlFor="photo">
           {preview ? (
             <>
-              <img src={preview} alt={`Profile of ${student?.nome || 'student'}`} />
+              <img src={preview} alt={`Profile of ${student?.name || 'user'}`} />
               <Overlay>
                 <FaCamera size={30} />
                 <span>Change</span>

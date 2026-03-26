@@ -8,10 +8,10 @@ import history from '../../../services/history';
 import axios from '../../../services/axios';
 
 function* updatePhotoRequest({ payload }) {
-  const { id, formData } = payload;
+  const { id, userType, formData } = payload;
 
   try {
-    const response = yield call(axios.patch, `/students/avatar/${id}`, formData);
+    const response = yield call(axios.patch, `/avatar/${userType}/${id}`, formData);
 
     yield put(actions.updatePhotoSuccess({
       avatar_url: response.data.avatar_url,
@@ -19,7 +19,10 @@ function* updatePhotoRequest({ payload }) {
     }));
 
     toast.success('Photo updated successfully!');
-    history.push(`/student/${id}/edit`);
+
+    if (userType === 'students') {
+      history.push(`/student/${id}/edit`);
+    }
 
   } catch (err) {
     const status = err.response?.status || 0;

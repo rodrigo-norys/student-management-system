@@ -5,6 +5,9 @@ import Address from '../models/Address.js';
 import Sequelize from 'sequelize';
 import database from '../database/index.js';
 
+// ALTERAR ESSE BLOCO DO CÓDIGO PARA O SOFT DELETE POSTERIORMENTE
+// ASSIM COMO CRIAR UMA NOVA PROPRIEDADE NA ENTIDADE DE ESTUDANTES
+
 class StudentController {
   // create
   async create(req, res) {

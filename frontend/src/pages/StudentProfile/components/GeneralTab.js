@@ -15,9 +15,7 @@ export default function GeneralTab() {
   if (!student) return <p>Loading student data...</p>;
 
   const sortedAddresses = student.addresses
-    ? [...student.addresses].sort((a, b) =>
-      a.id - b.id
-    )
+    ? [...student.addresses].sort((a, b) => a.id - b.id)
     : [];
 
   const address = sortedAddresses[0] || {};
@@ -43,7 +41,6 @@ export default function GeneralTab() {
         </div>
         <div>
           <Label><FaIdCard /> CPF</Label>
-          {/* Exibindo CPF com a máscara formatada */}
           <Value>{cpfValidator.format(student.cpf)}</Value>
         </div>
       </InfoGroup>

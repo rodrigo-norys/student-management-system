@@ -1,39 +1,39 @@
 import * as types from './types';
 
-// CREATE STUDENT
-export function createStudentRequest(studentData) {
+// --- CREATE ---
+export function createStudentRequest(payload) {
   return {
     type: types.CREATE_STUDENT_REQUEST,
-    payload: studentData,
+    payload,
   };
 }
 
-export function createStudentSuccess(studentData) {
+export function createStudentSuccess(payload) {
   return {
     type: types.CREATE_STUDENT_SUCCESS,
-    payload: studentData,
+    payload,
   };
 }
 
-export function createStudentFailure(studentData) {
+export function createStudentFailure(payload) {
   return {
     type: types.CREATE_STUDENT_FAILURE,
-    payload: studentData,
+    payload,
   };
 }
 
-// GET STUDENTS
-export function getStudentsRequest(id) {
+// --- INDEX ---
+export function getStudentsRequest(payload) {
   return {
     type: types.GET_STUDENTS_REQUEST,
-    payload: id,
+    payload,
   };
 }
 
-export function getStudentsSuccess(students) {
+export function getStudentsSuccess(payload) {
   return {
     type: types.GET_STUDENTS_SUCCESS,
-    payload: students,
+    payload,
   };
 }
 
@@ -43,50 +43,51 @@ export function getStudentsFailure() {
   };
 }
 
-// UPDATE STUDENT
-export function updateStudentRequest(updatedStudent) {
+// --- UPDATE ---
+export function updateStudentRequest(payload) {
   return {
     type: types.UPDATE_STUDENT_REQUEST,
-    payload: updatedStudent,
+    payload,
   };
 }
 
-export function updateStudentSuccess(updatedStudent) {
+export function updateStudentSuccess(payload) {
   return {
     type: types.UPDATE_STUDENT_SUCCESS,
-    payload: updatedStudent,
+    payload,
   };
 }
 
-export function updateStudentFailure(updatedStudent) {
+export function updateStudentFailure(payload) {
   return {
     type: types.UPDATE_STUDENT_FAILURE,
-    payload: updatedStudent,
+    payload,
   };
 }
 
-// DELETE STUDENT
-export function deleteStudentRequest(id) {
+// --- DELETE ---
+export function deleteStudentRequest(payload) {
   return {
     type: types.DELETE_STUDENT_REQUEST,
-    payload: id,
+    payload,
   };
 }
 
-export function deleteStudentSuccess(id) {
+export function deleteStudentSuccess(payload) {
   return {
     type: types.DELETE_STUDENT_SUCCESS,
-    payload: id,
+    payload,
   };
 }
 
-export function deleteStudentFailure(id) {
+export function deleteStudentFailure(payload) {
   return {
     type: types.DELETE_STUDENT_FAILURE,
-    payload: id,
+    payload,
   };
 }
 
+// --- CEP ---
 export function getCepRequest(payload) {
   return {
     type: types.GET_CEP_REQUEST,

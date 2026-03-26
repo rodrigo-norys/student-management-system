@@ -3,6 +3,27 @@ import Sequelize, { Model } from "sequelize";
 export default class Student extends Model {
   static init(sequelize) {
     super.init({
+      user_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      avatar_url: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        validate: {
+          len: {
+            args: [0, 150],
+            msg: 'Avatar URL/Path must be up to 150 characters'
+          }
+        }
+      },
+      url: {
+        type: Sequelize.VIRTUAL,
+        get() {
+          const avatar = this.getDataValue('avatar_url');
+          return avatar ? `${process.env.APP_URL}/images/students/${avatar}` : null;
+        },
+      },
       name: {
         type: Sequelize.STRING,
         defaultValue: '',
@@ -76,22 +97,6 @@ export default class Student extends Model {
           }
         },
       },
-      avatar_url: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        validate: {
-          len: {
-            args: [0, 150],
-            msg: 'Avatar URL/Path must be up to 150 characters'
-          }
-        }
-      },
-      url: {
-        type: Sequelize.VIRTUAL,
-        get() {
-          return `${process.env.APP_URL}/images/${this.getDataValue('avatar_url')}`;
-        },
-      },
       blood_type: {
         type: Sequelize.STRING,
         defaultValue: '',
@@ -111,10 +116,6 @@ export default class Student extends Model {
             msg: 'Medical notes must be up to 255 characters'
           }
         }
-      },
-      user_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
       },
     }, {
       sequelize,

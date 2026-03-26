@@ -8,13 +8,11 @@ export const Nav = styled.nav`
   height: 64px;
   width: 100%;
   box-sizing: border-box;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
   overflow: hidden;
-
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   position: sticky;
   top: 0;
@@ -81,7 +79,6 @@ export const UserInfo = styled.div`
   background: rgba(0,0,0,0.1);
   padding: 5px 10px;
   border-radius: 4px;
-
   min-width: 0;
 
   span {
@@ -95,5 +92,32 @@ export const UserInfo = styled.div`
 
   @media (max-width: 400px) {
     span { display: none; }
+  }
+`;
+
+export const StatusBadge = styled.div`
+  width: 8px;
+  height: 8px;
+  background: #44dd44;
+  border-radius: 50%;
+  flex-shrink: 0;
+`;
+
+export const LogoutButton = styled.button.attrs({ type: 'button' })`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 `;

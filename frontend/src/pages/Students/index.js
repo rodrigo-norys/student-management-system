@@ -99,13 +99,13 @@ export default function Students() {
         {filteredStudents.length > 0 ? (
           filteredStudents.map(student => {
             const hasAvatar = !!student.avatar_url;
-            const mainPhoto = hasAvatar ? `${process.env.REACT_APP_API_URL}/images/${student.avatar_url}` : null;
+            const mainPhoto = hasAvatar ? `${process.env.REACT_APP_API_URL}/images/students/${student.avatar_url}` : null;
 
             return (
               <StudentCard key={String(student.id)} $isGrid={isGridView}>
 
                 <ProfilePicture>
-                  <ProfileLink to={`/avatar/${student.id}`}>
+                  <ProfileLink to={`/avatar/students/${student.id}`}>
                     {hasAvatar
                       ? <img src={mainPhoto} alt={student.name} />
                       : <FaUserCircle size={85} />}

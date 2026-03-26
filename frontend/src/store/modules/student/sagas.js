@@ -9,7 +9,28 @@ import axios from '../../../services/axios';
 import * as actions from './actions';
 import * as types from './types';
 
-function* getStudentsRequest({ payload }) {
+function* createStudent({ payload }) {
+  try {
+    const { shouldLeave, shouldStay, ...studentData } = payload;
+    const response = yield call(axios.post, '/students', studentData);
+
+    toast.success('Student successfully created');
+    yield put(actions.createStudentSuccess(response.data));
+
+    shouldLeave
+      ? history.push('/')
+      : shouldStay && history.push(`/student/${response.data.id}/edit`);
+
+  } catch (e) {
+    const errors = get(e, 'response.data.errors', []);
+    errors.length > 0
+      ? errors.forEach((error) => toast.error(error))
+      : toast.error('An error occurred while saving.');
+    yield put(actions.createStudentFailure());
+  }
+}
+
+function* getStudents({ payload }) {
   try {
     const response = payload
       ? yield call(axios.get, `/students/${payload}`)
@@ -17,8 +38,46 @@ function* getStudentsRequest({ payload }) {
     yield put(actions.getStudentsSuccess(response.data));
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
-    errors.map(error => toast.error(error));
+    errors.length > 0
+      ? errors.forEach((error) => toast.error(error))
+      : toast.error('Error fetching student records.');
     yield put(actions.getStudentsFailure());
+  }
+}
+
+function* updateStudent({ payload }) {
+  try {
+    const { id, shouldLeave, shouldStay, ...studentData } = payload;
+    const response = yield call(axios.put, `/students/${id}`, studentData);
+
+    toast.success('Student successfully updated');
+    yield put(actions.updateStudentSuccess(response.data));
+
+    history.push('/');
+
+  } catch (e) {
+    const errors = get(e, 'response.data.errors', []);
+    errors.length > 0
+      ? errors.forEach((error) => toast.error(error))
+      : toast.error('An error occurred while saving.');
+    yield put(actions.updateStudentFailure());
+  }
+}
+
+function* deleteStudent({ payload }) {
+  const id = payload;
+  try {
+    if (id) {
+      yield call(axios.delete, `students/${id}`);
+      yield put(actions.deleteStudentSuccess(id));
+      toast.success('Student successfully deleted');
+    }
+  } catch (e) {
+    const errors = get(e, 'response.data.errors', []);
+    errors.length > 0
+      ? errors.forEach((error) => toast.error(error))
+      : toast.error('Error deleting student.');
+    yield put(actions.deleteStudentFailure());
   }
 }
 
@@ -32,60 +91,10 @@ function* getCep({ payload }) {
   }
 }
 
-function* createStudentRequest({ payload }) {
-  try {
-    const {
-      id,
-      shouldLeave,
-      shouldStay,
-      ...studentData
-    } = payload;
-
-    if (id) {
-      const response = yield call(axios.put, `/students/${id}`, studentData);
-      yield put(actions.updateStudentSuccess(response.data));
-      toast.success('Student successfully updated');
-    } else {
-      const response = yield call(axios.post, '/students', studentData);
-      yield put(actions.createStudentSuccess(response.data));
-      toast.success('Student successfully created');
-    }
-
-    if (shouldStay) {
-      history.go(0);
-    } else if (shouldLeave) {
-      history.push('/');
-    }
-
-  } catch (err) {
-    const errors = get(err, 'response.data.errors', []);
-    if (errors.length > 0) {
-      errors.map(error => toast.error(error));
-    } else {
-      toast.error('An error occurred while saving.');
-    }
-    yield put(actions.createStudentFailure());
-  }
-}
-
-function* deleteStudentRequest({ payload }) {
-  const id = payload;
-  try {
-    if (id) {
-      yield call(axios.delete, `students/${id}`);
-      yield put(actions.deleteStudentSuccess(id));
-      toast.success('Student successfully deleted');
-    }
-  } catch (err) {
-    const errors = get(err, 'response.data.errors', []);
-    errors.map(error => toast.error(error));
-    yield put(actions.deleteStudentFailure());
-  }
-}
-
 export default all([
-  takeLatest(types.GET_STUDENTS_REQUEST, getStudentsRequest),
-  takeLatest(types.DELETE_STUDENT_REQUEST, deleteStudentRequest),
-  takeLatest(types.CREATE_STUDENT_REQUEST, createStudentRequest),
+  takeLatest(types.CREATE_STUDENT_REQUEST, createStudent),
+  takeLatest(types.GET_STUDENTS_REQUEST, getStudents),
+  takeLatest(types.UPDATE_STUDENT_REQUEST, updateStudent),
+  takeLatest(types.DELETE_STUDENT_REQUEST, deleteStudent),
   takeLatest(types.GET_CEP_REQUEST, getCep),
 ]);

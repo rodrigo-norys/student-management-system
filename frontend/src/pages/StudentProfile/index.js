@@ -37,7 +37,7 @@ export default function StudentProfile() {
     );
   }
 
-  const mainPhoto = `${process.env.REACT_APP_API_URL}/images/${student.avatar_url}`;
+  const mainPhoto = `${process.env.REACT_APP_API_URL}/images/students/${student.avatar_url}`;
 
   return (
     <Container>
@@ -91,4 +91,3 @@ export default function StudentProfile() {
     </Container>
   );
 }
-
