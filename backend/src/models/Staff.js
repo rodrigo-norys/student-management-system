@@ -14,6 +14,13 @@ export default class Staff extends Model {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      url: {
+        type: Sequelize.VIRTUAL,
+        get() {
+          const avatar = this.getDataValue('avatar_url');
+          return avatar ? `${process.env.APP_URL}/images/staff/${avatar}` : null;
+        },
+      },
       full_name: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -116,13 +123,6 @@ export default class Staff extends Model {
             args: [3, 20],
             msg: 'Status must be between 3 and 20 characters.',
           },
-        },
-      },
-      url: {
-        type: Sequelize.VIRTUAL,
-        get() {
-          const avatar = this.getDataValue('avatar_url');
-          return avatar ? `${process.env.APP_URL}/images/${avatar}` : null;
         },
       },
     }, {

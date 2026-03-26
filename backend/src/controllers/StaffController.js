@@ -32,6 +32,7 @@ class StaffController {
       await transaction.commit();
 
       const fullStaff = await Staff.findByPk(newStaff.id, {
+        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status', 'url'],
         include: [{
           model: Address,
           as: 'addresses',
@@ -51,7 +52,7 @@ class StaffController {
   async index(req, res) {
     try {
       const staffMembers = await Staff.findAll({
-        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status'],
+        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status', 'url'],
         include: [
           {
             model: User,
@@ -80,7 +81,7 @@ class StaffController {
       if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing or invalid ID.'] });
 
       const staff = await Staff.findByPk(id, {
-        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status'],
+        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status', 'url'],
         include: [
           {
             model: User,
@@ -111,7 +112,7 @@ class StaffController {
     try {
       const { id } = req.params;
 
-      if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing or ivalid ID.'] });
+      if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing or invalid ID.'] });
 
       const staffToUpdate = await Staff.findByPk(id, { transaction });
 
@@ -145,7 +146,7 @@ class StaffController {
       const updatedStaff = await Staff.findByPk(id, {
         attributes: [
           'id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone',
-          'personal_email', 'job_title', 'hiring_date', 'status'
+          'personal_email', 'job_title', 'hiring_date', 'status', 'url'
         ],
         include: [{
           model: Address,
@@ -167,7 +168,7 @@ class StaffController {
     const transaction = await database.transaction();
 
     try {
-      if (req.userAccessLevel !== 1 || req.userAccessLevel !== 2) {
+      if (req.userAccessLevel !== 1 && req.userAccessLevel !== 2) {
         await transaction.rollback();
         return res.status(403).json({
           errors: ['You do not have permission to delete records.']
