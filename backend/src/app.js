@@ -13,9 +13,11 @@ import delay from 'express-delay';
 import cookieParser from 'cookie-parser';
 
 import homeRoutes from './routes/homeRoutes.js';
+import avatarRoutes from './routes/avatarRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import tokenRoutes from './routes/tokenRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
+import staffRoutes from './routes/staffRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -58,9 +60,11 @@ class App {
 
   routes() {
     this.app.use('/', homeRoutes);
+    this.app.use('/avatar', avatarRoutes);
     this.app.use('/users', userRoutes);
     this.app.use('/tokens', tokenRoutes);
     this.app.use('/students', studentRoutes);
+    this.app.use('/staff', staffRoutes);
   }
 }
 

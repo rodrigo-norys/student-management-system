@@ -1,5 +1,6 @@
 import fs from 'fs';
 import Student from '../models/Student.js';
+import Staff from '../models/Staff.js';
 
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
@@ -10,41 +11,64 @@ const __dirname = dirname(__filename);
 class AvatarController {
   async create(req, res) {
     try {
-      const { id } = req.params;
+      const { id, userType } = req.params;
+
+      const validFolders = ['users', 'students', 'guardians', 'staff'];
+      const folderName = validFolders.includes(userType) ? userType : 'others';
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({ errors: ['Missing ID.'] });
+        return res.status(400).json({
+          errors: ['Missing ID.']
+        });
       }
 
       if (!req.file) {
-        return res.status(400).json({ errors: ['File is required.'] });
+        return res.status(400).json({
+          errors: ['File is required.']
+        });
       }
 
       const { filename } = req.file;
 
-      const student = await Student.findByPk(id);
-
-      if (!student) {
-        return res.status(404).json({ errors: ['Student not found or unauthorized.'] });
+      let model;
+      if (userType === 'students') {
+        model = Student;
+      } else if (userType === 'staff') {
+        model = Staff;
       }
 
-      const oldAvatar = student.avatar_url;
+      if (!model) {
+        return res.status(400).json({
+          errors: ['Invalid user type or model not implemented.']
+        });
+      }
 
-      await student.update({
+      const entity = await model.findByPk(id);
+
+      if (!entity) {
+        return res.status(404).json({
+          errors: ['Record not found.']
+        });
+      }
+
+      const oldAvatar = entity.avatar_url;
+
+      await entity.update({
         avatar_url: filename
       });
 
       if (oldAvatar) {
-        const filePath = resolve(__dirname, '..', '..', 'uploads', 'images', oldAvatar);
+        const filePath = resolve(__dirname, '..', '..', 'uploads', 'images', folderName, oldAvatar);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
       }
 
-      return res.json(student);
+      return res.json(entity);
     } catch (e) {
-      console.log(e);
-      return res.status(400).json({errors: ['Error updating avatar.']});
+      return res.status(400).json({
+        errors: ['Error updating avatar.']
+      });
     }
   }
 }

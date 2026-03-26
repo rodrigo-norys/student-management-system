@@ -2,6 +2,8 @@ import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
 class TokenController {
+
+  // create
   async create(req, res) {
     try {
       const { email, password } = req.body;
@@ -51,6 +53,7 @@ class TokenController {
     }
   }
 
+  // delete
   async delete(req, res) {
     try {
       res.clearCookie('token', {
@@ -62,6 +65,33 @@ class TokenController {
     } catch (e) {
       return res.status(500).json({
         errors: ['Internal server error during logout.']
+      });
+    }
+  }
+
+  // validate (Silent Login)
+  async validate(req, res) {
+    try {
+      const user = await User.findByPk(req.userId);
+
+      if (!user) {
+        return res.status(401).json({
+          errors: ['User not found.']
+        });
+      }
+
+      const { id, email, access_level_id } = user;
+
+      return res.json({
+        user: {
+          id,
+          email,
+          access_level_id
+        },
+      });
+    } catch (e) {
+      return res.status(500).json({
+        errors: ['Internal server error during validation.']
       });
     }
   }
