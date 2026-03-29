@@ -20,9 +20,9 @@ export default function AppRouter() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<MyRoute isClosed={false}><Home /></MyRoute>} />
+        <Route path="/" element={<MyRoute isClosed><Home /></MyRoute>} />
 
-        <Route path="/students" element={<MyRoute isClosed={false}><Students /></MyRoute>} />
+        <Route path="/students" element={<MyRoute isClosed><Students /></MyRoute>} />
         <Route path="/student/:id/edit" element={<MyRoute isClosed><Student /></MyRoute>} />
         <Route path="/student/:id" element={<MyRoute isClosed><StudentProfile /></MyRoute>} />
         <Route path="/student/create" element={<MyRoute isClosed><Student /></MyRoute>} />
