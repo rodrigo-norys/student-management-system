@@ -125,6 +125,36 @@ export default class Staff extends Model {
           },
         },
       },
+      medical_notes: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        validate: {
+          len: {
+            args: [0, 255],
+            msg: 'Medical notes cannot exceed 255 characters.',
+          },
+        },
+      },
+      is_active: {
+        type: Sequelize.TINYINT,
+        allowNull: false,
+        defaultValue: 1,
+        validate: {
+          isIn: {
+            args: [[0, 1]],
+            msg: 'Invalid value for active status.',
+          },
+        },
+      },
+      termination_date: {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+        validate: {
+          isDate: {
+            msg: 'Invalid termination date format.',
+          },
+        },
+      },
     }, {
       sequelize,
       tableName: 'staff',

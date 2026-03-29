@@ -133,5 +133,12 @@ export default class Student extends Model {
       foreignKey: 'student_id',
       as: 'addresses',
     });
+
+    this.belongsToMany(models.Guardian, {
+      through: models.StudentGuardian,
+      foreignKey: 'student_id',
+      otherKey: 'guardian_id',
+      as: 'guardians',
+    });
   }
 }
