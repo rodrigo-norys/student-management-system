@@ -5,22 +5,28 @@ import Address from '../models/Address.js';
 import Sequelize from 'sequelize';
 import database from '../database/index.js';
 
+function isValidId(id) {
+  return id && !isNaN(Number(id)) && Number(id) > 0;
+}
+
 class StaffController {
   // create
   async create(req, res) {
     const transaction = await database.transaction();
 
     try {
-      if (req.userAccessLevel === 3) {
+      if (req.userLevel > 2) {
         await transaction.rollback();
-        return res.status(403).json({ errors: ['Finance administrators cannot create staff records.'] });
+        return res.status(403).json({
+          errors: ['You do not have permission to create staff records.']
+        });
       }
 
       const { addresses, ...staffData } = req.body;
 
       const newStaff = await Staff.create(staffData, { transaction });
 
-      if (addresses && addresses.length > 0) {
+      if (addresses && Array.isArray(addresses) && addresses.length > 0) {
         const addressesToSave = addresses.map((address) => ({
           ...address,
           staff_id: newStaff.id,
@@ -32,7 +38,9 @@ class StaffController {
       await transaction.commit();
 
       const fullStaff = await Staff.findByPk(newStaff.id, {
-        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status', 'url'],
+        attributes: {
+          exclude: ['created_at', 'updated_at']
+        },
         include: [{
           model: Address,
           as: 'addresses',
@@ -41,7 +49,7 @@ class StaffController {
         }],
       });
 
-      return res.json(fullStaff);
+      return res.status(201).json(fullStaff);
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
@@ -52,12 +60,14 @@ class StaffController {
   async index(req, res) {
     try {
       const staffMembers = await Staff.findAll({
-        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status', 'url'],
+        attributes: {
+          exclude: ['created_at', 'updated_at']
+        },
         include: [
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'access_level_id'],
+            attributes: ['id', 'email', 'access_level_id', 'is_active'],
           },
           {
             model: Address,
@@ -78,15 +88,15 @@ class StaffController {
   async show(req, res) {
     try {
       const { id } = req.params;
-      if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+      if (!isValidId(id)) return res.status(400).json({ errors: ['Missing or invalid ID.'] });
 
       const staff = await Staff.findByPk(id, {
-        attributes: ['id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone', 'personal_email', 'job_title', 'hiring_date', 'status', 'url'],
+        attributes: { exclude: ['created_at', 'updated_at'] },
         include: [
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'access_level_id'],
+            attributes: ['id', 'email', 'access_level_id', 'is_active'],
           },
           {
             model: Address,
@@ -111,8 +121,10 @@ class StaffController {
 
     try {
       const { id } = req.params;
-
-      if (!id || isNaN(id)) return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+      if (!isValidId(id)) {
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+      }
 
       const staffToUpdate = await Staff.findByPk(id, { transaction });
 
@@ -132,7 +144,7 @@ class StaffController {
           }
         );
 
-        if (addresses.length > 0) {
+        if (Array.isArray(addresses) && addresses.length > 0) {
           const addressesToSave = addresses.map((address) => ({
             ...address,
             staff_id: id
@@ -144,10 +156,9 @@ class StaffController {
       await transaction.commit();
 
       const updatedStaff = await Staff.findByPk(id, {
-        attributes: [
-          'id', 'avatar_url', 'full_name', 'email', 'cpf', 'birth_date', 'phone',
-          'personal_email', 'job_title', 'hiring_date', 'status', 'url'
-        ],
+        attributes: {
+          exclude: ['created_at', 'updated_at']
+        },
         include: [{
           model: Address,
           as: 'addresses',
@@ -168,21 +179,13 @@ class StaffController {
     const transaction = await database.transaction();
 
     try {
-      if (req.userAccessLevel !== 1 && req.userAccessLevel !== 2) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: ['You do not have permission to delete records.']
-        });
-      }
-
       const { id } = req.params;
-
-      if (!id || isNaN(id)) {
+      if (!isValidId(id)) {
         await transaction.rollback();
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
 
-      const staffMemberToDeactivate = await Staff.findByPk(id, {
+      const staffMember = await Staff.findByPk(id, {
         include: [{
           model: User,
           as: 'user'
@@ -190,22 +193,29 @@ class StaffController {
         transaction,
       });
 
-      if (!staffMemberToDeactivate) {
+      if (!staffMember) {
         await transaction.rollback();
         return res.status(404).json({ errors: ['Staff member not found.'] });
       }
 
-      await staffMemberToDeactivate.update(
+      if (staffMember.user_id === req.userId) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: ['You cannot deactivate your own record.'] });
+      }
+
+      if (req.userLevel > 2) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: ['You do not have permission to delete records.'] });
+      }
+
+      // Desativa o Staff
+      await staffMember.update(
         { status: 'INACTIVE' },
         { transaction }
       );
 
-      if (staffMemberToDeactivate.user) {
-        const associatedUserAccount = staffMemberToDeactivate.user;
-        await associatedUserAccount.update(
-          { is_active: false },
-          { transaction }
-        );
+      if (staffMember.user) {
+        await staffMember.user.update({ is_active: false }, { transaction });
       }
 
       await transaction.commit();

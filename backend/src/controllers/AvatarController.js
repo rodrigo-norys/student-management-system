@@ -1,73 +1,82 @@
-import fs from 'fs';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import Student from '../models/Student.js';
 import Staff from '../models/Staff.js';
 
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
+
+function isValidId(id) {
+  return id && !isNaN(Number(id)) && Number(id) > 0;
+}
 
 class AvatarController {
   async create(req, res) {
     try {
       const { id, userType } = req.params;
 
-      const validFolders = ['users', 'students', 'guardians', 'staff'];
-      const folderName = validFolders.includes(userType) ? userType : 'others';
+      if (!isValidId(id)) return res.status(400).json({
+        errors: ['Missing or invalid ID.']
+      });
+      if (!req.file) return res.status(400).json({
+        errors: ['File is required.']
+      });
 
-      if (!id || isNaN(id)) {
+      const models = {
+        students: Student,
+        staff: Staff
+      };
+
+      const Model = models[userType];
+      if (!Model) {
         return res.status(400).json({
-          errors: ['Missing ID.']
+          errors: ['Invalid user type.']
         });
       }
 
-      if (!req.file) {
-        return res.status(400).json({
-          errors: ['File is required.']
-        });
-      }
-
-      const { filename } = req.file;
-
-      let model;
-      if (userType === 'students') {
-        model = Student;
-      } else if (userType === 'staff') {
-        model = Staff;
-      }
-
-      if (!model) {
-        return res.status(400).json({
-          errors: ['Invalid user type or model not implemented.']
-        });
-      }
-
-      const entity = await model.findByPk(id);
-
+      const entity = await Model.findByPk(id);
       if (!entity) {
         return res.status(404).json({
           errors: ['Record not found.']
         });
       }
 
-      const oldAvatar = entity.avatar_url;
+      const isAdmin = req.userLevel <= 2;
 
-      await entity.update({
-        avatar_url: filename
-      });
+      if (!isAdmin) {
+        return res.status(403).json({
+          errors: ['You do not have permission to change photos.']
+        });
+      }
+
+      const oldAvatar = entity.avatar_url;
+      const { filename } = req.file;
+
+      await entity.update({ avatar_url: filename });
 
       if (oldAvatar) {
-        const filePath = resolve(__dirname, '..', '..', 'uploads', 'images', folderName, oldAvatar);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        const folderName = ['students', 'staff'].includes(userType) ? userType : 'others';
+        const filePath = path.resolve(__dirname, '..', '..', 'uploads', 'images', folderName, oldAvatar);
+
+        try {
+          await fs.access(filePath);
+          await fs.unlink(filePath);
+        } catch (err) {
+          console.warn(`Could not delete old avatar: ${oldAvatar}. Error: ${err.message}`);
         }
       }
 
-      return res.json(entity);
+      return res.json({
+        id: entity.id,
+        avatar_url: filename,
+        message: 'Avatar updated successfully.'
+      });
+
     } catch (e) {
-      return res.status(400).json({
-        errors: ['Error updating avatar.']
+      console.error('AvatarController Error:', e);
+      return res.status(500).json({
+        errors: ['An internal error occurred while updating the avatar.']
       });
     }
   }

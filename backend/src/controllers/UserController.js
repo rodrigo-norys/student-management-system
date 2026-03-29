@@ -4,6 +4,10 @@ import Student from '../models/Student.js';
 import Sequelize from 'sequelize';
 import database from '../database/index.js';
 
+function isValidId(id) {
+  return id && !isNaN(Number(id)) && Number(id) > 0;
+}
+
 class UserController {
   // create
   async create(req, res) {
@@ -36,17 +40,13 @@ class UserController {
       const {
         id,
         email: userEmail,
-        access_level_id: accessLvelId,
-        is_active: isActive,
-        is_temporary: isTemporay
+        access_level_id: accessLevelId
       } = newUser;
 
-      return res.json({
+      return res.status(201).json({
         id,
         email: userEmail,
-        access_level_id: accessLvelId,
-        is_active: isActive,
-        is_temporary: isTemporay
+        access_level_id: accessLevelId,
       });
 
     } catch (e) {
@@ -80,22 +80,15 @@ class UserController {
     try {
       const { id } = req.params;
 
-      if (!id || isNaN(id)) {
+      if (!isValidId(id)) {
         return res.status(400).json({
-          errors: ['Missing ID.'],
+          errors: ['Missing or invalid ID.'],
         });
       }
 
-      const requester = await User.findByPk(req.userId, {
-        include: [{
-          model: AccessLevel,
-          as: 'access_level'
-        }]
-      });
-
-      if (Number(id) !== Number(req.userId) && requester.access_level_id > 2) {
+      if (Number(id) !== Number(req.userId) && req.userLevel > 2) {
         return res.status(403).json({
-          error: 'You do not have permission to view other users profiles.'
+          errors: ['You do not have permission to view other users profiles.']
         });
       }
 
@@ -126,8 +119,8 @@ class UserController {
     try {
       const { id } = req.params;
 
-      if (!id || isNaN(id)) {
-        return res.status(400).json({ errors: ['Missing ID.'] });
+      if (!isValidId(id)) {
+        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
 
       const userToUpdate = await User.findByPk(id);
@@ -136,24 +129,20 @@ class UserController {
         return res.status(404).json({ errors: ['User not found.'] });
       }
 
-      const requester = await User.findByPk(req.userId, {
-        include: [{ model: AccessLevel, as: 'access_level' }]
-      });
-
-      if (requester.access_level_id > 2) {
-        return res.status(403).json({ error: 'You dont have permission to edit users.' });
+      if (req.userLevel > 2) {
+        return res.status(403).json({ errors: ["You don't have permission to edit users."] });
       }
 
-      if (requester.access_level_id > userToUpdate.access_level_id) {
-        return res.status(403).json({ error: 'You cannot edit someone with a higher rank.' });
+      if (req.userLevel > userToUpdate.access_level_id) {
+        return res.status(403).json({ errors: ['You cannot edit someone with a higher rank.'] });
       }
 
       const {
         email, avatar_url, access_level_id, is_active, is_temporary, password
       } = req.body;
 
-      if (requester.access_level_id > 1 && Number(access_level_id) === 1) {
-        return res.status(403).json({ error: 'You cannot transform an user in super admin' });
+      if (req.userLevel > 1 && Number(access_level_id) === 1) {
+        return res.status(403).json({ errors: ['You cannot promote a user to super admin.'] });
       }
 
       const updateData = { email, avatar_url, access_level_id, is_active, is_temporary };
@@ -185,9 +174,9 @@ class UserController {
     try {
       const { id } = req.params;
 
-      if (!id || isNaN(id)) {
+      if (!isValidId(id)) {
         return res.status(400).json({
-          errors: ['Missing ID.'],
+          errors: ['Missing or invalid ID.'],
         });
       }
 
@@ -198,16 +187,15 @@ class UserController {
         });
       }
 
-      const requester = await User.findByPk(req.userId);
-      if (requester.access_level_id > 2 || Number(id) === Number(req.userId)) {
+      if (req.userLevel > 2 || Number(id) === Number(req.userId)) {
         return res.status(403).json({
-          error: 'You do not have permission to delete this user profile.'
+          errors: ['You do not have permission to delete this user profile.']
         });
       }
 
-      if (requester.access_level_id > userToDelete.access_level_id) {
+      if (req.userLevel > userToDelete.access_level_id) {
         return res.status(403).json({
-          error: 'You cannot delete a user with a higher or equal access level.'
+          errors: ['You cannot delete a user with a higher or equal access level.']
         });
       }
 
@@ -216,7 +204,7 @@ class UserController {
       });
 
       return res.json({
-        message: 'User successfully desactivated.',
+        message: 'User successfully deactivated.',
         user: {
           id: userToDelete.id,
           email: userToDelete.email,
