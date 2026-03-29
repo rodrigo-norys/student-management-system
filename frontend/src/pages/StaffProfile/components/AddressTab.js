@@ -2,10 +2,10 @@ import React from 'react';
 import { FaMapMarkerAlt, FaCity, FaRoad } from 'react-icons/fa';
 import { TabContent, AddressCard, AddressGrid, Label, Value } from '../styled';
 
-export default function AddressTab({ staffMember }) {
-  if (!staffMember) return null;
+export default function AddressTab({ staff }) {
+  if (!staff) return null;
 
-  const addressList = staffMember.addresses || [];
+  const addressList = staff.addresses || [];
 
   return (
     <TabContent>
