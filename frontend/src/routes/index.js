@@ -1,7 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 
 import MyRoute from './MyRoute';
+import Layout from '../components/Layout'; // Importe o seu novo Layout aqui
 
+import Home from '../pages/Home';
 import Students from '../pages/Students';
 import Student from '../pages/Student';
 import Photos from '../pages/Photos';
@@ -12,24 +14,29 @@ import StudentProfile from '../pages/StudentProfile';
 
 import Staff from '../pages/Staff';
 import StaffMember from '../pages/StaffMember';
-// import StaffProfile from '../pages/StaffProfile';
+import StaffProfile from '../pages/StaffProfile';
 
 export default function AppRouter() {
   return (
     <Routes>
-      <Route path="/" element={<MyRoute isClosed={false}><Students /></MyRoute>} />
-      <Route path="/student/:id/edit" element={<MyRoute isClosed><Student /></MyRoute>} />
-      <Route path="/student/:id" element={<MyRoute isClosed><StudentProfile /></MyRoute>} />
-      <Route path="/student/create" element={<MyRoute isClosed><Student /></MyRoute>} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<MyRoute isClosed={false}><Home /></MyRoute>} />
 
-      <Route path="/staff" element={<MyRoute isClosed><Staff /></MyRoute>} />
-      <Route path="/staff/create" element={<MyRoute isClosed><StaffMember /></MyRoute>} />
-      <Route path="/staff/:id/edit" element={<MyRoute isClosed><StaffMember /></MyRoute>} />
-      {/* <Route path="/staff/:id" element={<MyRoute isClosed><StaffProfile /></MyRoute>} /> */}
+        <Route path="/students" element={<MyRoute isClosed={false}><Students /></MyRoute>} />
+        <Route path="/student/:id/edit" element={<MyRoute isClosed><Student /></MyRoute>} />
+        <Route path="/student/:id" element={<MyRoute isClosed><StudentProfile /></MyRoute>} />
+        <Route path="/student/create" element={<MyRoute isClosed><Student /></MyRoute>} />
 
-      <Route path="/avatar/:userType/:id" element={<MyRoute isClosed><Photos /></MyRoute>} />
+        <Route path="/staff" element={<MyRoute isClosed><Staff /></MyRoute>} />
+        <Route path="/staff/create" element={<MyRoute isClosed><StaffMember /></MyRoute>} />
+        <Route path="/staff/:id/edit" element={<MyRoute isClosed><StaffMember /></MyRoute>} />
+        <Route path="/staff/:id" element={<MyRoute isClosed><StaffProfile /></MyRoute>} />
+
+        <Route path="/avatar/:userType/:id" element={<MyRoute isClosed><Photos /></MyRoute>} />
+        <Route path="/register" element={<MyRoute isClosed><Register /></MyRoute>} />
+      </Route>
+
       <Route path="/login" element={<MyRoute isClosed={false}><Login /></MyRoute>} />
-      <Route path="/register" element={<MyRoute isClosed><Register /></MyRoute>} />
       <Route path="*" element={<Page404 />} />
     </Routes>
   );

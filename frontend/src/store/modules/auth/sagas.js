@@ -48,7 +48,7 @@ function* register({ payload }) {
 
       toast.success('Account created');
       yield put(actions.registerCreatedSuccess({ email, password, access_level_id }));
-      history.push('/users-management');
+      history.push('/');
     }
 
     yield put(studentActions.getStudentsRequest());

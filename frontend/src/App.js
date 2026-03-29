@@ -7,13 +7,11 @@ import store, { persistor } from './store';
 import history from './services/history';
 import GlobalStyle from './styles/GlobalStyles';
 import CustomHistoryRouter from './components/CustomHistory';
-import Header from './components/Header';
 import Routes from './routes';
 
 import { validateSessionRequest } from './store/modules/auth/actions';
 
 function App() {
-
   useEffect(() => {
     store.dispatch(validateSessionRequest());
   }, []);
@@ -22,7 +20,6 @@ function App() {
     <Provider store={store}>
       <PersistGate persistor={persistor}>
         <CustomHistoryRouter history={history}>
-          <Header />
           <Routes />
           <GlobalStyle />
           <ToastContainer autoClose={3000} className={"toast-container"} />
