@@ -217,6 +217,30 @@ class UserController {
     }
   }
 
+  // setup password
+  async setupPassword(req, res) {
+    try {
+      const user = await User.findByPk(req.userId);
+
+      if (!user) {
+        return res.status(400).json({
+          errors: ['User not found'],
+        });
+      }
+
+      await user.update({
+        password: req.body.password,
+        is_temporary: 0,
+      });
+
+      return res.json({ success: true });
+    } catch (e) {
+      return res.status(400).json({
+        errors: e.errors.map((err) => err.message),
+      });
+    }
+  }
+
   handleErrors(e, res) {
     if (e instanceof Sequelize.ValidationError) {
       return res.status(400).json({

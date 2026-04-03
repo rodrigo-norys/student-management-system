@@ -24,7 +24,12 @@ class TokenController {
         });
       }
 
-      const { id, email: userEmail, access_level_id } = user;
+      const {
+        id,
+        email: userEmail,
+        access_level_id,
+        is_temporary
+      } = user;
 
       const token = jwt.sign(
         { id, email: userEmail, level: access_level_id },
@@ -43,7 +48,8 @@ class TokenController {
         user: {
           id,
           email: userEmail,
-          access_level_id
+          access_level_id,
+          is_temporary
         },
       });
     } catch (e) {

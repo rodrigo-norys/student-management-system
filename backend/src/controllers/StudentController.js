@@ -2,7 +2,7 @@ import Student from '../models/Student.js';
 import User from '../models/User.js';
 import Address from '../models/Address.js';
 
-import Sequelize from 'sequelize';
+import Sequelize, { where } from 'sequelize';
 import database from '../database/index.js';
 
 function isValidId(id) {
@@ -62,9 +62,17 @@ class StudentController {
         ? { user_id: req.userId }
         : {};
 
-      const students = await Student.findAll({
+      const { page = 1, limit = 15 } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const students = await Student.findAndCountAll({
         where: whereClause,
-        attributes: { exclude: ['created_at', 'updated_at'] },
+        limit: Number(limit),
+        offset,
+        attributes: {
+          exclude: ['created_at', 'updated_at']
+        },
+        distinct: true,
         order: [['name', 'ASC']],
         include: [
           {
@@ -78,9 +86,16 @@ class StudentController {
             attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
           }
         ]
-      });
+      })
 
-      return res.json(students);
+      const totalPages = Math.ceil(students.count / Number(limit));
+
+      return res.json({
+        totalItems: students.count,
+        totalPages,
+        currentPage: Number(page),
+        data: students.rows,
+      });
     } catch (e) {
       return this.handleErrors(e, res);
     }
