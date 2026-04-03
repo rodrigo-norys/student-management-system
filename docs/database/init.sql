@@ -51,7 +51,7 @@ CREATE INDEX `addresses_index_0`
 ON `addresses` (`zip_code`);
 CREATE TABLE IF NOT EXISTS `students` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`user_id` INTEGER NOT NULL UNIQUE,
+	`user_id` INTEGER UNIQUE,
 	`avatar_url` VARCHAR(150),
 	`name` VARCHAR(50) NOT NULL,
 	`last_name` VARCHAR(100) NOT NULL,
@@ -73,7 +73,7 @@ CREATE INDEX `students_index_1`
 ON `students` (`name`, `last_name`);
 CREATE TABLE IF NOT EXISTS `guardians` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`user_id` INTEGER NOT NULL UNIQUE,
+	`user_id` INTEGER UNIQUE,
 	`avatar_url` VARCHAR(150),
 	`name` VARCHAR(50) NOT NULL,
 	`last_name` VARCHAR(50) NOT NULL,
@@ -120,23 +120,28 @@ CREATE INDEX `unit_classes_index_1`
 ON `unit_classes` (`grade_level`);
 CREATE TABLE IF NOT EXISTS `staff` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`user_id` INTEGER NOT NULL UNIQUE,
+	`user_id` INTEGER UNIQUE,
 	`avatar_url` VARCHAR(255),
-	`full_name` VARCHAR(150) NOT NULL UNIQUE,
+	`full_name` VARCHAR(150) NOT NULL,
 	`email` VARCHAR(150) NOT NULL,
 	`cpf` VARCHAR(14) NOT NULL UNIQUE,
 	`birth_date` DATE NOT NULL,
 	`phone` VARCHAR(15) NOT NULL,
 	`personal_email` VARCHAR(100) NOT NULL UNIQUE,
 	`job_title` VARCHAR(100) NOT NULL,
+	`medical_notes` VARCHAR(255),
 	`hiring_date` DATE NOT NULL,
 	`status` VARCHAR(20) NOT NULL,
+	`is_active` TINYINT,
+	`termination_date` DATE,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
 );
 
 
+CREATE INDEX `staff_index_0`
+ON `staff` ();
 CREATE TABLE IF NOT EXISTS `subjects` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(50) NOT NULL,

@@ -472,7 +472,8 @@
       "id": "HW19mKIm2iP4HOSeNzxyN",
       "x": 1248,
       "y": -408,
-      "locked": false
+      "locked": false,
+      "hidden": false
     },
     {
       "name": "students",
@@ -498,7 +499,7 @@
           "comment": "",
           "unique": true,
           "increment": false,
-          "notNull": true,
+          "notNull": false,
           "primary": false,
           "default": "",
           "check": ""
@@ -698,7 +699,7 @@
           "comment": "",
           "unique": true,
           "increment": false,
-          "notNull": true,
+          "notNull": false,
           "primary": false,
           "default": "",
           "check": ""
@@ -1041,7 +1042,7 @@
       ],
       "id": "3dE5cUqyAcinZs985syPg",
       "x": 96,
-      "y": 888,
+      "y": 1008,
       "locked": false
     },
     {
@@ -1068,7 +1069,7 @@
           "comment": "",
           "unique": true,
           "increment": false,
-          "notNull": true,
+          "notNull": false,
           "primary": false,
           "default": "",
           "check": ""
@@ -1091,7 +1092,7 @@
           "name": "full_name",
           "type": "VARCHAR",
           "comment": "",
-          "unique": true,
+          "unique": false,
           "increment": false,
           "notNull": true,
           "primary": false,
@@ -1179,6 +1180,19 @@
           "check": ""
         },
         {
+          "id": "ajnsHsX2uYXOt_60br7Sk",
+          "name": "medical_notes",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        },
+        {
           "id": "6ppKoAZHadEFekVLUhsfU",
           "name": "hiring_date",
           "type": "DATE",
@@ -1204,6 +1218,34 @@
           "default": "",
           "size": 20,
           "check": ""
+        },
+        {
+          "id": "jwRNSoj-kbPmXxTJGFVkp",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "uNKuStXfcOFEs2JTYlLyr",
+          "name": "termination_date",
+          "type": "DATE",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "wgiT3mmx34MiI7JAUfk0q",
@@ -1234,7 +1276,14 @@
           "values": []
         }
       ],
-      "indices": [],
+      "indices": [
+        {
+          "id": 0,
+          "name": "staff_index_0",
+          "unique": false,
+          "fields": []
+        }
+      ],
       "id": "0ST0ZEKSRIK1gQbZBNBFv",
       "x": 456,
       "y": 240,
@@ -1470,7 +1519,7 @@
       ],
       "id": "3u_VgZ1so5ZRDosa-edoU",
       "x": 456,
-      "y": 1464,
+      "y": 1560,
       "locked": false
     },
     {
@@ -1570,7 +1619,7 @@
       ],
       "id": "NXvmRfNCwoEGogal7Gsro",
       "x": 1248,
-      "y": 1464,
+      "y": 1560,
       "locked": false
     },
     {
@@ -1643,7 +1692,7 @@
       ],
       "id": "SrCbKu2cTvlPOCLXPKZm6",
       "x": 456,
-      "y": 888,
+      "y": 1008,
       "locked": false
     },
     {
@@ -1742,7 +1791,7 @@
       ],
       "id": "5cf4tNEvcjopDPBq1B3hZ",
       "x": 1248,
-      "y": 888,
+      "y": 1008,
       "locked": false
     },
     {
@@ -1906,7 +1955,7 @@
       ],
       "id": "n13WBpdGBPFtek3BL4Fgy",
       "x": 816,
-      "y": 888,
+      "y": 1008,
       "locked": false
     }
   ],
@@ -2162,7 +2211,7 @@
       "x": 96,
       "y": 192,
       "width": 1373.3610622053966,
-      "height": 624,
+      "height": 744,
       "color": "#E8F5E9",
       "locked": false
     },
@@ -2170,9 +2219,9 @@
       "id": 2,
       "name": "Tier 3: Assignments & Allocations",
       "x": 96,
-      "y": 840,
+      "y": 960,
       "width": 1371.8737473481365,
-      "height": 504,
+      "height": 528,
       "color": "#E3F2FD",
       "locked": false
     },
@@ -2180,9 +2229,9 @@
       "id": 3,
       "name": "Tier 4: Academic Records",
       "x": 96,
-      "y": 1368,
+      "y": 1512,
       "width": 1371.8737473481365,
-      "height": 384,
+      "height": 336,
       "color": "#F3E5F5",
       "locked": false
     }

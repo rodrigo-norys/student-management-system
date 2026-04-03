@@ -22,28 +22,37 @@ O grande diferencial técnico reside na **Modelagem do Banco de Dados** (dispon�
 ### ✨ Status das Funcionalidades
 
 #### ✅ Implementado (MVP Atual)
-- **Autenticação Base:** Estrutura de usuários (`users`) pronta e integrada para login seguro.
-- **Gestão Discente:** Tabela de Alunos (`students`) funcional, permitindo cadastro e persistência de dados.
-- **Endereços Múltiplos:** Relacionamento dinâmico permitindo até 3 endereços por aluno. Sincronização inteligente no backend (Update/Create/Delete) operando dentro de transações atômicas no Sequelize.
-- **Integração de API Externa:** Busca automática de logradouro via CEP (BrasilAPI) com preenchimento dinâmico e integrado ao estado global do formulário.
-- **Gerenciamento de Estado Global:** Arquitetura consolidada utilizando Redux e Redux Saga para controle de side-effects e chamadas assíncronas (Axios).
-- **Validação e Higienização de Dados:** Validação declarativa no frontend (máscaras de CPF, e-mail, campos obrigatórios) antes da persistência, garantindo a integridade do banco de dados.
-- **Gestão de Mídia:** Upload e vinculação de foto de perfil (Avatar) diretamente ao cadastro do aluno.
-- **Versionamento de Banco:** Controle de migrações ativo e auditável via `sequelizemeta`.
+
+**Regras de Negócio & Funcionalidades**
+*   **🔐 Autenticação:** Estrutura base de usuários (`users`) pronta e integrada para login seguro.
+*   **👨‍🎓 Gestão Discente:** CRUD completo de alunos (`students`), incluindo upload e vinculação de foto de perfil (Avatar).
+*   **📍 Múltiplos Endereços:** Relacionamento dinâmico permitindo até 3 endereços por aluno. Integração com a BrasilAPI para busca automática via CEP e preenchimento dinâmico.
+
+**Arquitetura & Infraestrutura**
+*   **⚙️ Gerenciamento de Estado:** Arquitetura front-end consolidada utilizando Redux e Redux Saga para controle de *side-effects* e chamadas assíncronas (Axios).
+*   **🛡️ Integridade de Dados:** Validação declarativa e higienização no client-side (máscaras de CPF, e-mail) antes da persistência no banco.
+*   **🗄️ Transações Seguras:** Sincronização inteligente de endereços (Update/Create/Delete) operando obrigatoriamente dentro de transações atômicas no Sequelize.
+*   **🔄 Versionamento de Banco:** Controle de migrações ativo e auditável via `sequelizemeta`.
+
+---
 
 #### 🚧 Em Desenvolvimento / Modelado
-- **Controle de Acesso (RBAC):** Tabela `access_levels` com flags booleanas (`manage_account`, `manage_finance`) para permissões granulares.
-- **Gestão de Staff:** Vínculo de professores a múltiplas unidades escolares via tabela pivô `staff_units` (N:N).
-- **Rede de Responsáveis:** Relacionamento entre alunos e responsáveis (`student_guardians`) com flag de responsabilidade financeira.
-- **Grade Horária (Alocação):** Tabela `class_allocations` modelada para cruzar Professor, Turma e Disciplina (`subjects`).
-- **Sistema de Avaliação:** Estrutura de notas (`student_grades`) vinculada à alocação da aula, permitindo histórico detalhado por bimestre.
+
+**Segurança & Acessos**
+*   **🔑 Controle de Acesso (RBAC):** Tabela `access_levels` estruturada com *flags* booleanas (`manage_account`, `manage_finance`) para permissões de escopo granular.
+
+**Gestão Escolar & Acadêmica**
+*   **🏢 Gestão de Staff:** Vínculo de professores a múltiplas unidades escolares utilizando tabela pivô `staff_units` (N:N).
+*   **👪 Rede de Responsáveis:** Relacionamento relacional Aluno ↔ Responsável (`student_guardians`), incluindo *flag* específica para isolar o responsável financeiro.
+*   **📅 Grade Horária (Alocação):** Tabela `class_allocations` modelada para o cruzamento exato entre Professor, Turma e Disciplina (`subjects`).
+*   **📊 Sistema de Avaliações:** Estrutura de notas (`student_grades`) vinculada diretamente à alocação da aula, permitindo histórico acadêmico detalhado e segmentado por bimestre.
 
 
 ## 📸 Screenshots
 
-| Login | Dashboard |
+| Register | Dashboard |
 |:---:|:---:|
-| <img src="./docs/screenshots/login.png" width="400" alt="Tela de Login"> | <img src="./docs/screenshots/dashboard.png" width="400" alt="Dashboard"> |
+| <img src="./docs/screenshots/register.png" width="400" alt="Tela de Login"> | <img src="./docs/screenshots/dashboard.png" width="400" alt="Dashboard"> |
 
 ---
 
