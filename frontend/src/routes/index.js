@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 
 import MyRoute from './MyRoute';
-import Layout from '../components/Layout'; // Importe o seu novo Layout aqui
+import Layout from '../components/Layout';
 
 import Home from '../pages/Home';
 import Students from '../pages/Students';
@@ -11,6 +11,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Page404 from '../pages/Page404';
 import StudentProfile from '../pages/StudentProfile';
+import SetupPassword from '../pages/SetupPassword';
 
 import Staff from '../pages/Staff';
 import StaffMember from '../pages/StaffMember';
@@ -35,6 +36,8 @@ export default function AppRouter() {
         <Route path="/avatar/:userType/:id" element={<MyRoute isClosed><Photos /></MyRoute>} />
         <Route path="/register" element={<MyRoute isClosed><Register /></MyRoute>} />
       </Route>
+
+      <Route path="/setup-password" element={<MyRoute isClosed><SetupPassword /></MyRoute>} />
 
       <Route path="/login" element={<MyRoute isClosed={false}><Login /></MyRoute>} />
       <Route path="*" element={<Page404 />} />

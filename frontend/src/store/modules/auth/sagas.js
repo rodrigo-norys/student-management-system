@@ -1,11 +1,10 @@
-import { call, put, all, takeLatest } from 'redux-saga/effects';
+import { call, put, all, select, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
 import { get } from 'lodash';
 import axios from '../../../services/axios';
 import history from '../../../services/history';
 
 import * as actions from './actions';
-import * as studentActions from '../student/actions';
 import * as types from './types';
 
 function* login({ payload }) {
@@ -14,7 +13,11 @@ function* login({ payload }) {
     yield put(actions.loginSuccess(response.data));
 
     toast.success('You are logged in');
-    history.push('/');
+
+    response.data.user.is_temporary
+      ? history.push('/setup-password')
+      : history.push('/');
+
   } catch (e) {
     const status = get(e, 'response.status', 0);
 
@@ -50,8 +53,6 @@ function* register({ payload }) {
       yield put(actions.registerCreatedSuccess({ email, password, access_level_id }));
       history.push('/');
     }
-
-    yield put(studentActions.getStudentsRequest());
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     const status = get(e, 'response.status', 0);
@@ -74,8 +75,7 @@ function* logout() {
   try {
     yield call(axios.delete, '/tokens');
     yield put(actions.logoutSuccess());
-
-    toast.info('Logged out successfully.');
+    toast.info('You logged out');
     history.push('/login');
   } catch (e) {
     toast.error('Error logging out.');

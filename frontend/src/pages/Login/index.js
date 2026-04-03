@@ -5,12 +5,11 @@ import { isEmail } from 'validator';
 
 import * as actions from '../../store/modules/auth/actions';
 import { Container } from '../../styles/GlobalStyles';
-import { Form, Title } from './styled';
+import { LoginWrapper, Form, Title } from './styled';
 import Loading from '../../components/Loading';
 
 export default function Login() {
   const dispatch = useDispatch();
-
   const { isLoading = false } = useSelector((state) => state.auth || {});
 
   const [email, setEmail] = useState('');
@@ -36,28 +35,30 @@ export default function Login() {
   };
 
   return (
-    <Container>
-      <Loading isLoading={isLoading} />
-      <Title>Login</Title>
+    <LoginWrapper>
+      <Container>
+        <Loading isLoading={isLoading} />
+        <Title>Login</Title>
 
-      <Form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Your email"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Your password"
-        />
+        <Form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Your email"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Your password"
+          />
 
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
-      </Form>
-    </Container>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? 'Logging in...' : 'Login'}
+          </button>
+        </Form>
+      </Container>
+    </LoginWrapper>
   );
 }
