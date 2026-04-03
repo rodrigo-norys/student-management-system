@@ -1,21 +1,13 @@
 import { FaHome, FaPowerOff, FaUserCircle, FaUserPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
 
-import * as actions from '../../store/modules/auth/actions';
 import { Nav, Menu, Logo, UserInfo, StatusBadge, LinkRegister, LogoutButton } from './styled';
 
 export default function Header() {
   const dispatch = useDispatch();
 
   const { isLoggedIn = false, user = {} } = useSelector(state => state.auth || {});
-
-  const handleLogout = e => {
-    e.preventDefault();
-    dispatch(actions.logoutRequest());
-    toast.info('You logged out');
-  };
 
   return (
     <Nav>

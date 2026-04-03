@@ -36,22 +36,31 @@ export default function studentReducer(state = initialState, action) {
     // ================= SUCCESS ================= //
 
     case types.GET_STUDENTS_SUCCESS: {
-      if (Array.isArray(action.payload)) {
+      const payload = action.payload;
+
+      if (payload && Array.isArray(payload.data)) {
         return {
           ...state,
-          students: action.payload,
+          students: payload.data,
+          totalPages: payload.totalPages || 1,
           isLoading: false
         };
       }
 
-      const studentIndex = state.students.findIndex(student => student.id === action.payload.id);
+      if (Array.isArray(payload)) {
+        return {
+          ...state,
+          students: payload,
+          isLoading: false
+        };
+      }
+
+      const studentIndex = state.students.findIndex(student => student.id === payload.id);
       let newStudents = [...state.students];
 
-      if (studentIndex >= 0) {
-        newStudents[studentIndex] = action.payload;
-      } else {
-        newStudents.push(action.payload);
-      }
+      studentIndex >= 0
+        ? newStudents[studentIndex] = payload
+        : newStudents.push(payload);
 
       return {
         ...state,

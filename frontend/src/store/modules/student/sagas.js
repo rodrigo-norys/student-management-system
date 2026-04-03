@@ -32,9 +32,24 @@ function* createStudent({ payload }) {
 
 function* getStudents({ payload }) {
   try {
-    const response = payload
-      ? yield call(axios.get, `/students/${payload}`)
-      : yield call(axios.get, '/students');
+    let response;
+    const isPaginationRequest = typeof payload === 'object' && payload !== null;
+    const isSingleStudentRequest = typeof payload === 'string' || typeof payload === 'number';
+
+    if (isPaginationRequest) {
+      const { page, limit } = payload;
+      response = yield call(axios.get, '/students', {
+        params: {
+          page,
+          limit
+        }
+      });
+    } else if (isSingleStudentRequest) {
+      response = yield call(axios.get, `/students/${payload}`);
+    } else {
+      response = yield call(axios.get, '/students');
+    }
+
     yield put(actions.getStudentsSuccess(response.data));
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);

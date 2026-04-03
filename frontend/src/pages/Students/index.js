@@ -3,37 +3,48 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaCamera, FaTh, FaList, FaSearch } from 'react-icons/fa';
-import { cpf as cpfValidator } from 'cpf-cnpj-validator';
+import { FaTh, FaList, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 import {
   Container, HeaderToolbar, ControlsArea, SearchInput, ViewToggle, ToggleButton,
-  NoResultsMessage, StudentContainer, StudentCard, ProfilePicture, PictureOverlay,
-  StudentName, StudentEmail, StudentDetails, DetailRow, ActionRow, NewStudentLink, ProfileLink
+  NoResultsMessage, NewStudentLink, PaginationArea, PageButton
 } from './styled.js';
 
 import * as actions from '../../store/modules/student/actions';
 import Loading from '../../components/Loading';
 
+import StudentGrid from './components/StudentGrid.js';
+import StudentTable from './components/StudentTable.js';
+
 export default function Students() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { students = [], isLoading = false } = useSelector(state => state.student || {});
+  const {
+    students = [],
+    totalPages = 1,
+    isLoading = false
+  } = useSelector(state => state.student || {});
   const { isLoggedIn = false } = useSelector(state => state.auth || {});
 
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isGridView, setIsGridView] = useState(true);
+  const [isGridView, setIsGridView] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [animationParent] = useAutoAnimate();
+
+  const limit = 15;
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login');
     } else {
-      dispatch(actions.getStudentsRequest());
+      dispatch(actions.getStudentsRequest({
+        page: currentPage,
+        limit
+      }));
     }
-  }, [isLoggedIn, navigate, dispatch]);
+  }, [isLoggedIn, currentPage, navigate, dispatch]);
 
   const handleDeleteAsk = (e, id) => {
     e.preventDefault();
@@ -44,6 +55,18 @@ export default function Students() {
     e.preventDefault();
     dispatch(actions.deleteStudentRequest(id));
     setConfirmDeleteId(null);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prevPage => prevPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
   };
 
   const filteredStudents = students.filter(student => {
@@ -68,108 +91,55 @@ export default function Students() {
 
       <ControlsArea>
         <SearchInput>
-          <FaSearch color="#999" />
+          <FaSearch color="#444" />
           <input
             type="text"
-            placeholder="Search by name, email or registration..."
+            placeholder="Search students..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </SearchInput>
 
         <ViewToggle>
-          <ToggleButton
-            $active={isGridView}
-            onClick={() => setIsGridView(true)}
-            title="Grid View"
-          >
-            <FaTh size={18} />
-          </ToggleButton>
-          <ToggleButton
-            $active={!isGridView}
-            onClick={() => setIsGridView(false)}
-            title="List View"
-          >
+          <ToggleButton $active={!isGridView} onClick={() => setIsGridView(false)}>
             <FaList size={18} />
+          </ToggleButton>
+          <ToggleButton $active={isGridView} onClick={() => setIsGridView(true)}>
+            <FaTh size={18} />
           </ToggleButton>
         </ViewToggle>
       </ControlsArea>
 
-      <StudentContainer ref={animationParent} $isGrid={isGridView}>
-        {filteredStudents.length > 0 ? (
-          filteredStudents.map(student => {
-            const hasAvatar = !!student.avatar_url;
-            const mainPhoto = hasAvatar ? `${process.env.REACT_APP_API_URL}/images/students/${student.avatar_url}` : null;
+      {filteredStudents.length === 0
+        ? <NoResultsMessage>No students found.</NoResultsMessage>
+        : isGridView
+          ? <StudentGrid
+            students={filteredStudents}
+            animationParent={animationParent}
+            confirmDeleteId={confirmDeleteId}
+            handleDeleteAsk={handleDeleteAsk}
+            handleDelete={handleDelete}
+          />
+          : <StudentTable
+            students={filteredStudents}
+            animationParent={animationParent}
+            confirmDeleteId={confirmDeleteId}
+            handleDeleteAsk={handleDeleteAsk}
+            handleDelete={handleDelete}
+            currentPage={currentPage}
+            limit={limit}
+          />
+      }
 
-            return (
-              <StudentCard key={String(student.id)} $isGrid={isGridView}>
-
-                <ProfilePicture>
-                  <ProfileLink to={`/avatar/students/${student.id}`}>
-                    {hasAvatar
-                      ? <img src={mainPhoto} alt={student.name} />
-                      : <FaUserCircle size={85} />}
-                    <PictureOverlay>
-                      <FaCamera size={24} color="#fff" />
-                      <span>Edit</span>
-                    </PictureOverlay>
-                  </ProfileLink>
-                </ProfilePicture>
-
-                <div className="card-content">
-                  <StudentName>{student.name} {student.last_name}</StudentName>
-                  <StudentEmail>{student.email}</StudentEmail>
-
-                  <StudentDetails $isGrid={isGridView}>
-                    <DetailRow $isGrid={isGridView}>
-                      <span>Registration</span>
-                      <span>{student.registration_number}</span>
-                    </DetailRow>
-                    <DetailRow $isGrid={isGridView}>
-                      <span>CPF</span>
-                      <span>{cpfValidator.format(student.cpf)}</span>
-                    </DetailRow>
-                    <DetailRow $isGrid={isGridView}>
-                      <span>Blood Type</span>
-                      <span>{student.blood_type || 'N/A'}</span>
-                    </DetailRow>
-                  </StudentDetails>
-                </div>
-
-                <ActionRow $isGrid={isGridView}>
-                  <ProfileLink to={`/student/${student.id}/edit`}>
-                    <FaEdit size={18} title="Edit" />
-                  </ProfileLink>
-
-                  {confirmDeleteId === student.id ? (
-                    <FaExclamation
-                      size={18} cursor="pointer"
-                      onClick={(e) => handleDelete(e, student.id)}
-                      color="#c30e0e"
-                      title="Confirm Delete"
-                    />
-                  ) : (
-                    <ProfileLink
-                      className="delete-btn"
-                      to={`/student/${student.id}/delete`}
-                      onClick={(e) => handleDeleteAsk(e, student.id)}>
-                      <FaWindowClose size={18} title="Delete" />
-                    </ProfileLink>
-                  )}
-
-                  <ProfileLink to={`/student/${student.id}/`}>
-                    <FaUserCircle size={18} color="#3f51b5" title="Profile" />
-                  </ProfileLink>
-                </ActionRow>
-              </StudentCard>
-            );
-          })
-        ) : (
-          <NoResultsMessage>
-            No students found matching "{searchTerm}".
-          </NoResultsMessage>
-        )}
-      </StudentContainer>
+      <PaginationArea>
+        <PageButton onClick={handlePreviousPage} disabled={currentPage === 1 || isLoading}>
+          <FaChevronLeft size={14} /> Prev
+        </PageButton>
+        <span>Page {currentPage} of {totalPages}</span>
+        <PageButton onClick={handleNextPage} disabled={currentPage === totalPages || isLoading}>
+          Next <FaChevronRight size={14} />
+        </PageButton>
+      </PaginationArea>
     </Container>
   );
 }

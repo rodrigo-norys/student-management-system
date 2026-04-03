@@ -11,7 +11,7 @@ import {
   StaffName, StaffEmail, StaffDetails, DetailRow, ActionRow, NewStaffLink, ProfileLink
 } from './styled.js';
 
-import * as actions from '../../store/modules/staff/actions';
+import * as actions from '../../store/modules/staff/actions.js';
 import Loading from '../../components/Loading';
 
 export default function Staff() {

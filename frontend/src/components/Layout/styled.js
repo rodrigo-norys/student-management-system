@@ -6,8 +6,9 @@ export const LayoutContainer = styled.div`
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #f4f6f9;
+  background-color: #1b1b28;
   overflow: hidden;
+  position: relative;
 `;
 
 export const Sidebar = styled.aside`
@@ -15,14 +16,24 @@ export const Sidebar = styled.aside`
   background-color: #1b1b28;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s;
+  transition: all 0.3s ease-in-out;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    left: ${(props) => props.$isOpen
+    ? '0'
+    : '-260px'};
+    height: 100vh;
+  }
 `;
 
 export const SidebarHeader = styled.div`
   height: 70px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
   background-color: #1b1b28;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -73,6 +84,7 @@ export const MainArea = styled.main`
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
+  width: 100%;
 `;
 
 export const Topbar = styled.header`
@@ -80,10 +92,28 @@ export const Topbar = styled.header`
   background-color: #1b1b28;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 0 30px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   z-index: 10;
+
+  @media (max-width: 768px) {
+    padding: 0 15px;
+  }
+`;
+
+export const MenuToggleButton = styled.button`
+  display: none;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
 `;
 
 export const UserProfile = styled.div`
@@ -106,11 +136,15 @@ export const UserProfile = styled.div`
       color: #a2a3b7;
       font-size: 12px;
     }
+
+    @media (max-width: 480px) {
+      display: none;
+    }
   }
 
   .avatar {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     border-radius: 8px;
     background-color: ${colors.primaryColor};
     display: flex;
@@ -118,6 +152,7 @@ export const UserProfile = styled.div`
     justify-content: center;
     color: #ffffff;
     font-weight: bold;
+    font-size: 14px;
   }
 `;
 
@@ -125,50 +160,68 @@ export const ContentWrapper = styled.div`
   flex: 1;
   padding: 30px;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    padding: 20px 15px;
+  }
 `;
 
 export const DashboardCard = styled.div`
-  background-color: #ffffff;
+  background-color: ${(props) => props.theme.container || '#ffffff'};
   border-radius: 12px;
   padding: 25px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid ${(props) => props.theme.border || 'transparent'};
 
   h3 {
-    color: #3f4254;
+    color: ${(props) => props.theme.text || '#3f4254'};
     margin-bottom: 10px;
+    font-size: 18px;
   }
 
   p {
-    color: #7e8299;
+    color: ${(props) => props.theme.secondaryText || '#7e8299'};
     line-height: 1.6;
+    font-size: 14px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px;
+
+    h3 {
+      font-size: 16px;
+    }
   }
 `;
 
 export const TopActions = styled.div`
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-right: 30px;
-  padding-right: 30px;
+  gap: 15px;
+  margin-right: 20px;
+  padding-right: 20px;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
 `;
 
 export const ActionLink = styled(Link)`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 15px;
+  padding: 8px 12px;
   background-color: rgba(255, 255, 255, 0.05);
   color: #ffffff;
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   transition: all 0.3s;
 
   &:hover {
     background-color: ${colors.primaryColor};
-    color: #ffffff;
   }
 `;
 
@@ -186,7 +239,7 @@ export const SidebarLogoutBtn = styled.button`
   padding: 12px 25px;
   background: transparent;
   border: none;
-  color: #f64e60; /* Vermelho de alerta */
+  color: #f64e60;
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
@@ -200,5 +253,22 @@ export const SidebarLogoutBtn = styled.button`
   &:hover {
     background-color: rgba(246, 78, 96, 0.05);
     border-left: 4px solid #f64e60;
+  }
+`;
+
+export const Overlay = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: ${(props) => props.$isOpen
+    ? 'block'
+    : 'none'};
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 90;
   }
 `;
