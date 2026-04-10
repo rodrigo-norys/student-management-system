@@ -18,7 +18,7 @@ export default function MedicalTab({ student }) {
         </BloodField>
 
         <NotesField>
-          <Label><FaNotesMedical color="#555" /> Medical Notes / Allergies</Label>
+          <Label><FaNotesMedical /> Medical Notes / Allergies</Label>
           <Value className="long-text">
             {student.medical_notes ? (
               student.medical_notes

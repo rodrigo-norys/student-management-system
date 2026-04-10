@@ -23,6 +23,7 @@ export default function GeneralTab() {
   return (
     <TabContent>
       <h3><FaUser /> Personal Information</h3>
+
       <InfoGroup>
         <div>
           <Label>Full Name</Label>
@@ -45,9 +46,8 @@ export default function GeneralTab() {
         </div>
       </InfoGroup>
 
-      <hr />
-
       <h3><FaMapMarkerAlt /> Primary Address</h3>
+
       {sortedAddresses.length > 0 ? (
         <InfoGroup>
           <div>

@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation } from 'react-icons/fa';
-import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import {
-  TableContainer, StyledTable, SmallProfilePic, TableNameCol, TableActions
+  TableContainer, StyledTable, SmallProfilePic,
+  TableNameCol, TableActions, StatusCell
 } from '../styled.js';
 
 export default function StudentTable({
@@ -21,10 +21,11 @@ export default function StudentTable({
         <thead>
           <tr>
             <th>#</th>
+            <th>Status</th>
             <th width="80">Avatar</th>
             <th>Info</th>
             <th>Registration</th>
-            <th>CPF</th>
+            <th>Blood Type</th>
             <th width="120">Actions</th>
           </tr>
         </thead>
@@ -32,6 +33,9 @@ export default function StudentTable({
           {students.map((student, index) => (
             <tr key={String(student.id)}>
               <td><strong>{(currentPage - 1) * limit + index + 1}</strong></td>
+              <StatusCell $status={student.is_active}>
+                {student.is_active.toUpperCase()}
+              </StatusCell>
               <td>
                 <SmallProfilePic>
                   {student.avatar_url
@@ -46,7 +50,7 @@ export default function StudentTable({
                 </TableNameCol>
               </td>
               <td>{student.registration_number}</td>
-              <td>{cpfValidator.format(student.cpf)}</td>
+              <td style={{ color: "#e74c3c" }}>{student.blood_type}</td>
               <td>
                 <TableActions>
                   <Link to={`/student/${student.id}/edit`} className="edit-btn">

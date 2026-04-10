@@ -74,9 +74,10 @@ export default function Students() {
     const fullName = `${student.name} ${student.last_name || ''}`.toLowerCase();
     return (
       fullName.includes(searchLower) ||
+      student.is_active.toLowerCase().includes(searchLower)||
       student.email.toLowerCase().includes(searchLower) ||
       student.registration_number.includes(searchLower) ||
-      student.cpf.includes(searchLower)
+      student.blood_type.includes(searchLower)
     );
   });
 

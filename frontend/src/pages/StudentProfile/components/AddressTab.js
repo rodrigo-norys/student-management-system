@@ -9,8 +9,8 @@ export default function AddressTab({ student }) {
 
   return (
     <TabContent>
-      <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-        <FaMapMarkerAlt color="#3f51b5" /> Registered Addresses
+      <h2>
+        <FaMapMarkerAlt /> Registered Addresses
       </h2>
 
       {addressList.length > 0 ? (
@@ -36,7 +36,7 @@ export default function AddressTab({ student }) {
 
                 <div>
                   <Label><FaCity /> Neighborhood / City</Label>
-                  <Value>{address.neighborhood} - {address} / {address.state}</Value>
+                  <Value>{address.neighborhood} - {address.city} / {address.state}</Value>
                 </div>
 
                 <div>

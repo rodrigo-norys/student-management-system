@@ -37,7 +37,6 @@ export default function studentReducer(state = initialState, action) {
 
     case types.GET_STUDENTS_SUCCESS: {
       const payload = action.payload;
-
       if (payload && Array.isArray(payload.data)) {
         return {
           ...state,
@@ -89,9 +88,20 @@ export default function studentReducer(state = initialState, action) {
     }
 
     case types.DELETE_STUDENT_SUCCESS: {
+      const updatedStudents = state.students.map((student) => {
+        if (student.id === action.payload) {
+          return {
+            ...student,
+            isLoading: false,
+            is_active: 'inactive',
+          };
+        }
+        return student;
+      });
+
       return {
         ...state,
-        students: state.students.filter(student => student.id !== action.payload),
+        students: updatedStudents,
         isLoading: false,
       };
     }

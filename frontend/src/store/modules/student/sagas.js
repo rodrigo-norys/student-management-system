@@ -81,11 +81,12 @@ function* updateStudent({ payload }) {
 
 function* deleteStudent({ payload }) {
   const id = payload;
+
   try {
     if (id) {
       yield call(axios.delete, `students/${id}`);
       yield put(actions.deleteStudentSuccess(id));
-      toast.success('Student successfully deleted');
+      toast.success('Student status updated to INACTIVE');
     }
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);

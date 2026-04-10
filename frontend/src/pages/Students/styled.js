@@ -2,6 +2,15 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import * as colors from '../../config/colors';
 
+// Alimenta o StatusCell e o StudentStatus
+const statusColors = {
+  active: '#2D9F5E',
+  graduated: '#2D9F5E',
+  inactive: '#C53030',
+  transferred: '#C53030',
+  suspended: '#B45309'
+};
+
 export const ActionRow = styled.div`
   display: flex;
   justify-content: center;
@@ -10,10 +19,36 @@ export const ActionRow = styled.div`
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 
-  a, svg { color: #555; transition: all 0.2s; }
-  .edit-btn:hover { color: #f1c40f; }
-  .delete-btn:hover { color: #e74c3c; }
-  .profile-btn:hover { color: #3498db; }
+  a, svg {
+    color: #555;
+    transition: all 0.2s;
+  }
+  .edit-btn:hover {
+    color: #f1c40f;
+    transform: translateY(-2px);
+
+    svg {
+      color: #f1c40f;
+    }
+  }
+
+  .delete-btn:hover {
+    color: #e74c3c;
+    transform: translateY(-2px);
+
+    svg {
+      color: #e74c3c;
+    }
+  }
+
+  .profile-btn:hover {
+    color: #3498db;
+    transform: translateY(-2px);
+
+    svg {
+      color: #3498db;
+    }
+  }
 `;
 
 export const Container = styled.div`
@@ -226,6 +261,13 @@ export const SmallProfilePic = styled.div`
   }
 `;
 
+export const StatusCell = styled.td`
+  &&{
+  color: ${props => statusColors[props.$status] || '#ccc'};
+  font-weight: bold;
+  }
+`;
+
 export const StudentCard = styled.div`
   background: #242433;
   border-radius: 12px;
@@ -275,6 +317,14 @@ export const StudentName = styled.h3`
   text-align: center;
 `;
 
+export const StudentStatus = styled.h3`
+  color: ${props => statusColors[props.$status] || '#fff'};
+  margin: 0;
+  margin-bottom: 15px;
+  text-align: center;
+  transform: translateY(-15px);
+`
+
 export const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -290,6 +340,8 @@ export const StyledTable = styled.table`
     letter-spacing: 1px;
     padding: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    vertical-align: middle;
   }
 
   td {
@@ -297,6 +349,8 @@ export const StyledTable = styled.table`
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     color: #ccc;
     font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
   }
 
   tbody tr:hover {

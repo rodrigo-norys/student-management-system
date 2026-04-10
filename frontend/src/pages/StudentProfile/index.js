@@ -29,7 +29,7 @@ export default function StudentProfile() {
     }
   }, [id, dispatch, student]);
 
-  if (!student) {
+if (!student) {
     return (
       <Container>
         <Loading isLoading={true} />
@@ -42,12 +42,13 @@ export default function StudentProfile() {
   return (
     <Container>
       <Loading isLoading={isLoading} />
+
       <ProfileHeader>
         <div className="avatar-placeholder">
           {student.avatar_url ? (
             <img src={mainPhoto} alt={student.name} />
           ) : (
-            <FaUserCircle size={150} color="#ddd" />
+            <FaUserCircle size={80} color="#9aa0ac" />
           )}
         </div>
         <div className="info">
@@ -67,19 +68,22 @@ export default function StudentProfile() {
           type="button"
           className={activeTab === 'general' ? 'active' : ''}
           onClick={() => setActiveTab('general')}
-        > General Data
+        >
+          General Data
         </button>
         <button
           type="button"
           className={activeTab === 'address' ? 'active' : ''}
           onClick={() => setActiveTab('address')}
-        > Addresses
+        >
+          Addresses
         </button>
         <button
           type="button"
           className={activeTab === 'medical' ? 'active' : ''}
           onClick={() => setActiveTab('medical')}
-        > Medical Record
+        >
+          Medical Record
         </button>
       </TabNav>
 

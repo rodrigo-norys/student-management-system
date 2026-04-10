@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation } from 'react-icons/fa';
-import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import {
-  StudentContainer, StudentCard, ProfilePicture, StudentName, StudentEmail,
-  StudentDetails, DetailRow, ActionRow
+  StudentContainer, StudentCard, ProfilePicture, StudentName, StudentStatus,
+  StudentEmail, StudentDetails, DetailRow, ActionRow
 } from '../styled.js';
 
 export default function StudentGrid({
@@ -18,6 +17,7 @@ export default function StudentGrid({
     <StudentContainer ref={animationParent}>
       {students.map(student => (
         <StudentCard key={String(student.id)}>
+          <StudentStatus $status={student.is_active}>{student.is_active.toUpperCase()}</StudentStatus>
           <ProfilePicture>
             {student.avatar_url
               ? <img src={`${process.env.REACT_APP_API_URL}/images/students/${student.avatar_url}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -27,7 +27,7 @@ export default function StudentGrid({
           <StudentEmail>{student.email}</StudentEmail>
           <StudentDetails>
             <DetailRow><span>Reg.</span><span>{student.registration_number}</span></DetailRow>
-            <DetailRow><span>CPF</span><span>{cpfValidator.format(student.cpf)}</span></DetailRow>
+            <DetailRow><span>Blood Type</span><span>{student.blood_type}</span></DetailRow>
           </StudentDetails>
           <ActionRow>
             <Link to={`/student/${student.id}/edit`} className="edit-btn"><FaEdit size={18} /></Link>

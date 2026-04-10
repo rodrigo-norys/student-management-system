@@ -4,30 +4,31 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default createGlobalStyle`
   * {
-    margin: 0;
-    padding: 0;
-    outline: none;
     box-sizing: border-box;
+    margin: 0;
+    outline: none;
+    padding: 0;
+  }
+
+  a {
+    color: ${colors.primaryColor};
+    text-decoration: none;
   }
 
   body {
-    font-family: sans-serif;
     background: ${colors.primaryDarkColor};
-    color: #fff;
-  }
-
-  html, body, #root {
-    height: 100%;
+    color: #f5f5f5;
+    font-family: sans-serif;
   }
 
   button {
-    cursor: pointer;
     background: ${colors.primaryColor};
     border: none;
+    border-radius: 6px;
     color: #fff;
-    padding: 10px 20px;
-    border-radius: 4px;
+    cursor: pointer;
     font-weight: 700;
+    padding: 10px 20px;
     transition: all 300ms;
   }
 
@@ -35,21 +36,27 @@ export default createGlobalStyle`
     filter: brightness(85%);
   }
 
-  a {
-    text-decoration: none;
-    color: ${colors.primaryColor};
+  html, body, #root {
+    height: 100%;
   }
 `;
 
 export const Container = styled.section`
-  max-width: 100%;
-  width: fit-content;
-  min-width: 400px;
-
-  background: #fff;
+  background: #222230;
+  border: 1px solid #323245;
+  border-radius: 8px;
   margin: 30px auto;
+  max-width: 100%;
+  min-width: 400px;
   padding: 30px;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: fit-content;
 `;
 
+export const ErrorMessage = styled.span`
+  color: #e74c3c;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 4px;
+  text-transform: none;
+  letter-spacing: normal;
+`;

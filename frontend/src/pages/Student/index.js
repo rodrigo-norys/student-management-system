@@ -8,10 +8,13 @@ import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import * as actions from '../../store/modules/student/actions.js';
 import Loading from '../../components/Loading';
+import ValidatedInput from '../../components/Form/ValidatedInput.js';
+import ValidatedSelect from '../../components/Form/ValidatedSelect.js';
+import ValidatedTextarea from '../../components/Form/ValidatedTextarea.js';
 import {
   Container, Title, Form, ProfilePicture, ActionsContainer, InputGroup,
   SectionTitle, Divider, HeaderContent, ViewProfileButton, CenteredWrapper,
-  AddressesWrapper, AddressCard, AddAddressButton, AddressSectionWrapper,
+  AddressesWrapper, AddressCard, MedicalNotesWrapper, AddAddressButton, AddressSectionWrapper,
   CenteredSectionTitle, AddressCardTitle, RemoveAddressButton
 } from './styled';
 
@@ -43,12 +46,12 @@ export default function StudentForm() {
 
   const [form, setForm] = useState(initialState);
   const [activeAddressIndex, setActiveAddressIndex] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const { isLoading = false, addressSuggestion = null } = useSelector(state => state.student || {});
   const student = useSelector(state =>
     state.student?.students?.find(stud => String(stud.id) === String(id))
   );
-
   useEffect(() => {
     if (!id) return;
 
@@ -109,8 +112,10 @@ export default function StudentForm() {
 
   const handleAddressChange = (index, e) => {
     const { name, value } = e.target;
+
     setForm(prev => {
       const updatedAddresses = [...prev.addresses];
+
       updatedAddresses[index] = {
         ...updatedAddresses[index],
         [name]: value
@@ -148,10 +153,11 @@ export default function StudentForm() {
     if (form.addresses.length < 3) {
       setForm(prev => ({
         ...prev,
-        addresses: [
-          ...prev.addresses,
-          { ...emptyAddress }
-        ]
+        addresses:
+          [
+            ...prev.addresses,
+            { ...emptyAddress }
+          ]
       }));
     }
   };
@@ -165,54 +171,36 @@ export default function StudentForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let formErrors = false;
+    const newErrors = {};
 
     const shouldLeave = e.nativeEvent.submitter?.name === 'leave';
     const shouldStay = e.nativeEvent.submitter?.name === 'stay';
 
     const { name, last_name, email, registration_number, cpf, birth_date } = form;
 
-    const personalRules = [
-      { condition: name.length < 3 || name.length > 50, message: 'Name must be between 3 and 50 characters' },
-      { condition: last_name.length < 3 || last_name.length > 100, message: 'Last name must be between 3 and 100 characters' },
-      { condition: !isEmail(email), message: 'Invalid email address' },
-      { condition: !registration_number, message: 'Registration number is required.' },
-      { condition: !cpfValidator.isValid(cpf), message: 'Invalid CPF format or algorithm.' },
-      { condition: !birth_date, message: 'Please provide a birth date' },
-    ];
-
-    personalRules.forEach(rule => {
-      if (rule.condition) {
-        formErrors = true;
-        toast.error(rule.message);
-      }
-    });
+    if (name.length < 3 || name.length > 50) newErrors.name = 'Name must be between 3 and 50 characters';
+    if (last_name.length < 3 || last_name.length > 100) newErrors.last_name = 'Last name must be between 3 and 100 characters';
+    if (!isEmail(email)) newErrors.email = 'Invalid email address';
+    if (!registration_number) newErrors.registration_number = 'Registration number is required';
+    if (!cpfValidator.isValid(cpf)) newErrors.cpf = 'Invalid CPF format or algorithm';
+    if (!birth_date) newErrors.birth_date = 'Please provide a birth date';
 
     form.addresses.forEach((address, index) => {
-      const addrNum = index + 1;
-      const addressRules = [
-        { condition: address.zip_code.replace(/\D/g, '').length !== 8, message: `Address ${addrNum}: Invalid CEP.` },
-        { condition: address.street.length < 3, message: `Address ${addrNum}: Street must have at least 3 characters.` },
-        { condition: !address.number, message: `Address ${addrNum}: House/Building number is required.` },
-        { condition: address.neighborhood.length < 2, message: `Address ${addrNum}: Neighborhood is required.` },
-        { condition: address.city.length < 2, message: `Address ${addrNum}: City is required.` },
-        { condition: address.state.length !== 2, message: `Address ${addrNum}: State (UF) must be 2 characters.` },
-      ];
-
-      addressRules.forEach(rule => {
-        if (rule.condition) {
-          formErrors = true;
-          toast.error(rule.message);
-        }
-      });
+      if (address.zip_code.replace(/\D/g, '').length !== 8) newErrors[`address_${index}_zip_code`] = 'Invalid CEP';
+      if (address.street.length < 3) newErrors[`address_${index}_street`] = 'Street must have at least 3 characters';
+      if (!address.number) newErrors[`address_${index}_number`] = 'Number is required';
+      if (address.neighborhood.length < 2) newErrors[`address_${index}_neighborhood`] = 'Neighborhood is required';
+      if (address.city.length < 2) newErrors[`address_${index}_city`] = 'City is required';
+      if (address.state.length !== 2) newErrors[`address_${index}_state`] = 'State must be 2 characters';
     });
 
-    if (formErrors) return;
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) return;
 
     (id)
       ? dispatch(actions.updateStudentRequest({ id, ...form, shouldLeave, shouldStay }))
       : dispatch(actions.createStudentRequest({ ...form, shouldLeave, shouldStay }));
-
   };
 
   const mainPhoto = `${process.env.REACT_APP_API_URL}/images/students/${form.avatar_url}`;
@@ -253,44 +241,49 @@ export default function StudentForm() {
           <SectionTitle>Personal Data</SectionTitle>
 
           <InputGroup>
-            <label>First Name
-              <input type='text' name='name' value={form.name} onChange={handleChange} maxLength="50" placeholder='Ex: Rodrigo' />
-            </label>
-            <label>Last Name
-              <input type='text' name='last_name' value={form.last_name} onChange={handleChange} maxLength="100" placeholder='Ex: Norys' />
-            </label>
+            <ValidatedInput
+              label='First Name' type='text' name='name' value={form.name} onChange={handleChange}
+              maxLength='50' placeholder='Ex: Rodrigo' error={errors.name}
+            />
+            <ValidatedInput
+              label='Last Name' type='text' name='last_name' value={form.last_name} onChange={handleChange}
+              maxLength='100' placeholder='Ex: Norys' error={errors.last_name}
+            />
           </InputGroup>
 
-          <label>Email Address
-            <input type='email' name='email' value={form.email} onChange={handleChange} maxLength="150" placeholder='rodrigo@example.com' />
-          </label>
+          <ValidatedInput
+            label='Email Address' type='email' name='email' value={form.email} onChange={handleChange}
+            maxLength='150' placeholder='rodrigo@example.com' error={errors.email}
+          />
 
           <InputGroup>
-            <label>Registration
-              <input type='text' name='registration_number' value={form.registration_number} onChange={handleChange} maxLength="20" />
-            </label>
-            <label>CPF
-              <input type='text' name='cpf' value={cpfValidator.format(form.cpf)} onChange={handleChange} maxLength="14" placeholder='000.000.000-00' />
-            </label>
+            <ValidatedInput
+              label='Registration' type='text' name='registration_number' value={form.registration_number}
+              onChange={handleChange} maxLength='20' error={errors.registration_number}
+            />
+            <ValidatedInput
+              label='CPF' type='text' name='cpf' value={cpfValidator.format(form.cpf)} onChange={handleChange}
+              maxLength='14' placeholder='000.000.000-00' error={errors.cpf}
+            />
           </InputGroup>
 
           <InputGroup>
-            <label>Birth Date
-              <input type='date' name='birth_date' value={form.birth_date} onChange={handleChange} maxLength="10" />
-            </label>
-            <label>Blood Type
-              <select name='blood_type' value={form.blood_type} onChange={handleChange}>
-                <option value=''>Select</option>
-                {bloodTypes.map(blood => (
-                  <option key={blood} value={blood}>{blood}</option>
-                ))}
-              </select>
-            </label>
+            <ValidatedInput
+              label='Birth Date' type='date' name='birth_date' value={form.birth_date}
+              onChange={handleChange} maxLength='10' error={errors.birth_date}
+            />
+            <ValidatedSelect
+              label='Blood Types' name='blood_type' value={form.blood_type} onChange={handleChange}
+              array={bloodTypes} error={errors.blood_type}
+            />
           </InputGroup>
 
-          <label>Medical Notes
-            <textarea name='medical_notes' value={form.medical_notes} onChange={handleChange} maxLength="255" />
-          </label>
+          <MedicalNotesWrapper>
+            <ValidatedTextarea
+              label='Medical Notes' name='medical_notes' value={form.medical_notes} onChange={handleChange}
+              maxLength='255' error={errors.medical_notes}
+            />
+          </MedicalNotesWrapper>
         </CenteredWrapper>
 
         <Divider />
@@ -305,49 +298,51 @@ export default function StudentForm() {
 
               {form.addresses.length > 1 && (
                 <RemoveAddressButton
-                  type="button"
-                  onClick={() => removeAddress(index)}
-                  title="Remove Address"> X
+                  type='button' onClick={() => removeAddress(index)}
+                  title='Remove Address'> X
                 </RemoveAddressButton>
               )}
 
               <AddressCardTitle>Address {index + 1}</AddressCardTitle>
 
               <InputGroup>
-                <label style={{ flex: 1 }}>Zip Code
-                  <input type='text' name='zip_code' value={address.zip_code} onChange={(e) => handleCepChange(index, e)} maxLength="9" placeholder="00000-000" />
-                </label>
-                <label style={{ flex: 3 }}>Street
-                  <input type='text' name='street' value={address.street} onChange={(e) => handleAddressChange(index, e)} maxLength="100" />
-                </label>
+                <ValidatedInput
+                  label='Zip Code' type='text' name='zip_code' value={address.zip_code} onChange={(e) => handleCepChange(index, e)}
+                  maxLength='9' placeholder='00000-000' error={errors[`address_${index}_zip_code`]}
+                />
+                <ValidatedInput
+                  label='Street' type='text' name='street' value={address.street} onChange={(e) => handleAddressChange(index, e)}
+                  maxLength='100' error={errors[`address_${index}_street`]}
+                />
               </InputGroup>
 
               <InputGroup>
-                <label style={{ flex: 1 }}>Number
-                  <input type='text' name='number' value={address.number} onChange={(e) => handleAddressChange(index, e)} maxLength="10" />
-                </label>
-                <label style={{ flex: 2 }}>Complement
-                  <input type='text' name='complement' value={address.complement} onChange={(e) => handleAddressChange(index, e)} maxLength="100" />
-                </label>
+                <ValidatedInput
+                  label='Number' type='text' name='number' value={address.number} onChange={(e) => handleAddressChange(index, e)}
+                  maxLength='10' error={errors[`address_${index}_number`]}
+                />
+                <ValidatedInput
+                  label='Complement' type='text' name='complement' value={address.complement} onChange={(e) => handleAddressChange(index, e)}
+                  maxLength='100' error={errors[`address_${index}complement`]}
+                />
               </InputGroup>
 
               <InputGroup>
-                <label style={{ flex: 2 }}>Neighborhood
-                  <input type='text' name='neighborhood' value={address.neighborhood} onChange={(e) => handleAddressChange(index, e)} maxLength="100" />
-                </label>
-                <label style={{ flex: 2 }}>City
-                  <input type='text' name='city' value={address.city} onChange={(e) => handleAddressChange(index, e)} maxLength="100" />
-                </label>
-                <label style={{ flex: 0.6 }}>UF
-                  <select name='state' value={address.state} onChange={(e) => handleAddressChange(index, e)}>
-                    <option value="">Select</option>
-                    {UFs.map(uf => (
-                      <option key={uf} value={uf}>{uf}</option>
-                    ))}
-                  </select>
-                </label>
-              </InputGroup>
+                <ValidatedInput
+                  label='Neighborhood' type='text' name='neighborhood' value={address.neighborhood} onChange={(e) => handleAddressChange(index, e)}
+                  maxLength='100' error={errors[`address_${index}_neighborhood`]}
+                />
 
+                <ValidatedInput
+                  label='City' type='text' name='city' value={address.city} onChange={(e) => handleAddressChange(index, e)}
+                  maxLength='100' error={errors[`address_${index}_city`]}
+                />
+
+                <ValidatedSelect
+                  label='UF' name='state' value={address.state} onChange={(e) => handleAddressChange(index, e)}
+                  array={UFs} error={errors[`address_${index}_state`]}
+                />
+              </InputGroup>
             </AddressCard>
           ))}
         </AddressesWrapper>
@@ -358,9 +353,11 @@ export default function StudentForm() {
           </AddAddressButton>
         )}
 
-        <ActionsContainer>
-          {renderButtons}
-        </ActionsContainer>
+        <CenteredWrapper>
+          <ActionsContainer>
+            {renderButtons}
+          </ActionsContainer>
+        </CenteredWrapper>
 
       </Form>
     </Container>
