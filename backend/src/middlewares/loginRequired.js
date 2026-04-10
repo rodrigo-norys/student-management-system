@@ -1,16 +1,19 @@
 import jwt from 'jsonwebtoken';
 
 export default (req, res, next) => {
-  const token = req.cookies.token;
+  const access_token = req.cookies.access_token;
 
-  if (!token) {
+  if (!access_token) {
     return res.status(401).json({
       errors: ['Login required.'],
     });
   }
 
   try {
-    const data = jwt.verify(token, process.env.TOKEN_SECRET);
+    const data = jwt.verify(
+      access_token,
+      process.env.ACCESS_TOKEN_SECRET
+    );
     const { id, email, level } = data;
 
     req.userId = id;

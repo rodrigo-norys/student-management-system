@@ -15,7 +15,7 @@ class StaffController {
     const transaction = await database.transaction();
 
     try {
-      if (req.userLevel > 2) {
+      if (req.userLevel > 3) {
         await transaction.rollback();
         return res.status(403).json({
           errors: ['You do not have permission to create staff records.']
@@ -24,7 +24,10 @@ class StaffController {
 
       const { addresses, ...staffData } = req.body;
 
-      const newStaff = await Staff.create(staffData, { transaction });
+      const newStaff = await Staff.create(
+        { ...staffData, user_id: null },
+        { transaction }
+      );
 
       if (addresses && Array.isArray(addresses) && addresses.length > 0) {
         const addressesToSave = addresses.map((address) => ({
@@ -45,7 +48,6 @@ class StaffController {
           model: Address,
           as: 'addresses',
           attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-          order: [['id', 'ASC']],
         }],
       });
 
@@ -59,10 +61,22 @@ class StaffController {
   // index
   async index(req, res) {
     try {
-      const staffMembers = await Staff.findAll({
+      const whereClause = (req.userLevel === 4 || req.userLevel === 5)
+        ? { user_id: req.userId }
+        : {};
+
+      const { page = 1, limit = 15 } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const staffMembers = await Staff.findAndCountAll({
+        where: whereClause,
+        limit: Number(limit),
+        offset,
         attributes: {
           exclude: ['created_at', 'updated_at']
         },
+        distinct: true,
+        order: [['full_name', 'ASC']],
         include: [
           {
             model: User,
@@ -74,11 +88,17 @@ class StaffController {
             as: 'addresses',
             attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
           }
-        ],
-        order: [['full_name', 'ASC']],
+        ]
       });
 
-      return res.json(staffMembers);
+      const totalPages = Math.ceil(staffMembers.count / Number(limit));
+
+      return res.json({
+        totalItems: staffMembers.count,
+        totalPages,
+        currentPage: Number(page),
+        data: staffMembers.rows,
+      });
     } catch (e) {
       return this.handleErrors(e, res);
     }
@@ -88,26 +108,41 @@ class StaffController {
   async show(req, res) {
     try {
       const { id } = req.params;
-      if (!isValidId(id)) return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+      if (!isValidId(id)) return res.status(400).json({
+        errors: ['Missing or invalid ID.']
+      });
 
       const staff = await Staff.findByPk(id, {
-        attributes: { exclude: ['created_at', 'updated_at'] },
+        attributes: {
+          exclude: ['created_at', 'updated_at']
+        },
         include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'email', 'access_level_id', 'is_active'],
-          },
           {
             model: Address,
             as: 'addresses',
             attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
             order: [['id', 'ASC']],
-          }
+          },
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'email', 'access_level_id', 'is_active'],
+          },
         ],
       });
 
-      if (!staff) return res.status(404).json({ errors: ['Staff member not found.'] });
+      if (!staff) return res.status(404).json({
+        errors: ['Staff member not found.']
+      });
+
+      const isRestrictedRole = [4, 5].includes(req.userLevel);
+      const isAccessingOtherRecord = Number(staff.user_id) !== Number(req.userId);
+
+      if (isRestrictedRole && isAccessingOtherRecord) {
+        return res.status(403).json({
+          errors: ['Forbidden. You can only view your own records.']
+        });
+      }
 
       return res.json(staff);
     } catch (e) {
@@ -123,26 +158,40 @@ class StaffController {
       const { id } = req.params;
       if (!isValidId(id)) {
         await transaction.rollback();
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+
+        return res.status(400).json({
+          errors: ['Missing or invalid ID.'],
+        });
       }
 
       const staffToUpdate = await Staff.findByPk(id, { transaction });
 
       if (!staffToUpdate) {
         await transaction.rollback();
-        return res.status(404).json({ errors: ['Staff member not found.'] });
+
+        return res.status(404).json({
+          errors: ['Staff member not found.']
+        });
       }
+
+      const isRestrictedRole = [4, 5].includes(req.userLevel);
+
+      if (isRestrictedRole) {
+        await transaction.rollback();
+        return res.status(403).json({
+          errors: ["Forbidden. You don't have permission to edit this record."]
+        });
+      }
+
       const { addresses, ...staffData } = req.body;
 
       await staffToUpdate.update(staffData, { transaction });
 
       if (addresses) {
-        await Address.destroy(
-          {
-            where: { staff_id: id },
-            transaction
-          }
-        );
+        await Address.destroy({
+          where: { staff_id: id },
+          transaction,
+        });
 
         if (Array.isArray(addresses) && addresses.length > 0) {
           const addressesToSave = addresses.map((address) => ({
@@ -163,7 +212,6 @@ class StaffController {
           model: Address,
           as: 'addresses',
           attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-          order: [['id', 'ASC']],
         }]
       });
 
@@ -180,9 +228,13 @@ class StaffController {
 
     try {
       const { id } = req.params;
+
       if (!isValidId(id)) {
         await transaction.rollback();
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+
+        return res.status(400).json({
+          errors: ['Missing or invalid ID.']
+        });
       }
 
       const staffMember = await Staff.findByPk(id, {
@@ -195,27 +247,38 @@ class StaffController {
 
       if (!staffMember) {
         await transaction.rollback();
-        return res.status(404).json({ errors: ['Staff member not found.'] });
+
+        return res.status(404).json({
+          errors: ['Staff member not found.']
+        });
       }
 
-      if (staffMember.user_id === req.userId) {
+      if (Number(staffMember.user_id) === Number(req.userId)) {
         await transaction.rollback();
-        return res.status(403).json({ errors: ['You cannot deactivate your own record.'] });
+
+        return res.status(403).json({
+          errors: ['You cannot deactivate your own record.']
+        });
       }
 
-      if (req.userLevel > 2) {
+      if (req.userLevel > 3) {
         await transaction.rollback();
-        return res.status(403).json({ errors: ['You do not have permission to delete records.'] });
+        
+        return res.status(403).json({
+          errors: ['You do not have permission to deactivate records.']
+        });
       }
 
-      // Desativa o Staff
       await staffMember.update(
         { status: 'INACTIVE' },
         { transaction }
       );
 
       if (staffMember.user) {
-        await staffMember.user.update({ is_active: false }, { transaction });
+        await staffMember.user.update(
+          { is_active: false },
+          { transaction }
+        );
       }
 
       await transaction.commit();

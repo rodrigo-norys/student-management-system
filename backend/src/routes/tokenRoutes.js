@@ -6,8 +6,8 @@ import loginRequired from '../middlewares/loginRequired.js';
 const router = new Router();
 
 router.post('/', tokenController.create);
-router.delete('/', tokenController.delete);
 
 router.get('/validate', loginRequired, tokenController.validate);
+router.delete('/', tokenController.delete);
 
 export default router;

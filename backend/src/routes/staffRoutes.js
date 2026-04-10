@@ -7,7 +7,7 @@ import roleAuth from '../middlewares/roleAuth.js';
 
 const router = new Router();
 
-router.post('/', loginRequired, roleAuth(1, 2), staffController.create);
+router.post('/', loginRequired, roleAuth(1, 2, 3), staffController.create);
 router.get('/', loginRequired, roleAuth(1, 2, 3), staffController.index);
 router.get('/:id', loginRequired, roleAuth(1, 2, 3), staffController.show);
 router.put('/:id', loginRequired, roleAuth(1, 2, 3), staffController.update);

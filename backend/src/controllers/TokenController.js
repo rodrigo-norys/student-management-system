@@ -31,17 +31,19 @@ class TokenController {
         is_temporary
       } = user;
 
-      const token = jwt.sign(
+      const expiresInSeconds = Number(process.env.ACCESS_TOKEN_EXPIRATION);
+
+      const access_token = jwt.sign(
         { id, email: userEmail, level: access_level_id },
-        process.env.TOKEN_SECRET,
-        { expiresIn: process.env.TOKEN_EXPIRATION }
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: expiresInSeconds }
       );
 
-      res.cookie('token', token, {
+      res.cookie('access_token', access_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 1000 * 60 * 60 * 24 * 7
+        maxAge: expiresInSeconds * 1000
       });
 
       return res.json({
@@ -58,23 +60,7 @@ class TokenController {
       });
     }
   }
-
-  // delete
-  async delete(req, res) {
-    try {
-      res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-      });
-      return res.status(200).json({ message: 'Logged out successfully.' });
-    } catch (e) {
-      return res.status(500).json({
-        errors: ['Internal server error during logout.']
-      });
-    }
-  }
-
+  
   // validate (Silent Login)
   async validate(req, res) {
     try {
@@ -101,6 +87,25 @@ class TokenController {
       });
     }
   }
+
+  // delete
+  async delete(req, res) {
+    try {
+      res.clearCookie('access_token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      return res.status(200).json({
+        message: 'Logged out successfully.'
+      });
+    } catch (e) {
+      return res.status(500).json({
+        errors: ['Internal server error during logout.']
+      });
+    }
+  }
+
 }
 
 export default new TokenController();

@@ -7,8 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
-    "build": "sucrase ./src -d ./dist",
-    "start": "node dist/server.js"
+    "build": "echo 'Build bypass: Executando ESM nativo'",
+    "start": "node src/server.js"
   },
   "author": "",
   "license": "ISC",
