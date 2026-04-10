@@ -2,7 +2,7 @@ import Student from '../models/Student.js';
 import User from '../models/User.js';
 import Address from '../models/Address.js';
 
-import Sequelize, { where } from 'sequelize';
+import Sequelize from 'sequelize';
 import database from '../database/index.js';
 
 function isValidId(id) {
@@ -15,7 +15,7 @@ class StudentController {
     const transaction = await database.transaction();
 
     try {
-      if (req.userLevel !== 1 || req.userLevel !== 2) {
+      if (req.userLevel > 2) {
         await transaction.rollback();
         return res.status(403).json({
           errors: ['Access denied. You cannot create student records.']
@@ -34,13 +34,16 @@ class StudentController {
           ...address,
           student_id: newStudent.id,
         }));
+
         await Address.bulkCreate(addressesToSave, { transaction });
       }
 
       await transaction.commit();
 
       const fullStudent = await Student.findByPk(newStudent.id, {
-        attributes: { exclude: ['created_at', 'updated_at'] },
+        attributes: {
+          exclude: ['created_at', 'updated_at']
+        },
         include: [{
           model: Address,
           as: 'addresses',
@@ -86,7 +89,7 @@ class StudentController {
             attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
           }
         ]
-      })
+      });
 
       const totalPages = Math.ceil(students.count / Number(limit));
 
@@ -105,26 +108,38 @@ class StudentController {
   async show(req, res) {
     try {
       const { id } = req.params;
+
       if (!isValidId(id)) return res.status(400).json({
-        errors: ['Missing or invalid ID.']
+        errors: ['Missing or invalid ID.'],
       });
 
       const student = await Student.findByPk(id, {
         attributes: {
           exclude: ['created_at', 'updated_at']
         },
-        include: [{
-          model: Address,
-          as: 'addresses',
-          attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-        }]
+        include: [
+          {
+            model: Address,
+            as: 'addresses',
+            attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
+            order: [['id', 'ASC']],
+          },
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'email', 'is_active'],
+          },
+        ]
       });
 
       if (!student) return res.status(404).json({
         errors: ['Student not found.']
       });
 
-      if (req.userLevel === 5 && Number(student.user_id) !== Number(req.userId)) {
+      const isRestrictedRole = [5].includes(req.userLevel);
+      const isAccessingOtherRecord = Number(student.user_id) !== Number(req.userId);
+
+      if (isRestrictedRole && isAccessingOtherRecord) {
         return res.status(403).json({
           errors: ['Forbidden. You can only view your own records.']
         });
@@ -144,20 +159,25 @@ class StudentController {
       const { id } = req.params;
       if (!isValidId(id)) {
         await transaction.rollback();
+
         return res.status(400).json({
-          errors: ['Missing or invalid ID.']
+          errors: ['Missing or invalid ID.'],
         });
       }
 
       const student = await Student.findByPk(id, { transaction });
+
       if (!student) {
         await transaction.rollback();
+
         return res.status(404).json({
           errors: ['Student not found.']
         });
       }
 
-      if (req.userLevel === 5 || req.userLevel === 4) {
+      const isRestrictedRole = [4, 5].includes(req.userLevel);
+
+      if (isRestrictedRole) {
         await transaction.rollback();
         return res.status(403).json({
           errors: ["Forbidden. You don't have permission to edit this record."]
@@ -165,10 +185,14 @@ class StudentController {
       }
 
       const { addresses, ...studentData } = req.body;
+
       await student.update(studentData, { transaction });
 
       if (addresses) {
-        await Address.destroy({ where: { student_id: id }, transaction });
+        await Address.destroy({
+          where: { student_id: id },
+          transaction,
+        });
 
         if (Array.isArray(addresses) && addresses.length > 0) {
           const addressesToSave = addresses.map((address) => ({
@@ -182,7 +206,9 @@ class StudentController {
       await transaction.commit();
 
       const updatedStudent = await Student.findByPk(id, {
-        attributes: { exclude: ['created_at', 'updated_at'] },
+        attributes: {
+          exclude: ['created_at', 'updated_at']
+        },
         include: [{
           model: Address,
           as: 'addresses',
@@ -200,37 +226,66 @@ class StudentController {
   // delete
   async delete(req, res) {
     const transaction = await database.transaction();
+
     try {
       const { id } = req.params;
+
       if (!isValidId(id)) {
         await transaction.rollback();
+
         return res.status(400).json({
           errors: ['Missing or invalid ID.']
         });
       }
 
-      const student = await Student.findByPk(id, { transaction });
+      const student = await Student.findByPk(id, {
+        include: [{
+          model: User,
+          as: 'user'
+        }],
+        transaction,
+      });
 
       if (!student) {
         await transaction.rollback();
+
         return res.status(404).json({
           errors: ['Student not found.']
         });
       }
 
-      if (student.user_id === req.userId) {
+      if (Number(student.user_id) === Number(req.userId)) {
         await transaction.rollback();
+
         return res.status(403).json({
-          errors: ['Forbidden. You cannot delete your own record.']
+          errors: ['You cannot deactivate your own record.']
         });
       }
 
-      // Soft Delete depois, .update({ is_active: 0 })
-      await student.destroy({ transaction });
+      if (req.userLevel > 3) {
+        await transaction.rollback();
+
+        return res.status(403).json({
+          errors: ['You do not have permission to deactivate records.']
+        });
+      }
+
+      await student.update(
+        { is_active: 'inactive' },
+        { transaction }
+      );
+
+      if (student.user) {
+        await student.user.update(
+          { is_active: 0 },
+          { transaction }
+        );
+      }
+
       await transaction.commit();
 
       return res.json({
-        message: 'Student record successfully deleted.'
+        message: 'Student and associated user login deactivated successfully.'
       });
     } catch (e) {
       if (transaction) await transaction.rollback();
@@ -254,6 +309,7 @@ class StudentController {
         errors: ['A database error occurred. Please contact the administrator.'],
       });
     }
+    console.log('ERRO REAL AQUI:', e);
     return res.status(500).json({
       errors: ['Internal server error.'],
     });

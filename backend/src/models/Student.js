@@ -7,6 +7,10 @@ export default class Student extends Model {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
+      is_active: {
+        type: Sequelize.ENUM('active', 'inactive', 'transferred', 'graduated', 'suspended'),
+        defaultValue: 'active',
+      },
       avatar_url: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -14,8 +18,8 @@ export default class Student extends Model {
           len: {
             args: [0, 150],
             msg: 'Avatar URL/Path must be up to 150 characters'
-          }
-        }
+          },
+        },
       },
       url: {
         type: Sequelize.VIRTUAL,
@@ -57,7 +61,7 @@ export default class Student extends Model {
           len: {
             args: [5, 150],
             msg: 'Email must be between 5 and 150 characters'
-          }
+          },
         },
       },
       registration_number: {
@@ -73,7 +77,7 @@ export default class Student extends Model {
           len: {
             args: [1, 20],
             msg: 'Registration number must be up to 20 characters'
-          }
+          },
         },
       },
       cpf: {
@@ -86,7 +90,7 @@ export default class Student extends Model {
           len: {
             args: [11, 14],
             msg: 'CPF must be between 11 and 14 characters'
-          }
+          },
         },
       },
       birth_date: {
@@ -94,7 +98,7 @@ export default class Student extends Model {
         validate: {
           isDate: {
             msg: 'Invalid birth date',
-          }
+          },
         },
       },
       blood_type: {
@@ -104,8 +108,8 @@ export default class Student extends Model {
           len: {
             args: [0, 3],
             msg: 'Blood type must be up to 3 characters'
-          }
-        }
+          },
+        },
       },
       medical_notes: {
         type: Sequelize.STRING,
@@ -114,8 +118,8 @@ export default class Student extends Model {
           len: {
             args: [0, 255],
             msg: 'Medical notes must be up to 255 characters'
-          }
-        }
+          },
+        },
       },
     }, {
       sequelize,
