@@ -147,9 +147,9 @@ npm run dev
 ```
 
 ## 🛠️ Tecnologias Utilizadas
-* **Backend:** Node.js, Express, Sequelize ORM, JWT, Bcrypt.
+* **Backend:** Node.js, Express, Sequelize ORM, JWT (Cookies HttpOnly), Bcrypt.
 * **Frontend:** React.js, Axios, Styled Components / CSS Modules.
-* **Banco de Dados:** MySQL.
+* **Banco de Dados:** MariaDB 10.11 (Engine compatível com MySQL).
 * **Infra:** Nginx, Docker, Linux.
 
 
