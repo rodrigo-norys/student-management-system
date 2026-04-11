@@ -1,6 +1,7 @@
 import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
 import { get } from 'lodash';
+import axiosLib from 'axios';
 
 import history from '../../../services/history';
 import axios from '../../../services/axios';
@@ -10,59 +11,84 @@ import * as types from './types';
 
 function* createStaff({ payload }) {
   try {
-    const { shouldLeave, shouldStay, ...data } = payload;
-    const response = yield call(axios.post, '/staff', data);
+    const { shouldLeave, shouldStay, ...staffData } = payload;
+    const response = yield call(axios.post, '/staff', staffData);
 
     toast.success('Staff member created successfully.');
     yield put(actions.createStaffSuccess(response.data));
 
     shouldLeave
-      ? history.push('/staff')
+      ? history.push('/')
       : shouldStay && history.push(`/staff/${response.data.id}/edit`);
 
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
-      : toast.error('An unknown error occurred.');
+      : toast.error('An error occurred while saving.');
     yield put(actions.createStaffFailure());
   }
 }
 
-function* getStaff() {
+function* getStaff({ payload }) {
   try {
-    const response = yield call(axios.get, '/staff');
+    let response;
+    const isPaginationRequest = typeof payload === 'object' && payload !== null;
+    const isSingleStaffRequest = typeof payload === 'string' || typeof payload === 'number';
+
+    if (isPaginationRequest) {
+      const { page, limit } = payload;
+      response = yield call(axios.get, '/staff', {
+        params: {
+          page,
+          limit
+        }
+      });
+    } else if (isSingleStaffRequest) {
+      response = yield call(axios.get, `/staff/${payload}`);
+    } else {
+      response = yield call(axios.get, '/staff');
+    }
+
     yield put(actions.getStaffSuccess(response.data));
+
   } catch (e) {
-    toast.error(get(e, 'response.data.errors[0]', 'Error fetching staff records.'));
+    const errors = get(e, 'response.data.errors', []);
+    errors.length > 0
+      ? errors.forEach((error) => toast.error(error))
+      : toast.error('Error fetching staff records.');
     yield put(actions.getStaffFailure());
   }
 }
 
 function* updateStaff({ payload }) {
   try {
-    const { id, shouldLeave, shouldStay, ...data } = payload;
-    const response = yield call(axios.put, `/staff/${id}`, data);
+    const { id, shouldLeave, shouldStay, ...staffData } = payload;
+    const response = yield call(axios.put, `/staff/${id}`, staffData);
 
     toast.success('Staff member updated successfully.');
     yield put(actions.updateStaffSuccess(response.data));
 
-   history.push('/staff');
+    history.push('/staff');
 
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
-      : toast.error('An unknown error occurred.');
+      : toast.error('An error occurred while saving.');
     yield put(actions.updateStaffFailure());
   }
 }
 
 function* deleteStaff({ payload }) {
+  const id = payload;
+
   try {
-    yield call(axios.delete, `/staff/${payload.id}`);
-    toast.success('Staff member deleted successfully.');
-    yield put(actions.deleteStaffSuccess({ id: payload.id }));
+    if (id) {
+      yield call(axios.delete, `staff/${id}`);
+      yield put(actions.deleteStaffSuccess(id));
+      toast.success('Staff status updated to INACTIVE');
+    }
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
@@ -74,21 +100,10 @@ function* deleteStaff({ payload }) {
 
 function* getCep({ payload }) {
   try {
-    const response = yield call(axios.get, `https://viacep.com.br/ws/${payload}/json/`);
-
-    if (response.data.erro) {
-      toast.error('Invalid CEP.');
-      yield put(actions.getCepFailure());
-    } else {
-      yield put(actions.getCepSuccess({
-        street: response.data.logradouro,
-        neighborhood: response.data.bairro,
-        city: response.data.localidade,
-        state: response.data.uf,
-      }));
-    }
+    const response = yield call(axiosLib.get, `https://brasilapi.com.br/api/cep/v1/${payload}`);
+    yield put(actions.getCepSuccess(response.data));
   } catch (e) {
-    toast.error(get(e, 'response.data.errors[0]', 'Error fetching CEP.'));
+    toast.error('CEP not found. Fill in the address manually.');
     yield put(actions.getCepFailure());
   }
 }
