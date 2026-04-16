@@ -34,7 +34,6 @@ export default function studentReducer(state = initialState, action) {
       };
 
     // ================= SUCCESS ================= //
-
     case types.GET_STUDENTS_SUCCESS: {
       const payload = action.payload;
       if (payload && Array.isArray(payload.data)) {
@@ -71,11 +70,13 @@ export default function studentReducer(state = initialState, action) {
     case types.CREATE_STUDENT_SUCCESS:
     case types.UPDATE_STUDENT_SUCCESS: {
       const { id } = action.payload;
-      const exists = state.students.some(student => String(student.id) === String(id));
+      const exists = state.students.some(student =>
+        String(student.id) === String(id)
+      );
 
       const newStudents = exists
-        ? state.students.map
-          (student => String(student.id) === String(id)
+        ? state.students.map(student =>
+          String(student.id) === String(id)
             ? { ...student, ...action.payload }
             : student)
         : [...state.students, action.payload];

@@ -1,32 +1,33 @@
+import Sequelize from 'sequelize';
+import database from '../database/index.js';
+
 import Staff from '../models/Staff.js';
 import User from '../models/User.js';
 import Address from '../models/Address.js';
-
-import Sequelize from 'sequelize';
-import database from '../database/index.js';
 
 function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
 }
 
 class StaffController {
-  // create
   async create(req, res) {
     const transaction = await database.transaction();
-
     try {
       if (req.userLevel > 3) {
         await transaction.rollback();
         return res.status(403).json({
-          errors: ['You do not have permission to create staff records.']
+          errors: ['You do not have permission to create staff records.'],
         });
       }
 
       const { addresses, ...staffData } = req.body;
 
       const newStaff = await Staff.create(
-        { ...staffData, user_id: null },
-        { transaction }
+        {
+          ...staffData,
+          user_id: null,
+        },
+        { transaction },
       );
 
       if (addresses && Array.isArray(addresses) && addresses.length > 0) {
@@ -34,23 +35,33 @@ class StaffController {
           ...address,
           staff_id: newStaff.id,
         }));
-
         await Address.bulkCreate(addressesToSave, { transaction });
       }
 
-      await transaction.commit();
-
       const fullStaff = await Staff.findByPk(newStaff.id, {
         attributes: {
-          exclude: ['created_at', 'updated_at']
+          exclude: ['created_at', 'updated_at'],
         },
-        include: [{
-          model: Address,
-          as: 'addresses',
-          attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-        }],
+        include: [
+          {
+            model: Address,
+            as: 'addresses',
+            attributes: [
+              'id',
+              'zip_code',
+              'street',
+              'number',
+              'complement',
+              'neighborhood',
+              'city',
+              'state',
+            ],
+          },
+        ],
+        transaction,
       });
 
+      await transaction.commit();
       return res.status(201).json(fullStaff);
     } catch (e) {
       if (transaction) await transaction.rollback();
@@ -58,12 +69,12 @@ class StaffController {
     }
   }
 
-  // index
   async index(req, res) {
     try {
-      const whereClause = (req.userLevel === 4 || req.userLevel === 5)
-        ? { user_id: req.userId }
-        : {};
+      const whereClause =
+        req.userLevel === 4 || req.userLevel === 5
+          ? { user_id: req.userId }
+          : {};
 
       const { page = 1, limit = 15 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -73,7 +84,7 @@ class StaffController {
         limit: Number(limit),
         offset,
         attributes: {
-          exclude: ['created_at', 'updated_at']
+          exclude: ['created_at', 'updated_at'],
         },
         distinct: true,
         order: [['full_name', 'ASC']],
@@ -86,9 +97,18 @@ class StaffController {
           {
             model: Address,
             as: 'addresses',
-            attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-          }
-        ]
+            attributes: [
+              'id',
+              'zip_code',
+              'street',
+              'number',
+              'complement',
+              'neighborhood',
+              'city',
+              'state',
+            ],
+          },
+        ],
       });
 
       const totalPages = Math.ceil(staffMembers.count / Number(limit));
@@ -104,24 +124,33 @@ class StaffController {
     }
   }
 
-  // show
   async show(req, res) {
     try {
       const { id } = req.params;
-      if (!isValidId(id)) return res.status(400).json({
-        errors: ['Missing or invalid ID.']
-      });
+      if (!isValidId(id)) {
+        return res.status(400).json({
+          errors: ['Missing or invalid ID.'],
+        });
+      }
 
       const staff = await Staff.findByPk(id, {
         attributes: {
-          exclude: ['created_at', 'updated_at']
+          exclude: ['created_at', 'updated_at'],
         },
         include: [
           {
             model: Address,
             as: 'addresses',
-            attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-            order: [['id', 'ASC']],
+            attributes: [
+              'id',
+              'zip_code',
+              'street',
+              'number',
+              'complement',
+              'neighborhood',
+              'city',
+              'state',
+            ],
           },
           {
             model: User,
@@ -129,18 +158,19 @@ class StaffController {
             attributes: ['id', 'email', 'access_level_id', 'is_active'],
           },
         ],
+        order: [[{ model: Address, as: 'addresses' }, 'id', 'ASC']],
       });
 
-      if (!staff) return res.status(404).json({
-        errors: ['Staff member not found.']
-      });
+      if (!staff) {
+        return res.status(404).json({
+          errors: ['Staff member not found.'],
+        });
+      }
 
       const isRestrictedRole = [4, 5].includes(req.userLevel);
-      const isAccessingOtherRecord = Number(staff.user_id) !== Number(req.userId);
-
-      if (isRestrictedRole && isAccessingOtherRecord) {
+      if (isRestrictedRole && Number(staff.user_id) !== Number(req.userId)) {
         return res.status(403).json({
-          errors: ['Forbidden. You can only view your own records.']
+          errors: ['Forbidden. You can only view your own records.'],
         });
       }
 
@@ -150,41 +180,33 @@ class StaffController {
     }
   }
 
-  // update
   async update(req, res) {
     const transaction = await database.transaction();
-
     try {
       const { id } = req.params;
       if (!isValidId(id)) {
         await transaction.rollback();
-
         return res.status(400).json({
           errors: ['Missing or invalid ID.'],
         });
       }
 
       const staffToUpdate = await Staff.findByPk(id, { transaction });
-
       if (!staffToUpdate) {
         await transaction.rollback();
-
         return res.status(404).json({
-          errors: ['Staff member not found.']
+          errors: ['Staff member not found.'],
         });
       }
 
-      const isRestrictedRole = [4, 5].includes(req.userLevel);
-
-      if (isRestrictedRole) {
+      if ([4, 5].includes(req.userLevel)) {
         await transaction.rollback();
         return res.status(403).json({
-          errors: ["Forbidden. You don't have permission to edit this record."]
+          errors: ["Forbidden. You don't have permission to edit this record."],
         });
       }
 
       const { addresses, ...staffData } = req.body;
-
       await staffToUpdate.update(staffData, { transaction });
 
       if (addresses) {
@@ -192,29 +214,39 @@ class StaffController {
           where: { staff_id: id },
           transaction,
         });
-
         if (Array.isArray(addresses) && addresses.length > 0) {
           const addressesToSave = addresses.map((address) => ({
             ...address,
-            staff_id: id
+            staff_id: id,
           }));
           await Address.bulkCreate(addressesToSave, { transaction });
         }
       }
 
-      await transaction.commit();
-
       const updatedStaff = await Staff.findByPk(id, {
         attributes: {
-          exclude: ['created_at', 'updated_at']
+          exclude: ['created_at', 'updated_at'],
         },
-        include: [{
-          model: Address,
-          as: 'addresses',
-          attributes: ['id', 'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state'],
-        }]
+        include: [
+          {
+            model: Address,
+            as: 'addresses',
+            attributes: [
+              'id',
+              'zip_code',
+              'street',
+              'number',
+              'complement',
+              'neighborhood',
+              'city',
+              'state',
+            ],
+          },
+        ],
+        transaction,
       });
 
+      await transaction.commit();
       return res.json(updatedStaff);
     } catch (e) {
       if (transaction) await transaction.rollback();
@@ -222,69 +254,48 @@ class StaffController {
     }
   }
 
-  // delete
   async delete(req, res) {
     const transaction = await database.transaction();
-
     try {
       const { id } = req.params;
-
       if (!isValidId(id)) {
         await transaction.rollback();
-
         return res.status(400).json({
-          errors: ['Missing or invalid ID.']
+          errors: ['Missing or invalid ID.'],
         });
       }
 
       const staffMember = await Staff.findByPk(id, {
-        include: [{
-          model: User,
-          as: 'user'
-        }],
+        include: [{ model: User, as: 'user' }],
         transaction,
       });
 
       if (!staffMember) {
         await transaction.rollback();
-
         return res.status(404).json({
-          errors: ['Staff member not found.']
+          errors: ['Staff member not found.'],
         });
       }
 
-      if (Number(staffMember.user_id) === Number(req.userId)) {
+      if (
+        Number(staffMember.user_id) === Number(req.userId) ||
+        req.userLevel > 3
+      ) {
         await transaction.rollback();
-
         return res.status(403).json({
-          errors: ['You cannot deactivate your own record.']
+          errors: ['Forbidden or restricted action.'],
         });
       }
 
-      if (req.userLevel > 3) {
-        await transaction.rollback();
-        
-        return res.status(403).json({
-          errors: ['You do not have permission to deactivate records.']
-        });
-      }
-
-      await staffMember.update(
-        { status: 'INACTIVE' },
-        { transaction }
-      );
+      await staffMember.update({ status: 'inactive' }, { transaction });
 
       if (staffMember.user) {
-        await staffMember.user.update(
-          { is_active: false },
-          { transaction }
-        );
+        await staffMember.user.update({ is_active: false }, { transaction });
       }
 
       await transaction.commit();
-
       return res.json({
-        message: 'Staff member and associated user login deactivated successfully.'
+        message: 'Staff member deactivated successfully.',
       });
     } catch (e) {
       if (transaction) await transaction.rollback();
@@ -298,19 +309,11 @@ class StaffController {
         errors: e.errors.map((err) => err.message),
       });
     }
-
     if (e instanceof Sequelize.UniqueConstraintError) {
       return res.status(400).json({
         errors: ['One or more unique fields are already in use (e.g., CPF or Email).'],
       });
     }
-
-    if (e instanceof Sequelize.ForeignKeyConstraintError) {
-      return res.status(400).json({
-        errors: ['The provided relation or ID does not exist in the database.'],
-      });
-    }
-
     console.error('StaffController Error:', e);
     return res.status(500).json({
       errors: ['An internal server error occurred.'],

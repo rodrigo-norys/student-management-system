@@ -1,14 +1,5 @@
 import styled from "styled-components";
 
-export const LoginWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100vw;
-  background-color: #1b1b28;
-`;
-
 export const Form = styled.form`
   margin-top: 20px;
   display: flex;
@@ -23,6 +14,15 @@ export const Form = styled.form`
   }
 `;
 
+export const LoginWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #1b1b28;
+`;
+
 export const Title = styled.h1`
-  color: #333;
+  color: #ddd;
 `;

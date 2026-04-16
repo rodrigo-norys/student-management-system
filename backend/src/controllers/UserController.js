@@ -1,61 +1,90 @@
+import Sequelize from 'sequelize';
+import database from '../database/index.js';
+
 import User from '../models/User.js';
 import AccessLevel from '../models/AccessLevel.js';
 import Student from '../models/Student.js';
-import Sequelize from 'sequelize';
-import database from '../database/index.js';
+import Guardian from '../models/Guardian.js';
+import Staff from '../models/Staff.js';
 
 function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
 }
 
 class UserController {
-  // create
   async create(req, res) {
     const transaction = await database.transaction();
-
     try {
       const {
-        access_level_id, email, avatar_url, password, is_active, is_temporary, student_id
+        access_level_id,
+        email,
+        avatar_url,
+        password,
+        is_active,
+        is_temporary,
+        student_id,
+        guardian_id,
+        staff_id,
       } = req.body;
 
-      const newUser = await User.create({
-        access_level_id, email, avatar_url, password, is_active, is_temporary,
-      }, { transaction });
+      const newUser = await User.create(
+        {
+          access_level_id,
+          email,
+          avatar_url,
+          password,
+          is_active,
+          is_temporary,
+        },
+        { transaction },
+      );
 
       if (student_id) {
         const student = await Student.findByPk(student_id, { transaction });
-
-        if (student) {
-          await student.update({ user_id: newUser.id }, { transaction });
-        } else {
+        if (!student) {
           await transaction.rollback();
-          return res.status(404).json({
-            errors: ['Student not found to link this access account.']
-          });
+          return res.status(404).json({ errors: ['Student not found.'] });
         }
+        await student.update({ user_id: newUser.id }, { transaction });
       }
 
-      await transaction.commit();
+      if (guardian_id) {
+        const guardian = await Guardian.findByPk(guardian_id, { transaction });
+        if (!guardian) {
+          await transaction.rollback();
+          return res.status(404).json({ errors: ['Guardian not found.'] });
+        }
+        await guardian.update({ user_id: newUser.id }, { transaction });
+      }
 
-      const {
-        id,
-        email: userEmail,
-        access_level_id: accessLevelId
-      } = newUser;
+      if (staff_id) {
+        const staff = await Staff.findByPk(staff_id, { transaction });
+        if (!staff) {
+          await transaction.rollback();
+          return res.status(404).json({ errors: ['Staff profile not found.'] });
+        }
+        await staff.update({ user_id: newUser.id }, { transaction });
+      }
 
-      return res.status(201).json({
-        id,
-        email: userEmail,
-        access_level_id: accessLevelId,
+      const fullUser = await User.findByPk(newUser.id, {
+        attributes: [
+          'id',
+          'email',
+          'access_level_id',
+          'is_active',
+          'is_temporary',
+        ],
+        transaction,
       });
 
+      await transaction.commit();
+      return res.status(201).json(fullUser);
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
   }
 
-  // index
   async index(req, res) {
     try {
       const allUsers = await User.findAll({
@@ -65,9 +94,16 @@ class UserController {
           {
             model: AccessLevel,
             as: 'access_level',
-            attributes: ['id', 'name', 'description', 'manage_account', 'manage_record', 'manage_finance']
-          }
-        ]
+            attributes: [
+              'id',
+              'name',
+              'description',
+              'manage_account',
+              'manage_record',
+              'manage_finance',
+            ],
+          },
+        ],
       });
       return res.json(allUsers);
     } catch (e) {
@@ -75,149 +111,154 @@ class UserController {
     }
   }
 
-  // show
   async show(req, res) {
     try {
       const { id } = req.params;
-
-      if (!isValidId(id)) {
-        return res.status(400).json({
-          errors: ['Missing or invalid ID.'],
-        });
-      }
-
-      if (Number(id) !== Number(req.userId) && req.userLevel > 2) {
-        return res.status(403).json({
-          errors: ['You do not have permission to view other users profiles.']
-        });
-      }
-
-      const userToShow = await User.findByPk(id, {
-        attributes: ['id', 'email', 'avatar_url', 'access_level_id', 'is_active', 'is_temporary'],
-        include: [{
-          model: AccessLevel,
-          as: 'access_level',
-          attributes: ['name', 'description']
-        }]
-      });
-
-      if (!userToShow) {
-        return res.status(404).json({
-          errors: ['User not found.']
-        });
-      }
-
-      return res.json(userToShow);
-
-    } catch (e) {
-      return this.handleErrors(e, res);
-    }
-  }
-
-  // update
-  async update(req, res) {
-    try {
-      const { id } = req.params;
-
       if (!isValidId(id)) {
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
 
-      const userToUpdate = await User.findByPk(id);
+      if (Number(id) !== Number(req.userId) && req.userLevel > 2) {
+        return res.status(403).json({
+          errors: ['Forbidden.'],
+        });
+      }
 
-      if (!userToUpdate) {
+      const userToShow = await User.findByPk(id, {
+        attributes: [
+          'id',
+          'email',
+          'avatar_url',
+          'access_level_id',
+          'is_active',
+          'is_temporary',
+        ],
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+            attributes: ['name', 'description'],
+          },
+        ],
+      });
+
+      if (!userToShow) {
         return res.status(404).json({ errors: ['User not found.'] });
       }
 
-      if (req.userLevel > 2) {
-        return res.status(403).json({ errors: ["You don't have permission to edit users."] });
+      return res.json(userToShow);
+    } catch (e) {
+      return this.handleErrors(e, res);
+    }
+  }
+
+  async update(req, res) {
+    const transaction = await database.transaction();
+    try {
+      const { id } = req.params;
+      if (!isValidId(id)) {
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
 
-      if (req.userLevel > userToUpdate.access_level_id) {
-        return res.status(403).json({ errors: ['You cannot edit someone with a higher rank.'] });
+      const userToUpdate = await User.findByPk(id, { transaction });
+      if (!userToUpdate) {
+        await transaction.rollback();
+        return res.status(404).json({ errors: ['User not found.'] });
+      }
+
+      if (req.userLevel > 2 || req.userLevel > userToUpdate.access_level_id) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: ['Forbidden.'] });
       }
 
       const {
-        email, avatar_url, access_level_id, is_active, is_temporary, password
+        email,
+        avatar_url,
+        access_level_id,
+        is_active,
+        is_temporary,
+        password,
       } = req.body;
 
       if (req.userLevel > 1 && Number(access_level_id) === 1) {
-        return res.status(403).json({ errors: ['You cannot promote a user to super admin.'] });
+        await transaction.rollback();
+        return res.status(403).json({ errors: ['Restriction: Super Admin.'] });
       }
 
-      const updateData = { email, avatar_url, access_level_id, is_active, is_temporary };
+      const updateData = {
+        email,
+        avatar_url,
+        access_level_id,
+        is_active,
+        is_temporary,
+      };
 
-      if (password) {
-        updateData.password = password;
-      }
+      if (password) updateData.password = password;
 
-      await userToUpdate.update(updateData);
+      await userToUpdate.update(updateData, { transaction });
 
       const updatedUser = await User.findByPk(id, {
-        attributes: ['id', 'email', 'avatar_url', 'access_level_id', 'is_active', 'is_temporary'],
-        include: [{
-          model: AccessLevel,
-          as: 'access_level',
-          attributes: ['name', 'description']
-        }]
+        attributes: [
+          'id',
+          'email',
+          'avatar_url',
+          'access_level_id',
+          'is_active',
+          'is_temporary',
+        ],
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+            attributes: ['name', 'description'],
+          },
+        ],
+        transaction,
       });
 
+      await transaction.commit();
       return res.json(updatedUser);
-
     } catch (e) {
+      if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
   }
 
-  // delete
   async delete(req, res) {
+    const transaction = await database.transaction();
     try {
       const { id } = req.params;
-
       if (!isValidId(id)) {
-        return res.status(400).json({
-          errors: ['Missing or invalid ID.'],
-        });
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
 
-      const userToDelete = await User.findByPk(id);
+      const userToDelete = await User.findByPk(id, { transaction });
       if (!userToDelete) {
-        return res.status(404).json({
-          errors: ['User not found.'],
-        });
+        await transaction.rollback();
+        return res.status(404).json({ errors: ['User not found.'] });
       }
 
-      if (req.userLevel > 2 || Number(id) === Number(req.userId)) {
-        return res.status(403).json({
-          errors: ['You do not have permission to delete this user profile.']
-        });
+      if (
+        req.userLevel > 2 ||
+        Number(id) === Number(req.userId) ||
+        req.userLevel > userToDelete.access_level_id
+      ) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: ['Forbidden.'] });
       }
 
-      if (req.userLevel > userToDelete.access_level_id) {
-        return res.status(403).json({
-          errors: ['You cannot delete a user with a higher or equal access level.']
-        });
-      }
+      await userToDelete.update({ is_active: 0 }, { transaction });
 
-      await userToDelete.update({
-        is_active: 0
-      });
-
-      return res.json({
-        message: 'User successfully deactivated.',
-        user: {
-          id: userToDelete.id,
-          email: userToDelete.email,
-          is_active: userToDelete.is_active
-        }
-      });
-
+      await transaction.commit();
+      return res.json({ message: 'User successfully deactivated.' });
     } catch (e) {
+      if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
   }
 
-  // setup password
   async setupPassword(req, res) {
     try {
       const user = await User.findByPk(req.userId);
@@ -243,26 +284,15 @@ class UserController {
 
   handleErrors(e, res) {
     if (e instanceof Sequelize.ValidationError) {
-      return res.status(400).json({
-        errors: e.errors.map((err) => err.message),
-      });
+      return res
+        .status(400)
+        .json({ errors: e.errors.map((err) => err.message) });
     }
-
-    if (e instanceof Sequelize.ForeignKeyConstraintError) {
-      return res.status(400).json({
-        errors: ['The provided relation or ID does not exist in the database.'],
-      });
+    if (e instanceof Sequelize.UniqueConstraintError) {
+      return res.status(400).json({ errors: ['Email is already in use.'] });
     }
-
-    if (e instanceof Sequelize.DatabaseError) {
-      return res.status(500).json({
-        errors: ['A database error occurred. Please contact the administrator.'],
-      });
-    }
-
-    return res.status(500).json({
-      errors: ['Internal server error.'],
-    });
+    console.error('UserController Error:', e);
+    return res.status(500).json({ errors: ['Internal server error.'] });
   }
 }
 

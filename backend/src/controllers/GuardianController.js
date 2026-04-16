@@ -1,50 +1,49 @@
-import Student from '../models/Student.js';
-import Guardian from '../models/Guardian.js';
-import User from '../models/User.js';
-import Address from '../models/Address.js';
-
 import Sequelize from 'sequelize';
 import database from '../database/index.js';
+
+import Guardian from '../models/Guardian.js';
+import Student from '../models/Student.js';
+import User from '../models/User.js';
+import Address from '../models/Address.js';
 
 function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
 }
 
-class StudentController {
+class GuardianController {
   async create(req, res) {
     const transaction = await database.transaction();
     try {
       if (req.userLevel > 2) {
         await transaction.rollback();
         return res.status(403).json({
-          errors: ['Access denied. You cannot create student records.'],
+          errors: ['Access denied. You cannot create guardian records.'],
         });
       }
 
-      const { addresses, guardian_ids, ...studentData } = req.body;
+      const { addresses, student_ids, ...guardianData } = req.body;
 
-      const newStudent = await Student.create(
-        { ...studentData, user_id: null },
+      const newGuardian = await Guardian.create(
+        {
+          ...guardianData,
+          user_id: null,
+        },
         { transaction },
       );
 
       if (addresses && Array.isArray(addresses) && addresses.length > 0) {
         const addressesToSave = addresses.map((address) => ({
           ...address,
-          student_id: newStudent.id,
+          guardian_id: newGuardian.id,
         }));
         await Address.bulkCreate(addressesToSave, { transaction });
       }
 
-      if (
-        guardian_ids &&
-        Array.isArray(guardian_ids) &&
-        guardian_ids.length > 0
-      ) {
-        await newStudent.setGuardians(guardian_ids, { transaction });
+      if (student_ids && Array.isArray(student_ids) && student_ids.length > 0) {
+        await newGuardian.setStudents(student_ids, { transaction });
       }
 
-      const fullStudent = await Student.findByPk(newStudent.id, {
+      const fullGuardian = await Guardian.findByPk(newGuardian.id, {
         attributes: {
           exclude: ['created_at', 'updated_at'],
         },
@@ -64,9 +63,9 @@ class StudentController {
             ],
           },
           {
-            model: Guardian,
-            as: 'guardians',
-            attributes: ['id', 'name', 'last_name', 'phone'],
+            model: Student,
+            as: 'students',
+            attributes: ['id', 'name', 'last_name', 'registration_number'],
             through: { attributes: [] },
           },
         ],
@@ -74,7 +73,7 @@ class StudentController {
       });
 
       await transaction.commit();
-      return res.status(201).json(fullStudent);
+      return res.status(201).json(fullGuardian);
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
@@ -87,11 +86,13 @@ class StudentController {
       const { page = 1, limit = 15 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
 
-      const students = await Student.findAndCountAll({
+      const guardians = await Guardian.findAndCountAll({
         where: whereClause,
         limit: Number(limit),
         offset,
-        attributes: { exclude: ['created_at', 'updated_at'] },
+        attributes: {
+          exclude: ['created_at', 'updated_at'],
+        },
         distinct: true,
         order: [['name', 'ASC']],
         include: [
@@ -115,21 +116,21 @@ class StudentController {
             ],
           },
           {
-            model: Guardian,
-            as: 'guardians',
-            attributes: ['id', 'name', 'last_name', 'phone'],
+            model: Student,
+            as: 'students',
+            attributes: ['id', 'name', 'last_name', 'registration_number'],
             through: { attributes: [] },
           },
         ],
       });
 
-      const totalPages = Math.ceil(students.count / Number(limit));
+      const totalPages = Math.ceil(guardians.count / Number(limit));
 
       return res.json({
-        totalItems: students.count,
+        totalItems: guardians.count,
         totalPages,
         currentPage: Number(page),
-        data: students.rows,
+        data: guardians.rows,
       });
     } catch (e) {
       return this.handleErrors(e, res);
@@ -140,11 +141,15 @@ class StudentController {
     try {
       const { id } = req.params;
       if (!isValidId(id)) {
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+        return res.status(400).json({
+          errors: ['Missing or invalid ID.'],
+        });
       }
 
-      const student = await Student.findByPk(id, {
-        attributes: { exclude: ['created_at', 'updated_at'] },
+      const guardian = await Guardian.findByPk(id, {
+        attributes: {
+          exclude: ['created_at', 'updated_at'],
+        },
         include: [
           {
             model: User,
@@ -166,27 +171,27 @@ class StudentController {
             ],
           },
           {
-            model: Guardian,
-            as: 'guardians',
-            attributes: ['id', 'name', 'last_name', 'phone', 'email'],
+            model: Student,
+            as: 'students',
+            attributes: ['id', 'name', 'last_name', 'registration_number'],
             through: { attributes: [] },
           },
         ],
         order: [[{ model: Address, as: 'addresses' }, 'id', 'ASC']],
       });
 
-      if (!student) {
-        return res.status(404).json({ errors: ['Student not found.'] });
+      if (!guardian) {
+        return res.status(404).json({
+          errors: ['Guardian not found.'],
+        });
       }
 
-      if (
-        [5].includes(req.userLevel) &&
-        Number(student.user_id) !== Number(req.userId)
-      ) {
+      const isRestrictedRole = [5].includes(req.userLevel);
+      if (isRestrictedRole && Number(guardian.user_id) !== Number(req.userId)) {
         return res.status(403).json({ errors: ['Forbidden.'] });
       }
 
-      return res.json(student);
+      return res.json(guardian);
     } catch (e) {
       return this.handleErrors(e, res);
     }
@@ -198,13 +203,17 @@ class StudentController {
       const { id } = req.params;
       if (!isValidId(id)) {
         await transaction.rollback();
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+        return res.status(400).json({
+          errors: ['Missing or invalid ID.'],
+        });
       }
 
-      const student = await Student.findByPk(id, { transaction });
-      if (!student) {
+      const guardian = await Guardian.findByPk(id, { transaction });
+      if (!guardian) {
         await transaction.rollback();
-        return res.status(404).json({ errors: ['Student not found.'] });
+        return res.status(404).json({
+          errors: ['Guardian not found.'],
+        });
       }
 
       if ([4, 5].includes(req.userLevel)) {
@@ -212,26 +221,31 @@ class StudentController {
         return res.status(403).json({ errors: ['Forbidden.'] });
       }
 
-      const { addresses, guardian_ids, ...studentData } = req.body;
-      await student.update(studentData, { transaction });
+      const { addresses, student_ids, ...guardianData } = req.body;
+      await guardian.update(guardianData, { transaction });
 
       if (addresses) {
-        await Address.destroy({ where: { student_id: id }, transaction });
+        await Address.destroy({
+          where: { guardian_id: id },
+          transaction,
+        });
         if (Array.isArray(addresses) && addresses.length > 0) {
           const addressesToSave = addresses.map((addr) => ({
             ...addr,
-            student_id: id,
+            guardian_id: id,
           }));
           await Address.bulkCreate(addressesToSave, { transaction });
         }
       }
 
-      if (guardian_ids && Array.isArray(guardian_ids)) {
-        await student.setGuardians(guardian_ids, { transaction });
+      if (student_ids && Array.isArray(student_ids)) {
+        await guardian.setStudents(student_ids, { transaction });
       }
 
-      const updatedStudent = await Student.findByPk(id, {
-        attributes: { exclude: ['created_at', 'updated_at'] },
+      const updatedGuardian = await Guardian.findByPk(id, {
+        attributes: {
+          exclude: ['created_at', 'updated_at'],
+        },
         include: [
           {
             model: Address,
@@ -248,9 +262,9 @@ class StudentController {
             ],
           },
           {
-            model: Guardian,
-            as: 'guardians',
-            attributes: ['id', 'name', 'last_name', 'phone'],
+            model: Student,
+            as: 'students',
+            attributes: ['id', 'name', 'last_name', 'registration_number'],
             through: { attributes: [] },
           },
         ],
@@ -258,7 +272,7 @@ class StudentController {
       });
 
       await transaction.commit();
-      return res.json(updatedStudent);
+      return res.json(updatedGuardian);
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
@@ -271,31 +285,43 @@ class StudentController {
       const { id } = req.params;
       if (!isValidId(id)) {
         await transaction.rollback();
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+        return res.status(400).json({
+          errors: ['Missing or invalid ID.'],
+        });
       }
 
-      const student = await Student.findByPk(id, {
+      const guardian = await Guardian.findByPk(id, {
         include: [{ model: User, as: 'user' }],
         transaction,
       });
 
-      if (!student) {
+      if (!guardian) {
         await transaction.rollback();
-        return res.status(404).json({ errors: ['Student not found.'] });
+        return res.status(404).json({
+          errors: ['Guardian not found.'],
+        });
       }
 
-      if (Number(student.user_id) === Number(req.userId) || req.userLevel > 3) {
+      if (
+        Number(guardian.user_id) === Number(req.userId) ||
+        req.userLevel > 3
+      ) {
         await transaction.rollback();
-        return res.status(403).json({ errors: ['Forbidden.'] });
+        return res.status(403).json({
+          errors: ['Forbidden or restricted action.'],
+        });
       }
 
-      await student.update({ is_active: 'inactive' }, { transaction });
-      if (student.user) {
-        await student.user.update({ is_active: 0 }, { transaction });
+      await guardian.update({ is_active: 'inactive' }, { transaction });
+
+      if (guardian.user) {
+        await guardian.user.update({ is_active: 0 }, { transaction });
       }
 
       await transaction.commit();
-      return res.json({ message: 'Student deactivated successfully.' });
+      return res.json({
+        message: 'Guardian deactivated successfully.',
+      });
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
@@ -309,13 +335,15 @@ class StudentController {
         .json({ errors: e.errors.map((err) => err.message) });
     }
     if (e instanceof Sequelize.ForeignKeyConstraintError) {
-      return res
-        .status(400)
-        .json({ errors: ['Referenced ID does not exist.'] });
+      return res.status(400).json({
+        errors: ['Relation error: Referenced ID not found.'],
+      });
     }
     console.log('REAL_ERROR:', e);
-    return res.status(500).json({ errors: ['Internal server error.'] });
+    return res.status(500).json({
+      errors: ['Internal server error.'],
+    });
   }
 }
 
-export default new StudentController();
+export default new GuardianController();

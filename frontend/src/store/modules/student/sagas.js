@@ -51,6 +51,7 @@ function* getStudents({ payload }) {
     }
 
     yield put(actions.getStudentsSuccess(response.data));
+
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
@@ -68,7 +69,7 @@ function* updateStudent({ payload }) {
     toast.success('Student successfully updated');
     yield put(actions.updateStudentSuccess(response.data));
 
-    history.push('/');
+    history.push('/students');
 
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
@@ -102,8 +103,8 @@ function* getCep({ payload }) {
     const response = yield call(axiosLib.get, `https://brasilapi.com.br/api/cep/v1/${payload}`);
     yield put(actions.getCepSuccess(response.data));
   } catch (e) {
-    yield put(actions.getCepFailure());
     toast.error('CEP not found. Fill in the address manually.');
+    yield put(actions.getCepFailure());
   }
 }
 
