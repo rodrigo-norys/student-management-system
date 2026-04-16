@@ -18,6 +18,7 @@ import userRoutes from './routes/userRoutes.js';
 import tokenRoutes from './routes/tokenRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import staffRoutes from './routes/staffRoutes.js';
+import guardianRoutes from './routes/guardianRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -65,6 +66,7 @@ class App {
     this.app.use('/tokens', tokenRoutes);
     this.app.use('/students', studentRoutes);
     this.app.use('/staff', staffRoutes);
+    this.app.use('/guardians', guardianRoutes);
   }
 }
 

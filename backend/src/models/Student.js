@@ -12,7 +12,7 @@ export default class Student extends Model {
         defaultValue: 'active',
       },
       avatar_url: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(150),
         allowNull: true,
         validate: {
           len: {
@@ -29,7 +29,7 @@ export default class Student extends Model {
         },
       },
       name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(50),
         defaultValue: '',
         validate: {
           len: {
@@ -39,7 +39,7 @@ export default class Student extends Model {
         },
       },
       last_name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(100),
         defaultValue: '',
         validate: {
           len: {
@@ -49,7 +49,7 @@ export default class Student extends Model {
         },
       },
       email: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(150),
         defaultValue: '',
         unique: {
           msg: 'Email already exists'
@@ -65,7 +65,7 @@ export default class Student extends Model {
         },
       },
       registration_number: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(20),
         defaultValue: '',
         unique: {
           msg: 'Registration number already exists'
@@ -81,7 +81,7 @@ export default class Student extends Model {
         },
       },
       cpf: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(14),
         defaultValue: '',
         unique: {
           msg: 'CPF already exists'
@@ -102,7 +102,7 @@ export default class Student extends Model {
         },
       },
       blood_type: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(3),
         defaultValue: '',
         validate: {
           len: {
@@ -112,7 +112,7 @@ export default class Student extends Model {
         },
       },
       medical_notes: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(255),
         defaultValue: '',
         validate: {
           len: {
