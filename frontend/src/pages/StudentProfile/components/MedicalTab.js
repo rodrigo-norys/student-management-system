@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaHeartbeat, FaTint, FaNotesMedical } from 'react-icons/fa';
 import { TabContent, MedicalHeader, InfoGroup, BloodField, NotesField, Label, Value } from '../styled';
 
