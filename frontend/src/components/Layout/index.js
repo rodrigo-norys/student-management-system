@@ -6,7 +6,7 @@ import * as actions from '../../store/modules/auth/actions';
 
 import {
   FaHome, FaUserGraduate, FaUserTie, FaUsers,
-  FaCog, FaPowerOff, FaUserPlus, FaBars, FaTimes
+  FaCog, FaPowerOff, FaUserPlus, FaBars, FaTimes, FaUserFriends
 } from 'react-icons/fa';
 
 import {
@@ -40,6 +40,7 @@ export default function Layout() {
 
   return (
     <LayoutContainer>
+      {isLoggedIn}
       <Overlay $isOpen={isMenuOpen} onClick={toggleMenu} />
 
       <Sidebar $isOpen={isMenuOpen}>
@@ -54,6 +55,10 @@ export default function Layout() {
           <NavItem to="/" className={isActive('/')} onClick={() => setIsMenuOpen(false)}>
             <FaHome /> Dashboard
           </NavItem>
+          {user?.access_level_id && user.access_level_id < 3 &&
+            <NavItem to="/register" className={isActive('/register')} onClick={() => setIsMenuOpen(false)}>
+              <FaUserFriends /> Users
+            </NavItem>}
           <NavItem to="/students" className={isActive('/students')} onClick={() => setIsMenuOpen(false)}>
             <FaUserGraduate /> Students
           </NavItem>
@@ -85,17 +90,6 @@ export default function Layout() {
 
           <div style={{ flex: 1 }} />
 
-          {isLoggedIn && (
-            <TopActions>
-              {(user?.access_level_id && user.access_level_id < 3) && (
-                <ActionLink to='/register'>
-                  <FaUserPlus size={14} />
-                  <span>Accounts</span>
-                </ActionLink>
-              )}
-            </TopActions>
-          )}
-
           <UserProfile>
             <div className="user-info">
               <strong>{userName}</strong>
@@ -112,6 +106,6 @@ export default function Layout() {
           <Outlet />
         </ContentWrapper>
       </MainArea>
-    </LayoutContainer>
+    </LayoutContainer >
   );
 }

@@ -20,7 +20,6 @@ function* createStudent({ payload }) {
     shouldLeave
       ? history.push('/')
       : shouldStay && history.push(`/student/${response.data.id}/edit`);
-
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
@@ -34,15 +33,16 @@ function* getStudents({ payload }) {
   try {
     let response;
     const isPaginationRequest = typeof payload === 'object' && payload !== null;
-    const isSingleStudentRequest = typeof payload === 'string' || typeof payload === 'number';
+    const isSingleStudentRequest =
+      typeof payload === 'string' || typeof payload === 'number';
 
     if (isPaginationRequest) {
       const { page, limit } = payload;
       response = yield call(axios.get, '/students', {
         params: {
           page,
-          limit
-        }
+          limit,
+        },
       });
     } else if (isSingleStudentRequest) {
       response = yield call(axios.get, `/students/${payload}`);
@@ -51,12 +51,12 @@ function* getStudents({ payload }) {
     }
 
     yield put(actions.getStudentsSuccess(response.data));
-
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('Error fetching student records.');
+
     yield put(actions.getStudentsFailure());
   }
 }
@@ -70,7 +70,6 @@ function* updateStudent({ payload }) {
     yield put(actions.updateStudentSuccess(response.data));
 
     history.push('/students');
-
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
@@ -100,7 +99,10 @@ function* deleteStudent({ payload }) {
 
 function* getCep({ payload }) {
   try {
-    const response = yield call(axiosLib.get, `https://brasilapi.com.br/api/cep/v1/${payload}`);
+    const response = yield call(
+      axiosLib.get,
+      `https://brasilapi.com.br/api/cep/v1/${payload}`,
+    );
     yield put(actions.getCepSuccess(response.data));
   } catch (e) {
     toast.error('CEP not found. Fill in the address manually.');

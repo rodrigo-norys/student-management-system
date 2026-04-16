@@ -1,5 +1,4 @@
-import React from 'react';
-import { DashboardCard } from '../../components/Layout/styled';
+import { DashboardCard } from '../../components/Layout/styled.js';
 
 export default function Home() {
   return (

@@ -22,7 +22,7 @@ export function createStaffFailure(payload) {
   };
 }
 
-// --- INDEX ---
+// --- GET ---
 export function getStaffRequest(payload) {
   return {
     type: types.GET_STAFF_REQUEST,

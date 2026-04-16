@@ -20,7 +20,6 @@ function* createStaff({ payload }) {
     shouldLeave
       ? history.push('/')
       : shouldStay && history.push(`/staff/${response.data.id}/edit`);
-
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
@@ -34,15 +33,16 @@ function* getStaff({ payload }) {
   try {
     let response;
     const isPaginationRequest = typeof payload === 'object' && payload !== null;
-    const isSingleStaffRequest = typeof payload === 'string' || typeof payload === 'number';
+    const isSingleStaffRequest =
+      typeof payload === 'string' || typeof payload === 'number';
 
     if (isPaginationRequest) {
       const { page, limit } = payload;
       response = yield call(axios.get, '/staff', {
         params: {
           page,
-          limit
-        }
+          limit,
+        },
       });
     } else if (isSingleStaffRequest) {
       response = yield call(axios.get, `/staff/${payload}`);
@@ -51,7 +51,6 @@ function* getStaff({ payload }) {
     }
 
     yield put(actions.getStaffSuccess(response.data));
-
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
@@ -70,7 +69,6 @@ function* updateStaff({ payload }) {
     yield put(actions.updateStaffSuccess(response.data));
 
     history.push('/staff');
-
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
     errors.length > 0
@@ -100,7 +98,10 @@ function* deleteStaff({ payload }) {
 
 function* getCep({ payload }) {
   try {
-    const response = yield call(axiosLib.get, `https://brasilapi.com.br/api/cep/v1/${payload}`);
+    const response = yield call(
+      axiosLib.get,
+      `https://brasilapi.com.br/api/cep/v1/${payload}`,
+    );
     yield put(actions.getCepSuccess(response.data));
   } catch (e) {
     toast.error('CEP not found. Fill in the address manually.');
