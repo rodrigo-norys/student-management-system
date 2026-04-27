@@ -1,30 +1,54 @@
-import styled from "styled-components";
-import * as colors from "../../config/colors.js";
+import styled from 'styled-components';
+import * as colors from '../../config/colors.js';
 
-const borderColor = "#323245";
-const darkBg = "#1a1a24";
-const panelBg = "#222230";
-const textLight = "#f5f5f5";
-const textMuted = "#9aa0ac";
+const bgColor = '#0f172a';
+const surfaceColor = '#1e293b';
+const inputBg = '#0f172a';
+const borderColor = '#334155';
+const textPrimary = '#f8fafc';
+const textSecondary = '#94a3b8';
+const accentColor = colors.primaryColor || '#3b82f6';
+const dangerColor = '#ef4444';
 
 export const ActionsContainer = styled.div`
-  border-top: none;
+  align-items: center;
+  border-top: 1px solid ${borderColor};
   display: flex;
-  gap: 15px;
+  gap: 24px;
   justify-content: flex-end;
-  margin-top: 0;
-  padding-top: 0;
+  padding-top: 32px;
 
   button {
-    border-radius: 6px;
+    background: ${(props) =>
+      props.variant === 'primary' ? accentColor : 'transparent'};
+    border: ${(props) =>
+      props.variant === 'primary' ? 'none' : `1px solid ${borderColor}`};
+    border-radius: 8px;
+    box-shadow: ${(props) =>
+      props.variant === 'primary'
+        ? `0 4px 14px 0 rgba(59, 130, 246, 0.4)`
+        : 'none'};
+    color: ${(props) => (props.variant === 'primary' ? '#fff' : textPrimary)};
+    cursor: pointer;
     font-size: 14px;
-    font-weight: 600;
-    height: 38px;
-    padding: 0 25px;
+    font-weight: 700;
+    height: 46px;
+    padding: 0 32px;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
   }
 
   @media (max-width: 600px) {
-    flex-direction: column;
+    flex-direction: column-reverse;
     button {
       width: 100%;
     }
@@ -32,263 +56,359 @@ export const ActionsContainer = styled.div`
 `;
 
 export const AddAddressButton = styled.button`
+  align-items: center;
   background: transparent;
   border: 2px dashed ${borderColor};
-  color: ${textMuted};
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 12px;
+  color: ${textSecondary};
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  font-weight: 600;
   gap: 10px;
-  margin-top: 15px;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 16px;
+  transition: all 0.2s;
+  width: 100%;
 
   &:hover {
-    border-color: ${colors.primaryColor || '#007bff'};
-    color: ${colors.primaryColor || '#007bff'};
-    background: rgba(0, 123, 255, 0.05);
+    background: ${accentColor}05;
+    border-color: ${accentColor};
+    color: ${accentColor};
   }
 `;
 
 export const AddressCard = styled.div`
-  background: ${darkBg};
+  background: rgba(15, 23, 42, 0.4);
   border: 1px solid ${borderColor};
-  border-radius: 8px;
-  padding: 15px;
+  border-radius: 12px;
+  padding: 24px;
   position: relative;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 
   &:hover {
-    border-color: #4a4a5e;
+    border-color: ${accentColor}60;
+    transform: translateY(-2px);
   }
 `;
 
-export const AddressCardTitle = styled.h4`
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: ${textLight};
-  font-weight: 600;
-  font-size: 15px;
+export const AddressCardHeader = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  h4 {
+    color: ${textSecondary};
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+  }
 `;
 
 export const AddressesWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 15px;
-  width: 100%;
-`;
-
-export const AddressSectionWrapper = styled.div`
-  max-width: 500px;
-  margin: 0 auto;
-`;
-
-export const SectionTitle = styled.h3`
-  font-size: 1rem;
-  color: ${textLight};
-  margin: 20px 0 15px;
-  display: flex;
-  align-items: center;
-  border-left: 4px solid ${colors.primaryColor || '#007bff'};
-  padding-left: 10px;
-`;
-
-export const CenteredSectionTitle = styled(SectionTitle)`
-  justify-content: center;
-  border-left: none;
-  padding-left: 0;
-  margin-top: 25px;
-`;
-
-export const CenteredWrapper = styled.div`
-  background: ${panelBg};
-  border: 1px solid ${borderColor};
-  border-radius: 8px;
-  margin: 20px auto 0;
-  padding: 20px 30px;
-  width: 100%;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
 `;
 
 export const Container = styled.div`
-  max-width: 650px;
+  color: ${textPrimary};
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 0 20px;
   width: 100%;
-  margin: 0 auto;
-  padding: 15px;
-`;
-
-export const Divider = styled.hr`
-  margin: 20px 0;
-  border: 0;
-  border-top: 1px solid ${borderColor};
 `;
 
 export const Form = styled.form`
   display: flex;
   flex-direction: column;
+  gap: 24px;
+`;
 
-  label {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-    font-weight: 500;
-    color: ${textMuted};
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+export const FormGrid = styled.div`
+  align-items: start;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 320px 1fr;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
   }
-
-  input, select, textarea {
-    width: 100%;
-    margin-top: 4px;
-    padding: 0 8px;
-    border-radius: 4px;
-    border: 1px solid ${borderColor};
-    background: ${darkBg};
-    color: ${textLight};
-    font-size: 15px;
-    transition: all 0.2s;
-
-    &:focus {
-      border-color: ${colors.primaryColor || '#007bff'};
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-    }
-
-    &::placeholder {
-      color: #555;
-    }
-  }
-
-  input, select {
-    height: 32px;
-  }
-
-  textarea {
-    padding: 8px;
-    min-height: 60px;
-    resize: vertical;
-  }
-
-  &.has-error {
-    border-color: #e74c3c;
-    }
 `;
 
 export const HeaderContent = styled.div`
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid ${borderColor};
+  margin-bottom: 40px;
 
-  h1, h2 {
-    margin: 0;
-    padding: 0;
-    line-height: 1;
-    color: ${textLight};
-    font-size: 20px;
-    font-weight: 600;
+  h1 {
+    color: ${textPrimary};
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
   }
 `;
 
 export const InputGroup = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 15px;
-  margin-bottom: 5px;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: 16px;
+
+  label {
+    color: ${textSecondary};
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
+  }
+
+  input,
+  select {
+    background: ${inputBg} !important;
+    border: 1px solid ${borderColor};
+    border-radius: 8px;
+    color: ${textPrimary} !important;
+    font-family: inherit;
+    font-size: 14px;
+    height: 42px;
+    padding: 10px 14px;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: ${accentColor};
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+  }
+`;
+
+export const MainContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 `;
 
 export const MedicalNotesWrapper = styled.div`
-  max-width: 300px;
-  width: 100%;
-  margin: 10px auto 0;
+  margin-top: 10px;
 
   label {
-    align-items: center;
+    color: ${textSecondary};
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
   }
 
   textarea {
-    text-align: center;
-    min-height: 200px;
+    background-color: ${inputBg} !important;
+    border: 1px solid ${borderColor} !important;
+    border-radius: 8px;
+    color: ${textPrimary} !important;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 150px;
+    padding: 12px 14px;
+    resize: vertical;
+    transition: all 0.2s ease;
+    width: 100%;
+
+    &:focus {
+      border-color: ${accentColor};
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+  }
+`;
+
+export const PersistenceToggle = styled.div`
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  position: relative;
+  user-select: none;
+
+  input {
+    cursor: pointer;
+    height: 0;
+    opacity: 0;
+    position: absolute;
+    width: 0;
+  }
+
+  .checkmark {
+    background-color: ${inputBg};
+    border: 1px solid ${borderColor};
+    border-radius: 6px;
+    height: 20px;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+    width: 20px;
+
+    &::after {
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      content: "";
+      display: none;
+      height: 10px;
+      left: 6px;
+      position: absolute;
+      top: 2px;
+      transform: rotate(45deg);
+      width: 5px;
+    }
+  }
+
+  &:hover input ~ .checkmark {
+    border-color: ${accentColor};
+  }
+
+  input:checked ~ .checkmark {
+    background-color: ${accentColor};
+    border-color: ${accentColor};
+
+    &::after {
+      display: block;
+    }
+  }
+
+  input:focus-visible ~ .checkmark {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  label {
+    color: ${textSecondary};
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 600px) {
+    justify-content: center;
+    margin-bottom: 15px;
+    width: 100%;
   }
 `;
 
 export const ProfilePicture = styled.div`
   display: flex;
+  height: 160px;
   justify-content: center;
-  align-items: center;
-  padding: 0 0 20px;
+  margin: 0 auto 24px;
   position: relative;
+  width: 160px;
 
-  img, svg {
-    width: 100px !important;
-    height: 100px !important;
+  img,
+  svg {
+    background: ${bgColor};
+    border: 4px solid ${surfaceColor};
     border-radius: 50%;
+    box-shadow: 0 0 0 2px ${borderColor};
+    height: 100% !important;
     object-fit: cover;
-    border: 4px solid ${darkBg};
+    width: 100% !important;
+  }
+
+  svg {
+    color: ${borderColor};
+    padding: 10px;
   }
 
   a {
-    display: flex;
     align-items: center;
+    background: ${accentColor};
+    border: 4px solid ${surfaceColor};
+    border-radius: 50%;
+    bottom: 5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    display: flex;
+    height: 40px;
     justify-content: center;
     position: absolute;
-    bottom: 20px;
-    color: #fff;
-    background: ${colors.primaryColor || '#007bff'};
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    transition: all 0.2s;
-    border: 3px solid ${panelBg};
+    right: 5px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 40px;
 
-    &:hover { transform: scale(1.1); }
+    &:hover {
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+      transform: scale(1.1) rotate(-10deg);
+    }
   }
 `;
 
 export const RemoveAddressButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: #e74c3c;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+  color: ${dangerColor};
   cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: transform 0.2s, color 0.2s;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  transition: all 0.2s;
 
   &:hover {
-    color: #c0392b;
-    transform: scale(1.1);
+    background: ${dangerColor};
+    color: white;
   }
 `;
 
-export const Title = styled.h1`
-  text-align: left;
-  color: ${textLight};
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
+export const Section = styled.div`
+  background: ${surfaceColor};
+  border: 1px solid ${borderColor};
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+`;
+
+export const SectionTitle = styled.h3`
+  align-items: center;
+  color: ${accentColor};
+  display: flex;
+  font-size: 11px;
+  font-weight: 800;
+  gap: 12px;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+
+  &::after {
+    background: ${borderColor};
+    content: '';
+    flex: 1;
+    height: 1px;
+  }
+`;
+
+export const Sidebar = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 `;
 
 export const ViewProfileButton = styled.button`
-  background: none;
-  border: none;
-  color: #3498db;
-  display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  background: ${surfaceColor};
+  border: 1px solid ${borderColor};
+  border-radius: 10px;
+  color: ${textPrimary};
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
+  display: flex;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 10px;
+  padding: 10px 20px;
+  transition: all 0.2s;
 
-  svg { display: block; }
-  &:hover { text-decoration: underline; }
+  &:hover {
+    background: ${borderColor};
+    transform: translateY(-1px);
+  }
 `;
