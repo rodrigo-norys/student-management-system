@@ -68,12 +68,19 @@ export default class Guardian extends Model {
         },
         phone: {
           type: Sequelize.STRING(15),
-          defaultValue: '',
           allowNull: false,
+          defaultValue: '',
+          set(value) {
+            const rawValue = String(value).replace(/\D/g, '');
+            this.setDataValue('phone', rawValue);
+          },
           validate: {
+            isNumeric: {
+              msg: 'Phone number must contain only digits.',
+            },
             len: {
-              args: [8, 15],
-              msg: 'Phone number must be between 8 and 15 characters.',
+              args: [10, 15],
+              msg: 'Phone number must be between 10 and 15 digits.',
             },
           },
         },
