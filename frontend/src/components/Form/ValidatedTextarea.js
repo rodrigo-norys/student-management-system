@@ -1,4 +1,4 @@
-import { ErrorMessage } from '../../styles/GlobalStyles.js';
+import { ErrorMessage } from 'styles/GlobalStyles.js';
 
 const ValidatedTextarea = ({ label, error, ...rest }) => {
   return (

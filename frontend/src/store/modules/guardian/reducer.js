@@ -32,7 +32,7 @@ export default function guardianReducer(state = initialState, action) {
         addressSuggestion: null,
       };
 
-      // ================= SUCCESS ================= //
+    // ================= SUCCESS ================= //
     case types.GET_GUARDIANS_SUCCESS: {
       const payload = action.payload;
 
@@ -53,7 +53,9 @@ export default function guardianReducer(state = initialState, action) {
         };
       }
 
-      const guardianIndex = state.guardians.findIndex((guardian) => guardian.id === payload.id);
+      const guardianIndex = state.guardians.findIndex(
+        (guardian) => guardian.id === payload.id,
+      );
       let newGuardians = [...state.guardians];
 
       guardianIndex >= 0
@@ -70,12 +72,16 @@ export default function guardianReducer(state = initialState, action) {
     case types.CREATE_GUARDIAN_SUCCESS:
     case types.UPDATE_GUARDIAN_SUCCESS: {
       const { id } = action.payload;
-      const exists = state.guardians.some((guardian) => String(guardian.id) === String(id));
+      const exists = state.guardians.some(
+        (guardian) => String(guardian.id) === String(id),
+      );
 
       const newGuardians = exists
         ? state.guardians.map((guardian) =>
-          String(guardian.id) === String(id) ? { ...guardian, ...action.payload } : guardian
-        )
+            String(guardian.id) === String(id)
+              ? { ...guardian, ...action.payload }
+              : guardian,
+          )
         : [...state.guardians, action.payload];
 
       return {
@@ -110,7 +116,9 @@ export default function guardianReducer(state = initialState, action) {
       return {
         ...state,
         guardians: state.guardians.map((guardian) =>
-          String(guardian.id) === String(guardianId) ? { ...guardian, avatar_url } : guardian
+          String(guardian.id) === String(guardianId)
+            ? { ...guardian, avatar_url }
+            : guardian,
         ),
       };
     }

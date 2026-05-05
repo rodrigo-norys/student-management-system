@@ -1,4 +1,4 @@
-import { ErrorMessage } from '../../styles/GlobalStyles.js';
+import { ErrorMessage } from 'styles/GlobalStyles.js';
 
 const ValidatedInput = ({ label, error, ...rest }) => {
   return (

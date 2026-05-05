@@ -1,28 +1,23 @@
 import React, { useState } from 'react';
 import { useLocation, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-
-import * as actions from '../../store/modules/auth/actions';
-
+import * as actions from 'store/modules/auth/actions.js';
 import {
   FaHome, FaUserGraduate, FaUserTie, FaUsers,
-  FaCog, FaPowerOff, FaUserPlus, FaBars, FaTimes, FaUserFriends
+  FaCog, FaPowerOff, FaBars, FaTimes, FaUserFriends
 } from 'react-icons/fa';
-
 import {
   LayoutContainer, Sidebar, SidebarHeader, NavMenu, NavItem, MainArea, Topbar,
-  UserProfile, ContentWrapper, TopActions, ActionLink, SidebarFooter,
-  SidebarLogoutBtn, Overlay, MenuToggleButton
+  UserProfile, ContentWrapper, SidebarFooter, SidebarLogoutBtn, Overlay, MenuToggleButton
 } from './styled';
 
 export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const dispatch = useDispatch();
+  const { isLoggedIn = false, user = {} } = useSelector((state) => state.auth || {});
 
-  const { isLoggedIn = false, user = {} } = useSelector(state => state.auth || {});
-
-  const handleLogout = e => {
+  const handleLogout = (e) => {
     e.preventDefault();
     dispatch(actions.logoutRequest());
   };
@@ -40,39 +35,56 @@ export default function Layout() {
 
   return (
     <LayoutContainer>
-      {isLoggedIn}
       <Overlay $isOpen={isMenuOpen} onClick={toggleMenu} />
-
       <Sidebar $isOpen={isMenuOpen}>
         <SidebarHeader>
           <h2>SISBOSCHOOL</h2>
-          <MenuToggleButton onClick={toggleMenu} className="close-menu">
+          <MenuToggleButton onClick={toggleMenu}>
             <FaTimes size={20} />
           </MenuToggleButton>
         </SidebarHeader>
-
         <NavMenu>
           <NavItem to="/" className={isActive('/')} onClick={() => setIsMenuOpen(false)}>
             <FaHome /> Dashboard
           </NavItem>
-          {user?.access_level_id && user.access_level_id < 3 &&
-            <NavItem to="/register" className={isActive('/register')} onClick={() => setIsMenuOpen(false)}>
+          {user?.access_level_id && user.access_level_id < 3 && (
+            <NavItem
+              to="/register"
+              className={isActive('/register')}
+              onClick={() => setIsMenuOpen(false)}
+            >
               <FaUserFriends /> Users
-            </NavItem>}
-          <NavItem to="/students" className={isActive('/students')} onClick={() => setIsMenuOpen(false)}>
+            </NavItem>
+          )}
+          <NavItem
+            to="/students"
+            className={isActive('/students')}
+            onClick={() => setIsMenuOpen(false)}
+          >
             <FaUserGraduate /> Students
           </NavItem>
-          <NavItem to="/staff" className={isActive('/staff')} onClick={() => setIsMenuOpen(false)}>
+          <NavItem
+            to="/staff"
+            className={isActive('/staff')}
+            onClick={() => setIsMenuOpen(false)}
+          >
             <FaUserTie /> Staff
           </NavItem>
-          <NavItem to="/guardians" className={isActive('/guardians')} onClick={() => setIsMenuOpen(false)}>
+          <NavItem
+            to="/guardians"
+            className={isActive('/guardians')}
+            onClick={() => setIsMenuOpen(false)}
+          >
             <FaUsers /> Guardians
           </NavItem>
-          <NavItem to="/settings" className={isActive('/settings')} onClick={() => setIsMenuOpen(false)}>
+          <NavItem
+            to="/settings"
+            className={isActive('/settings')}
+            onClick={() => setIsMenuOpen(false)}
+          >
             <FaCog /> Settings
           </NavItem>
         </NavMenu>
-
         {isLoggedIn && (
           <SidebarFooter>
             <SidebarLogoutBtn onClick={handleLogout}>
@@ -81,31 +93,30 @@ export default function Layout() {
           </SidebarFooter>
         )}
       </Sidebar>
-
       <MainArea>
         <Topbar>
           <MenuToggleButton onClick={toggleMenu}>
             <FaBars size={22} />
           </MenuToggleButton>
-
           <div style={{ flex: 1 }} />
-
           <UserProfile>
             <div className="user-info">
               <strong>{userName}</strong>
               <span>
-                {user?.access_level_id === 1 ? 'Administrator' :
-                  user?.access_level_id === 2 ? 'Staff' : 'User'}
+                {user?.access_level_id === 1
+                  ? 'Administrator'
+                  : user?.access_level_id === 2
+                    ? 'Staff'
+                    : 'User'}
               </span>
             </div>
             <div className="avatar">{userInitial}</div>
           </UserProfile>
         </Topbar>
-
         <ContentWrapper>
           <Outlet />
         </ContentWrapper>
       </MainArea>
-    </LayoutContainer >
+    </LayoutContainer>
   );
 }

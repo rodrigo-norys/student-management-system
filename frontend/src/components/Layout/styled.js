@@ -1,30 +1,37 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import * as colors from '../../config/colors';
+import * as colors from 'config/colors';
+
+const appBg = '#020617';
+const sidebarBg = '#0f172a';
+const topbarBg = '#0f172a';
+const borderColor = '#1e293b';
+const textPrimary = '#f8fafc';
+const textSecondary = '#94a3b8';
+const accentColor = colors.primaryColor || '#3b82f6';
+const dangerColor = '#ef4444';
 
 export const LayoutContainer = styled.div`
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #1b1b28;
+  background-color: ${appBg};
   overflow: hidden;
   position: relative;
 `;
 
 export const Sidebar = styled.aside`
   width: 260px;
-  background-color: #1b1b28;
+  background-color: ${sidebarBg};
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease-in-out;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid ${borderColor};
   z-index: 100;
 
   @media (max-width: 768px) {
     position: fixed;
-    left: ${(props) => props.$isOpen
-    ? '0'
-    : '-260px'};
+    left: ${(props) => (props.$isOpen ? '0' : '-260px')};
     height: 100vh;
   }
 `;
@@ -35,15 +42,16 @@ export const SidebarHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background-color: #1b1b28;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: ${sidebarBg};
+  border-bottom: 1px solid ${borderColor};
 
   h2 {
-    color: #ffffff;
-    font-size: 20px;
+    color: ${textPrimary};
+    font-size: 18px;
     margin: 0;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
   }
 `;
 
@@ -52,7 +60,7 @@ export const NavMenu = styled.nav`
   padding: 20px 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   overflow-y: auto;
 `;
 
@@ -60,22 +68,37 @@ export const NavItem = styled(Link)`
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 12px 25px;
-  color: #a2a3b7;
+  padding: 12px 20px;
+  color: ${textSecondary};
   text-decoration: none;
-  font-size: 15px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
   border-left: 4px solid transparent;
 
   svg {
     font-size: 18px;
+    color: ${textSecondary};
+    transition: color 0.2s;
   }
 
-  &:hover, &.active {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #ffffff;
-    border-left: 4px solid ${colors.primaryColor};
+  &:hover {
+    background-color: rgba(30, 41, 59, 0.5);
+    color: ${textPrimary};
+
+    svg {
+      color: ${accentColor};
+    }
+  }
+
+  &.active {
+    background-color: #1e293b;
+    color: ${accentColor};
+    border-left: 4px solid ${accentColor};
+
+    svg {
+      color: ${accentColor};
+    }
   }
 `;
 
@@ -89,12 +112,12 @@ export const MainArea = styled.main`
 
 export const Topbar = styled.header`
   height: 70px;
-  background-color: #1b1b28;
+  background-color: ${topbarBg};
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid ${borderColor};
   z-index: 10;
 
   @media (max-width: 768px) {
@@ -106,7 +129,7 @@ export const MenuToggleButton = styled.button`
   display: none;
   background: transparent;
   border: none;
-  color: #ffffff;
+  color: ${textPrimary};
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -128,13 +151,17 @@ export const UserProfile = styled.div`
     align-items: flex-end;
 
     strong {
-      color: #ffffff;
+      color: ${textPrimary};
       font-size: 14px;
+      font-weight: 700;
     }
 
     span {
-      color: #a2a3b7;
-      font-size: 12px;
+      color: ${textSecondary};
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     @media (max-width: 480px) {
@@ -143,16 +170,17 @@ export const UserProfile = styled.div`
   }
 
   .avatar {
-    width: 35px;
-    height: 35px;
-    border-radius: 8px;
-    background-color: ${colors.primaryColor};
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background-color: ${accentColor};
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-weight: bold;
-    font-size: 14px;
+    font-weight: 800;
+    font-size: 15px;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
   }
 `;
 
@@ -160,74 +188,16 @@ export const ContentWrapper = styled.div`
   flex: 1;
   padding: 30px;
   overflow-y: auto;
+  background-color: ${appBg};
 
   @media (max-width: 768px) {
     padding: 20px 15px;
   }
 `;
 
-export const DashboardCard = styled.div`
-  background-color: ${(props) => props.theme.container || '#ffffff'};
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.03);
-  border: 1px solid ${(props) => props.theme.border || 'transparent'};
-
-  h3 {
-    color: ${(props) => props.theme.text || '#3f4254'};
-    margin-bottom: 10px;
-    font-size: 18px;
-  }
-
-  p {
-    color: ${(props) => props.theme.secondaryText || '#7e8299'};
-    line-height: 1.6;
-    font-size: 14px;
-  }
-
-  @media (max-width: 768px) {
-    padding: 20px;
-
-    h3 {
-      font-size: 16px;
-    }
-  }
-`;
-
-export const TopActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-right: 20px;
-  padding-right: 20px;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-
-  @media (max-width: 1024px) {
-    display: none;
-  }
-`;
-
-export const ActionLink = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 12px;
-  transition: all 0.3s;
-
-  &:hover {
-    background-color: ${colors.primaryColor};
-  }
-`;
-
 export const SidebarFooter = styled.div`
   padding: 15px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid ${borderColor};
   margin-top: auto;
 `;
 
@@ -239,11 +209,11 @@ export const SidebarLogoutBtn = styled.button`
   padding: 12px 25px;
   background: transparent;
   border: none;
-  color: #f64e60;
-  font-size: 15px;
-  font-weight: 500;
+  color: ${dangerColor};
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   border-left: 4px solid transparent;
 
   svg {
@@ -251,8 +221,8 @@ export const SidebarLogoutBtn = styled.button`
   }
 
   &:hover {
-    background-color: rgba(246, 78, 96, 0.05);
-    border-left: 4px solid #f64e60;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid ${dangerColor};
   }
 `;
 
@@ -260,15 +230,14 @@ export const Overlay = styled.div`
   display: none;
 
   @media (max-width: 768px) {
-    display: ${(props) => props.$isOpen
-    ? 'block'
-    : 'none'};
+    display: ${(props) => (props.$isOpen ? 'block' : 'none')};
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(4px);
     z-index: 90;
   }
 `;
