@@ -10,6 +10,8 @@
 /node_modules
 /.pnp
 .pnp.js
+/scripts/
+frontend/src/assets/
 
 # testing
 /coverage
