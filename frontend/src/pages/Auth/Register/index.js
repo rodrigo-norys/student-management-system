@@ -1,165 +1,186 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+
 import { isEmail } from 'validator';
 
 import Loading from 'components/Loading';
-
-import * as actions from 'store/modules/auth/actions';
-import * as studentActions from 'store/modules/student/actions';
-
-import { Container, Form, Title } from './styled';
+import * as actions from 'store/modules/auth/actions.js';
+import axios from 'services/axios';
+import {
+  Container, Form, Title, SearchArea, SearchResultList, SearchItem,
+  PersonInfo, Badge, SelectedPersonCard, StatusIndicator, Section
+} from './styled';
 
 export default function UserManager() {
   const dispatch = useDispatch();
+  const { isLoading } = useSelector((state) => state.auth);
 
-  const { students = [] } = useSelector(state => state.student || {});
-  const { isLoading = false } = useSelector(state => state.auth || {});
-
-  const [selectedStudentId, setSelectedStudentId] = useState('');
-  const [targetUserId, setTargetUserId] = useState(null);
-
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedPerson, setSelectedPerson] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [accessLevel, setAccessLevel] = useState('5');
-
-  const [emailFocus, setEmailFocus] = useState(false);
-  const [passwordFocus, setPasswordFocus] = useState(false);
-
-  // Busca inicial dos estudantes
-  useEffect(() => {
-    dispatch(studentActions.getStudentsRequest());
-  }, [dispatch]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    if (!selectedStudentId) {
-      setTargetUserId(null);
-      setEmail('');
-      setAccessLevel('5');
-      setPassword('');
-      return;
-    }
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchTerm.length < 2) {
+        setSearchResults([]);
+        return;
+      }
 
-    const student = students.find(stud => String(stud.id) === String(selectedStudentId));
+      setIsSearching(true);
+      try {
+        const response = await axios.get('/users/search-targets', {
+          params: { searchTerm },
+        });
+        setSearchResults(response.data);
+      } catch (error) {
+        toast.error('Error fetching search results.');
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
 
-    if (student?.user) {
-      setTargetUserId(student.user.id);
-      setEmail(student.email);
-      setAccessLevel(String(student.user.access_level_id));
-    } else {
-      setTargetUserId(null);
-      setEmail('');
-      setAccessLevel('5');
-    }
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
+  const handleSelectPerson = (person) => {
+    setSelectedPerson(person);
+    setSearchTerm('');
+    setSearchResults([]);
+    setEmail(person.email || '');
+    setAccessLevel(person.user ? String(person.user.access_level_id) : '5');
     setPassword('');
-  }, [selectedStudentId, students]);
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleReset = () => {
+    setSelectedPerson(null);
+    setSearchTerm('');
+    setSearchResults([]);
+    setEmail('');
+    setPassword('');
+    setAccessLevel('5');
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
     const validations = [
-      { condition: !selectedStudentId, message: 'Please select a person first!' },
-      { condition: !isEmail(email), message: 'Invalid email' },
-      { condition: !targetUserId && (password.length < 6 || password.length > 50), message: 'Password must be between 6 and 50 characters' },
-      { condition: !accessLevel, message: 'Please select an access level' },
+      { condition: !selectedPerson, message: 'Please select a person first.' },
+      { condition: !isEmail(email), message: 'Invalid email address.' },
+      { condition: !selectedPerson?.user && password.length < 8, message: 'New users require a password (min 8 chars).' },
+      { condition: !accessLevel, message: 'Access level is required.' },
     ];
 
-    const error = validations.find(rule => rule.condition);
-
-    if (error) {
-      toast.error(error.message);
+    const errorValidation = validations.find((validation) => validation.condition);
+    if (errorValidation) {
+      toast.error(errorValidation.message);
       return;
     }
 
-    dispatch(actions.registerRequest({
-      id: targetUserId,
-      email,
-      password,
-      student_id: selectedStudentId,
-      access_level_id: Number(accessLevel),
-    }));
+    dispatch(
+      actions.registerRequest({
+        id: selectedPerson.user?.id || null,
+        email,
+        password,
+        [`${selectedPerson.type}_id`]: selectedPerson.id,
+        access_level_id: Number(accessLevel),
+      })
+    );
   };
 
   return (
     <Container>
-      <Loading isLoading={isLoading} />
+      <Loading isLoading={isLoading || isSearching} />
+      <Section>
+        <Title>Access Management</Title>
 
-      <Title>Access Management</Title>
+        {!selectedPerson ? (
+          <SearchArea>
+            <input
+              type="text"
+              placeholder="Search by name, email or CPF..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+            {searchResults.length > 0 && (
+              <SearchResultList>
+                {searchResults.map((person) => (
+                  <SearchItem key={`${person.type}-${person.id}`} onClick={() => handleSelectPerson(person)}>
+                    <PersonInfo>
+                      <strong>{person.displayName}</strong>
+                      <span>{person.cpf}</span>
+                    </PersonInfo>
+                    <Badge $type={person.type}>{person.type}</Badge>
+                  </SearchItem>
+                ))}
+              </SearchResultList>
+            )}
+          </SearchArea>
+        ) : (
+          <SelectedPersonCard>
+            <PersonInfo>
+              <strong>{selectedPerson.displayName}</strong>
+              <span>{selectedPerson.type.toUpperCase()} | CPF: {selectedPerson.cpf}</span>
+            </PersonInfo>
+            <button type="button" onClick={handleReset}>Change</button>
+          </SelectedPersonCard>
+        )}
 
-      <Form onSubmit={handleSubmit}>
-        <label htmlFor="personSelect">
-          Select Student
-          <select
-            id="personSelect"
-            value={selectedStudentId}
-            onChange={e => setSelectedStudentId(e.target.value)}
-          >
-            <option value="">-- Select a student --</option>
-            {students.map(student => (
-              <option key={student.id} value={student.id}>
-                {student.name} {student.last_name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {selectedStudentId && (
-          <>
-            <div style={{ margin: '15px 0', color: '#666', fontSize: '14px' }}>
-              <strong>Status:</strong> {targetUserId ? '🟢 Edit Mode' : '🔵 Creation Mode'}
-            </div>
+        {selectedPerson && (
+          <Form onSubmit={handleSubmit}>
+            <StatusIndicator $isEdit={!!selectedPerson.user}>
+              {selectedPerson.user ? 'Editing existing account' : 'Creating new access'}
+            </StatusIndicator>
 
             <label htmlFor="accessLevel">
-              Access Level
+              System Privileges
               <select
                 id="accessLevel"
                 value={accessLevel}
-                onChange={e => setAccessLevel(e.target.value)}
+                onChange={(event) => setAccessLevel(event.target.value)}
               >
-                <option value="1">1 - Full Access (System Owner)</option>
-                <option value="2">2 - Technical Admin (IT Support)</option>
-                <option value="3">3 - Finance Admin (Billing/Payments)</option>
-                <option value="4">4 - Academic Admin (Pedagogical)</option>
-                <option value="5">5 - Basic Access (Read-only)</option>
+                <option value="1">Level 1 - Owner / IT Full</option>
+                <option value="2">Level 2 - Technical Admin</option>
+                <option value="3">Level 3 - Finance / Billing</option>
+                <option value="4">Level 4 - Academic / Pedagogical</option>
+                <option value="5">Level 5 - Basic / Viewer</option>
               </select>
             </label>
 
             <label htmlFor="email">
-              Email
+              Access Email
               <input
                 id="email"
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="Access email"
-                readOnly={!emailFocus}
-                onFocus={() => setEmailFocus(true)}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="username"
               />
             </label>
 
             <label htmlFor="password">
-              Password
+              {selectedPerson.user ? 'Update Password (Optional)' : 'Security Password'}
               <input
                 id="password"
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder={targetUserId ? "Keep empty to remain the same" : "Create password"}
-                readOnly={!passwordFocus}
-                onFocus={() => setPasswordFocus(true)}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={selectedPerson.user ? 'Leave blank to keep current' : 'Min 8 characters'}
+                autoComplete="new-password"
               />
             </label>
 
             <button type="submit" disabled={isLoading}>
-              {isLoading
-                ? 'Processing...'
-                : (targetUserId ? 'Update Access' : 'Create Access')
-              }
+              {selectedPerson.user ? 'Save Changes' : 'Confirm Registration'}
             </button>
-          </>
+          </Form>
         )}
-      </Form>
+      </Section>
     </Container>
   );
 }

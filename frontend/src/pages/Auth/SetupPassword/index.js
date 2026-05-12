@@ -44,7 +44,7 @@ export default function SetupPassword() {
       await axios.put('/users/setup-password', { password });
 
       toast.success('Password updated successfully');
-      navigate('/');
+      navigate('/dashboard');
     } catch (error) {
       const errors = get(error, 'response.data.errors', []);
       const status = get(error, 'response.status', 0);

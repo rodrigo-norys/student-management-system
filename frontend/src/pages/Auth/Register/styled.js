@@ -1,143 +1,99 @@
-import styled from "styled-components";
-import * as colors from "config/colors.js";
+import styled from 'styled-components';
+import * as colors from 'config/colors';
+
+const bgColor = '#0f172a';
+const surfaceColor = '#1e293b';
+const inputBg = '#0f172a';
+const borderColor = '#334155';
+const textPrimary = '#f8fafc';
+const textSecondary = '#94a3b8';
+const accentColor = colors.primaryColor || '#3b82f6';
 
 export const Container = styled.div`
-  width: 100%;
-  max-width: 550px;
+  color: ${textPrimary};
   margin: 40px auto;
-  background: #242433;
-  padding: 40px;
+  max-width: 650px;
+  padding: 0 20px;
+  width: 100%;
+`;
+
+export const Section = styled.div`
+  background: ${surfaceColor};
+  border: 1px solid ${borderColor};
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 32px;
 `;
 
 export const Title = styled.h1`
+  color: ${textPrimary};
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 32px;
   text-align: center;
-  color: #fff;
-  font-size: 28px;
-  margin-bottom: 30px;
-  font-weight: bold;
 `;
 
-export const Form = styled.form`
-  display: flex;
-  flex-direction: column;
+export const SearchArea = styled.div`
+  margin-bottom: 24px;
+  position: relative;
 
-  label {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-    font-weight: 600;
-    color: #ccc;
-    font-size: 14px;
-  }
-
-  input, select {
-    width: 100%;
-    margin-top: 8px;
-    height: 48px;
-    padding: 0 15px;
+  input {
+    background: ${inputBg};
+    border: 1px solid ${borderColor};
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
-    font-size: 15px;
-    transition: all 0.2s;
+    color: ${textPrimary};
+    font-size: 14px;
+    height: 48px;
+    padding: 0 16px;
+    transition: all 0.2s ease;
+    width: 100%;
 
     &:focus {
-      border-color: ${colors.primaryColor};
-      background: rgba(0, 0, 0, 0.2);
+      border-color: ${accentColor};
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
       outline: none;
     }
 
     &::placeholder {
-      color: #666;
-    }
-
-    &:read-only {
-      color: #888;
-      cursor: not-allowed;
+      color: ${textSecondary};
     }
   }
-
-  option {
-    background: #242433;
-    color: #fff;
-  }
-
-  button[type="submit"] {
-    margin-top: 10px;
-    height: 50px;
-    width: 100%;
-    font-size: 16px;
-    font-weight: bold;
-    background: ${colors.primaryColor};
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      filter: brightness(1.1);
-      transform: translateY(-2px);
-    }
-
-    &:disabled {
-      background: #555;
-      cursor: not-allowed;
-      transform: none;
-    }
-  }
-`;
-
-export const SearchArea = styled.div`
-  position: relative;
-  margin-bottom: 25px;
 `;
 
 export const SearchResultList = styled.ul`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: #1b1b28;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: ${surfaceColor};
+  border: 1px solid ${borderColor};
   border-radius: 8px;
-  margin-top: 5px;
-  max-height: 250px;
-  overflow-y: auto;
-  z-index: 10;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
   list-style: none;
-  padding: 0;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  margin-top: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  position: absolute;
+  width: 100%;
+  z-index: 50;
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    background: ${borderColor};
+    border-radius: 3px;
   }
 `;
 
 export const SearchItem = styled.li`
-  padding: 15px;
-  color: #ccc;
+  align-items: center;
+  border-bottom: 1px solid ${borderColor};
   cursor: pointer;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 12px 16px;
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.03);
   }
 
   &:last-child {
@@ -151,74 +107,136 @@ export const PersonInfo = styled.div`
   gap: 4px;
 
   strong {
-    font-size: 15px;
-    color: #fff;
+    color: ${textPrimary};
+    font-size: 14px;
   }
 
   span {
+    color: ${textSecondary};
     font-size: 12px;
-    color: #888;
   }
 `;
 
 export const Badge = styled.span`
+  border-radius: 6px;
   font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: ${props => props.$type === 'staff'
-    ? '#8e44ad'
-    : props.$type === 'guardian'
-      ? '#2980b9'
-      : '#27ae60'};
-  color: #fff;
+
+  ${(props) => {
+    switch (props.$type) {
+      case 'staff':
+        return `background: rgba(139, 92, 246, 0.1); color: #a78bfa;`;
+      case 'guardian':
+        return `background: rgba(14, 165, 233, 0.1); color: #38bdf8;`;
+      default:
+        return `background: rgba(34, 197, 94, 0.1); color: #4ade80;`;
+    }
+  }}
 `;
 
 export const SelectedPersonCard = styled.div`
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 25px;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid ${borderColor};
+  border-radius: 12px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
 
   button {
     background: transparent;
-    color: #e74c3c;
-    border: none;
+    border: 1px solid ${borderColor};
+    border-radius: 8px;
+    color: ${textSecondary};
     cursor: pointer;
-    font-size: 13px;
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
     transition: all 0.2s;
 
     &:hover {
-      background: rgba(231, 76, 60, 0.1);
+      background: ${borderColor};
+      color: ${textPrimary};
     }
   }
 `;
 
 export const StatusIndicator = styled.div`
-  margin-bottom: 25px;
-  padding: 12px 15px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
   align-items: center;
-  gap: 10px;
-  background: ${props => props.$isEdit
-    ? 'rgba(52, 152, 219, 0.1)'
-    : 'rgba(46, 204, 113, 0.1)'};
-  color: ${props => props.$isEdit
-    ? '#3498db'
-    : '#2ecc71'};
-  border: 1px solid ${props => props.$isEdit
-    ? 'rgba(52, 152, 219, 0.2)'
-    : 'rgba(46, 204, 113, 0.2)'};
+  border-radius: 8px;
+  display: flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+  padding: 10px;
+  text-transform: uppercase;
+
+  background: ${(props) => (props.$isEdit ? 'rgba(59, 130, 246, 0.1)' : 'rgba(34, 197, 94, 0.1)')};
+  border: 1px solid ${(props) => (props.$isEdit ? 'rgba(59, 130, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)')};
+  color: ${(props) => (props.$isEdit ? '#60a5fa' : '#4ade80')};
+`;
+
+export const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  label {
+    color: ${textSecondary};
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
+  }
+
+  input,
+  select {
+    background: ${inputBg} !important;
+    border: 1px solid ${borderColor};
+    border-radius: 8px;
+    color: ${textPrimary} !important;
+    font-size: 14px;
+    height: 44px;
+    padding: 0 14px;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: ${accentColor};
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+  }
+
+  button[type='submit'] {
+    background: ${accentColor};
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4);
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    height: 48px;
+    margin-top: 12px;
+    transition: all 0.2s;
+
+    &:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      background: #475569;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
 `;

@@ -34,7 +34,7 @@ export default function Photos() {
   const currentAvatarUrl = useMemo(() => {
     if (!profileData?.avatar_url) return '';
     const endpoint = `${process.env.REACT_APP_API_URL}/images/${userType}/`;
-    
+
     return `${endpoint}${profileData.avatar_url}`;
   }, [profileData, userType]);
 
@@ -45,7 +45,7 @@ export default function Photos() {
 
     if (!validContexts.includes(userType)) {
       toast.error('Invalid URL context');
-      navigate('/');
+      navigate('/dashboard');
       return;
     }
 
