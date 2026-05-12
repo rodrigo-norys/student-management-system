@@ -1,7 +1,7 @@
 import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
-import axios from '../../../services/axios';
-import history from '../../../services/history';
+import axios from 'services/axios';
+import history from 'services/history';
 
 import * as actions from './actions';
 import * as types from './types';
@@ -16,7 +16,7 @@ function* login({ payload }) {
     if (response.data.user.is_temporary) {
       yield call(history.push, '/setup-password');
     } else {
-      yield call(history.push, '/');
+      yield call(history.push, '/dashboard');
     }
 
   } catch (e) {
@@ -56,7 +56,7 @@ function* register({ payload }) {
 
       toast.success('Account created');
       yield put(actions.registerCreatedSuccess({ email, password, access_level_id }));
-      yield call(history.push, '/');
+      yield call(history.push, '/dashboard');
     }
   } catch (e) {
     const errors = e.response?.data?.errors || [];

@@ -2,8 +2,8 @@ import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
 import { get } from 'lodash';
 import axiosLib from 'axios';
-import history from '../../../services/history';
-import axios from '../../../services/axios';
+import history from 'services/history';
+import axios from 'services/axios';
 import * as actions from './actions';
 import * as types from './types';
 
@@ -16,9 +16,8 @@ function* createStudent({ payload }) {
     yield put(actions.createStudentSuccess(response.data));
 
     if (!shouldStay) {
-      history.push('/');
+      history.push('/students');
     }
-    
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
 
@@ -40,7 +39,7 @@ function* updateStudent({ payload }) {
     toast.success('Student record updated');
     yield put(actions.updateStudentSuccess({ id, ...studentData }));
 
-    history.push('/');
+    history.push('/students');
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
 
@@ -58,7 +57,8 @@ function* getStudents({ payload }) {
   try {
     let response;
     const isPaginationRequest = typeof payload === 'object' && payload !== null;
-    const isSingleStudentRequest = typeof payload === 'string' || typeof payload === 'number';
+    const isSingleStudentRequest =
+      typeof payload === 'string' || typeof payload === 'number';
 
     if (isPaginationRequest) {
       const { page, limit } = payload;
@@ -110,7 +110,7 @@ function* getCep({ payload }) {
   try {
     const response = yield call(
       axiosLib.get,
-      `https://brasilapi.com.br/api/cep/v1/${payload}`
+      `https://brasilapi.com.br/api/cep/v1/${payload}`,
     );
     yield put(actions.getCepSuccess(response.data));
   } catch (e) {

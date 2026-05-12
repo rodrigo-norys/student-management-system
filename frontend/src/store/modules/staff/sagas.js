@@ -3,8 +3,8 @@ import { toast } from 'react-toastify';
 import { get } from 'lodash';
 import axiosLib from 'axios';
 
-import history from '../../../services/history';
-import axios from '../../../services/axios';
+import history from 'services/history';
+import axios from 'services/axios';
 
 import * as actions from './actions';
 import * as types from './types';
@@ -18,7 +18,7 @@ function* createStaff({ payload }) {
     yield put(actions.createStaffSuccess(response.data));
 
     shouldLeave
-      ? history.push('/')
+      ? history.push('/dashboard')
       : shouldStay && history.push(`/staff/${response.data.id}/edit`);
   } catch (e) {
     const errors = get(e, 'response.data.errors', []);
