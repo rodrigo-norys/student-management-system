@@ -38,7 +38,7 @@ export default function MyRoute({ children, isClosed = false }) {
   }
 
   if (isLoggedIn && isRegisterPath && !isPowerUser) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;

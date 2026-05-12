@@ -44,7 +44,7 @@ export default function Layout() {
           </MenuToggleButton>
         </SidebarHeader>
         <NavMenu>
-          <NavItem to="/" className={isActive('/')} onClick={() => setIsMenuOpen(false)}>
+          <NavItem to="/dashboard" className={isActive('/dashboard')} onClick={() => setIsMenuOpen(false)}>
             <FaHome /> Dashboard
           </NavItem>
           {user?.access_level_id && user.access_level_id < 3 && (
