@@ -20,7 +20,7 @@ export const LoginWrapper = styled.div`
   align-items: center;
   height: 100vh;
   width: 100vw;
-  background-color: #1b1b28;
+  background-color: #030617;
 `;
 
 export const Title = styled.h1`

@@ -42,7 +42,7 @@ export default createGlobalStyle`
 `;
 
 export const Container = styled.section`
-  background: #222230;
+  background: #0f172a;
   border: 1px solid #323245;
   border-radius: 8px;
   margin: 30px auto;
