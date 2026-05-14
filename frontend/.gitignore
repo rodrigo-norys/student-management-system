@@ -11,7 +11,7 @@
 /.pnp
 .pnp.js
 /scripts/
-frontend/src/assets/
+src/assets/
 
 # testing
 /coverage
