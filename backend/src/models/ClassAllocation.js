@@ -43,5 +43,10 @@ export default class ClassAllocation extends Model {
       foreignKey: 'subject_id',
       as: 'subject',
     });
+
+    this.hasMany(models.Attendance, {
+      foreignKey: 'class_allocation_id',
+      as: 'attendances',
+    });
   }
 }
