@@ -14,72 +14,55 @@ function isValidId(id) {
 }
 
 class UserController {
+  // Método de busca para as entidades que não possuem um usuário.
   async searchTargets(req, res) {
     try {
-      const { searchTerm } = req.query;
+      const { searchTerm, page = 1, limit = 15 } = req.query;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
 
-      if (!searchTerm || searchTerm.length < 2) {
-        return res.json([]);
+      const studentWhere = { user_id: null };
+      const guardianWhere = { user_id: null };
+      const staffWhere = { user_id: null };
+
+      if (searchTerm) {
+        const searchPattern = `%${searchTerm}%`;
+
+        studentWhere[Operators.or] = [
+          { name: { [Operators.like]: searchPattern } },
+          { last_name: { [Operators.like]: searchPattern } },
+          { cpf: { [Operators.like]: searchPattern } },
+          { email: { [Operators.like]: searchPattern } },
+          { registration_number: { [Operators.like]: searchPattern } },
+        ];
+
+        guardianWhere[Operators.or] = [
+          { name: { [Operators.like]: searchPattern } },
+          { last_name: { [Operators.like]: searchPattern } },
+          { cpf: { [Operators.like]: searchPattern } },
+          { email: { [Operators.like]: searchPattern } },
+        ];
+
+        staffWhere[Operators.or] = [
+          { full_name: { [Operators.like]: searchPattern } },
+          { cpf: { [Operators.like]: searchPattern } },
+          { email: { [Operators.like]: searchPattern } },
+        ];
       }
-
-      const searchPattern = `%${searchTerm}%`;
 
       const [students, guardians, staffMembers] = await Promise.all([
         Student.findAll({
-          where: {
-            [Operators.or]: [
-              { name: { [Operators.like]: searchPattern } },
-              { last_name: { [Operators.like]: searchPattern } },
-              { cpf: { [Operators.like]: searchPattern } },
-              { email: { [Operators.like]: searchPattern } },
-            ],
-          },
+          where: studentWhere,
           attributes: ['id', 'name', 'last_name', 'email', 'cpf'],
-          include: [
-            {
-              model: User,
-              as: 'user',
-              attributes: ['id', 'access_level_id'],
-            },
-          ],
-          limit: 10,
         }),
         Guardian.findAll({
-          where: {
-            [Operators.or]: [
-              { name: { [Operators.like]: searchPattern } },
-              { last_name: { [Operators.like]: searchPattern } },
-              { cpf: { [Operators.like]: searchPattern } },
-              { email: { [Operators.like]: searchPattern } },
-            ],
-          },
+          where: guardianWhere,
           attributes: ['id', 'name', 'last_name', 'email', 'cpf'],
-          include: [
-            {
-              model: User,
-              as: 'user',
-              attributes: ['id', 'access_level_id'],
-            },
-          ],
-          limit: 10,
         }),
         Staff.findAll({
-          where: {
-            [Operators.or]: [
-              { full_name: { [Operators.like]: searchPattern } },
-              { cpf: { [Operators.like]: searchPattern } },
-              { email: { [Operators.like]: searchPattern } },
-            ],
-          },
+          where: staffWhere,
           attributes: ['id', 'full_name', 'email', 'cpf'],
-          include: [
-            {
-              model: User,
-              as: 'user',
-              attributes: ['id', 'access_level_id'],
-            },
-          ],
-          limit: 10,
         }),
       ]);
 
@@ -101,7 +84,15 @@ class UserController {
         })),
       ];
 
-      return res.json(results);
+      const totalCount = results.length;
+      const totalPages = Math.ceil(totalCount / limitNum);
+      const paginatedResults = results.slice(offset, offset + limitNum);
+
+      return res.json({
+        rows: paginatedResults,
+        totalPages,
+        totalCount,
+      });
     } catch (e) {
       return this.handleErrors(e, res);
     }
@@ -122,58 +113,99 @@ class UserController {
         staff_id,
       } = req.body;
 
+      const targetLevel = await AccessLevel.findByPk(access_level_id, {
+        transaction,
+      });
+      if (!targetLevel) {
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Access level not found.'] });
+      }
+
+      // Um usuário só pode criar outro usuário com peso menor que ele.
+      if (req.userWeight < targetLevel.hierarchy_weight) {
+        await transaction.rollback();
+        return res.status(403).json({
+          errors: [
+            'Forbidden. You do not have the authority to create a user with this access level.',
+          ],
+        });
+      }
+
+      let TargetModel;
+      let personId;
+
+      if (staff_id) {
+        TargetModel = Staff;
+        personId = staff_id;
+      } else if (student_id) {
+        TargetModel = Student;
+        personId = student_id;
+      } else if (guardian_id) {
+        TargetModel = Guardian;
+        personId = guardian_id;
+      }
+
+      if (!TargetModel) {
+        await transaction.rollback();
+        return res.status(400).json({
+          errors: [
+            'A user must be linked to a person (Staff, Student, or Guardian).',
+          ],
+        });
+      }
+
+      const person = await TargetModel.findByPk(personId, { transaction });
+      if (!person) {
+        await transaction.rollback();
+        return res.status(404).json({
+          errors: ['The specified person does not exist in the system.'],
+        });
+      }
+
+      // Prevenção de duplicação de conta para um mesmo usuário.
+      if (person.user_id) {
+        await transaction.rollback();
+        return res
+          .status(400)
+          .json({ errors: ['This person already has a linked user account.'] });
+      }
+
+      const emailExists = await User.findOne({ where: { email }, transaction });
+      if (emailExists) {
+        await transaction.rollback();
+        return res
+          .status(400)
+          .json({ errors: ['This email is already registered.'] });
+      }
+
       const newUser = await User.create(
         {
-          access_level_id,
           email,
-          avatar_url,
           password,
-          is_active,
-          is_temporary,
+          access_level_id,
+          avatar_url,
+          is_active: is_active ?? 1,
+          is_temporary: is_temporary ?? 0,
         },
         { transaction },
       );
 
-      if (student_id) {
-        const student = await Student.findByPk(student_id, { transaction });
-        if (!student) {
-          await transaction.rollback();
-          return res.status(404).json({ errors: ['Student not found.'] });
-        }
-        await student.update({ user_id: newUser.id }, { transaction });
-      }
+      await person.update({ user_id: newUser.id }, { transaction });
 
-      if (guardian_id) {
-        const guardian = await Guardian.findByPk(guardian_id, { transaction });
-        if (!guardian) {
-          await transaction.rollback();
-          return res.status(404).json({ errors: ['Guardian not found.'] });
-        }
-        await guardian.update({ user_id: newUser.id }, { transaction });
-      }
-
-      if (staff_id) {
-        const staff = await Staff.findByPk(staff_id, { transaction });
-        if (!staff) {
-          await transaction.rollback();
-          return res.status(404).json({ errors: ['Staff profile not found.'] });
-        }
-        await staff.update({ user_id: newUser.id }, { transaction });
-      }
-
-      const fullUser = await User.findByPk(newUser.id, {
-        attributes: [
-          'id',
-          'email',
-          'access_level_id',
-          'is_active',
-          'is_temporary',
+      const userCreated = await User.findByPk(newUser.id, {
+        attributes: ['id', 'email', 'avatar_url', 'is_active', 'is_temporary'],
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+            attributes: ['name', 'hierarchy_weight'],
+          },
         ],
         transaction,
       });
 
       await transaction.commit();
-      return res.status(201).json(fullUser);
+      return res.status(201).json(userCreated);
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
@@ -182,17 +214,36 @@ class UserController {
 
   async index(req, res) {
     try {
-      const allUsers = await User.findAll({
-        attributes: ['id', 'email', 'avatar_url', 'is_active', 'is_temporary'],
-        order: [['email', 'ASC']],
+      const { searchTerm, page = 1, limit = 15 } = req.query;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
+
+      const where = {};
+
+      if (searchTerm) {
+        where[Operators.or] = [
+          { email: { [Operators.like]: `%${searchTerm}%` } },
+        ];
+      }
+
+      const { count, rows } = await User.findAndCountAll({
+        where,
+        attributes: [
+          'id',
+          'email',
+          'avatar_url',
+          'is_active',
+          'is_temporary',
+          'access_level_id',
+        ],
         include: [
           {
             model: AccessLevel,
             as: 'access_level',
             attributes: [
-              'id',
               'name',
-              'description',
+              'hierarchy_weight',
               'manage_account',
               'manage_record',
               'manage_academic',
@@ -200,8 +251,18 @@ class UserController {
             ],
           },
         ],
+        order: [['id', 'DESC']],
+        limit: limitNum,
+        offset: offset,
       });
-      return res.json(allUsers);
+
+      const totalPages = Math.ceil(count / limitNum);
+
+      return res.json({
+        rows,
+        totalPages,
+        totalCount: count,
+      });
     } catch (e) {
       return this.handleErrors(e, res);
     }
@@ -210,35 +271,41 @@ class UserController {
   async show(req, res) {
     try {
       const { id } = req.params;
-      if (!isValidId(id)) {
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+
+      if (!id) {
+        return res.status(400).json({ errors: ['Missing user ID.'] });
       }
-      if (Number(id) !== Number(req.userId) && req.userLevel > 2) {
-        return res.status(403).json({
-          errors: ['Forbidden.'],
-        });
-      }
-      const userToShow = await User.findByPk(id, {
+
+      const user = await User.findByPk(id, {
         attributes: [
           'id',
           'email',
           'avatar_url',
-          'access_level_id',
           'is_active',
           'is_temporary',
+          'access_level_id',
         ],
         include: [
           {
             model: AccessLevel,
             as: 'access_level',
-            attributes: ['name', 'description'],
+            attributes: [
+              'name',
+              'hierarchy_weight',
+              'manage_account',
+              'manage_record',
+              'manage_academic',
+              'manage_finance',
+            ],
           },
         ],
       });
-      if (!userToShow) {
+
+      if (!user) {
         return res.status(404).json({ errors: ['User not found.'] });
       }
-      return res.json(userToShow);
+
+      return res.json(user);
     } catch (e) {
       return this.handleErrors(e, res);
     }
@@ -252,14 +319,28 @@ class UserController {
         await transaction.rollback();
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
-      const userToUpdate = await User.findByPk(id, { transaction });
-      if (!userToUpdate) {
+
+      const userToUpdate = await User.findByPk(id, {
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+          },
+        ],
+        transaction,
+      });
+
+      const isEditingSelf = Number(id) === Number(req.userId);
+      const myWeight = req.userWeight;
+      const targetWeight = userToUpdate.access_level.hierarchy_weight;
+
+      if (!isEditingSelf && myWeight <= targetWeight) {
         await transaction.rollback();
-        return res.status(404).json({ errors: ['User not found.'] });
-      }
-      if (req.userLevel > 2 || req.userLevel > userToUpdate.access_level_id) {
-        await transaction.rollback();
-        return res.status(403).json({ errors: ['Forbidden.'] });
+        return res.status(403).json({
+          errors: [
+            'Forbidden. You do not have enough authority to edit this user.',
+          ],
+        });
       }
       const {
         email,
@@ -269,9 +350,23 @@ class UserController {
         is_temporary,
         password,
       } = req.body;
-      if (req.userLevel > 1 && Number(access_level_id) === 1) {
-        await transaction.rollback();
-        return res.status(403).json({ errors: ['Restriction: Super Admin.'] });
+
+      // REGRA DE PROMOÇÃO: Não pode atribuir um nível de acesso com peso maior que o seu próprio.
+      if (
+        access_level_id &&
+        Number(access_level_id) !== userToUpdate.access_level_id
+      ) {
+        const newLevel = await AccessLevel.findByPk(access_level_id, {
+          transaction,
+        });
+        if (!newLevel || myWeight < newLevel.hierarchy_weight) {
+          await transaction.rollback();
+          return res.status(403).json({
+            errors: [
+              'Forbidden. You cannot assign an access level higher than your own.',
+            ],
+          });
+        }
       }
       const updateData = {
         email,
@@ -312,26 +407,43 @@ class UserController {
     const transaction = await database.transaction();
     try {
       const { id } = req.params;
+
       if (!isValidId(id)) {
         await transaction.rollback();
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
-      const userToDelete = await User.findByPk(id, { transaction });
-      if (!userToDelete) {
+
+      const userToDelete = await User.findByPk(id, {
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+          },
+        ],
+        transaction,
+      });
+
+      const isSelf = Number(id) === Number(req.userId);
+      const hasAuthority =
+        req.userWeight > userToDelete.access_level.hierarchy_weight;
+
+      if (isSelf || !hasAuthority) {
         await transaction.rollback();
-        return res.status(404).json({ errors: ['User not found.'] });
+        return res.status(403).json({
+          errors: [
+            'Forbidden. Insufficient authority to deactivate this user or self-deactivation attempt.',
+          ],
+        });
       }
-      if (
-        req.userLevel > 2 ||
-        Number(id) === Number(req.userId) ||
-        req.userLevel > userToDelete.access_level_id
-      ) {
-        await transaction.rollback();
-        return res.status(403).json({ errors: ['Forbidden.'] });
-      }
+
+      // Soft Delete
       await userToDelete.update({ is_active: 0 }, { transaction });
+
       await transaction.commit();
-      return res.json({ message: 'User successfully deactivated.' });
+      return res.json({
+        message:
+          'User successfully deactivated while preserving historical data.',
+      });
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
@@ -340,21 +452,32 @@ class UserController {
 
   async setupPassword(req, res) {
     try {
+      const { password } = req.body;
+
+      if (!password) {
+        return res.status(400).json({ errors: ['Password is required.'] });
+      }
+
       const user = await User.findByPk(req.userId);
+
       if (!user) {
+        return res.status(404).json({ errors: ['User not found.'] });
+      }
+
+      if (!user.is_temporary) {
         return res.status(400).json({
-          errors: ['User not found'],
+          errors: ['Password setup is only allowed for temporary accounts.'],
         });
       }
+
       await user.update({
-        password: req.body.password,
+        password,
         is_temporary: 0,
       });
+
       return res.json({ success: true });
     } catch (e) {
-      return res.status(400).json({
-        errors: e.errors.map((err) => err.message),
-      });
+      return this.handleErrors(e, res);
     }
   }
 
