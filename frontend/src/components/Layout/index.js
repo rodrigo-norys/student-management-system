@@ -47,15 +47,15 @@ export default function Layout() {
           <NavItem to="/dashboard" className={isActive('/dashboard')} onClick={() => setIsMenuOpen(false)}>
             <FaHome /> Dashboard
           </NavItem>
-          {user?.access_level_id && user.access_level_id < 3 && (
+          {
             <NavItem
-              to="/register"
-              className={isActive('/register')}
+              to="/users"
+              className={isActive('/users')}
               onClick={() => setIsMenuOpen(false)}
             >
               <FaUserFriends /> Users
             </NavItem>
-          )}
+          }
           <NavItem
             to="/students"
             className={isActive('/students')}

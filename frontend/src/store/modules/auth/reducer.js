@@ -1,11 +1,11 @@
 import * as types from './types';
 
 const initialState = {
-  isLoggedIn: false,
-  user: {},
+  isCheckingSession: true,
   isLoading: false,
+  isLoggedIn: false,
   isPowerUser: false,
-  isCheckingSession: true
+  user: {},
 };
 
 export default function auth(state = initialState, action) {
@@ -15,7 +15,7 @@ export default function auth(state = initialState, action) {
       return {
         ...state,
         isLoading: true,
-      }
+      };
     }
 
     case types.LOGIN_SUCCESS: {
@@ -56,17 +56,17 @@ export default function auth(state = initialState, action) {
 
     case types.REGISTER_UPDATED_SUCCESS: {
       const newState = { ...state };
-
       if (action.payload.id === newState.user.id) {
         newState.user = {
           ...newState.user,
           email: action.payload.email,
           access_level_id: action.payload.access_level_id,
+          access_level: action.payload.access_level,
         };
-
-        newState.isPowerUser = action.payload.access_level_id <= 2;
+        newState.isPowerUser =
+          action.payload.access_level?.manage_account === 1 ||
+          action.payload.access_level_id <= 2;
       }
-
       newState.isLoading = false;
       return newState;
     }
