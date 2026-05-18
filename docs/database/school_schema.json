@@ -623,6 +623,26 @@
           "check": ""
         },
         {
+          "id": "CpQHCjmNYL2y642NkYfjt",
+          "name": "is_active",
+          "type": "ENUM",
+          "default": "active",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": [
+            "active",
+            "inactive",
+            "transferred",
+            "graduated",
+            "suspended"
+          ]
+        },
+        {
           "id": "u8X6cyEPUr75LA_DjL5Ss",
           "name": "created_at",
           "type": "DATETIME",
@@ -857,13 +877,66 @@
           "name": "name",
           "type": "VARCHAR",
           "comment": "",
-          "unique": false,
+          "unique": true,
           "increment": false,
           "notNull": true,
           "primary": false,
           "default": "",
           "size": 50,
           "check": ""
+        },
+        {
+          "id": "2ECLq_didrflPVv5V_cPW",
+          "name": "cnpj",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 18
+        },
+        {
+          "id": "Lq8wXOKdz4TInrzgBzsnW",
+          "name": "email",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 150
+        },
+        {
+          "id": "Wu2u6LHuLOamMFYTEVS4S",
+          "name": "phone",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 15
+        },
+        {
+          "id": "Lat56Rg_2NgtN4ae-N1YR",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "qMgGg4ybrDQJkQ8Coe4Ur",
@@ -900,7 +973,9 @@
           "name": "units_index_0",
           "unique": false,
           "fields": [
-            "name"
+            "name",
+            "cnpj",
+            "email"
           ]
         }
       ],
@@ -939,6 +1014,19 @@
           "check": ""
         },
         {
+          "id": "wchGvSd6XAA7Z4Kd0ITqX",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 20
+        },
+        {
           "id": "8jrDrs0bhGM2UXH5fTl2e",
           "name": "grade_level",
           "type": "VARCHAR",
@@ -974,7 +1062,7 @@
           "notNull": true,
           "primary": false,
           "default": "",
-          "size": 4,
+          "size": 15,
           "check": ""
         },
         {
@@ -989,6 +1077,34 @@
           "default": "",
           "size": 45,
           "check": ""
+        },
+        {
+          "id": "SFE_-a_nizWkdYL07RKmJ",
+          "name": "max_students",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "w4uNTpsLroYcAkK9_UF6M",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "BcdJqukyO_2WuvTqJE8Vh",
@@ -1034,6 +1150,16 @@
         {
           "id": 1,
           "name": "unit_classes_index_1",
+          "unique": false,
+          "fields": [
+            "unit_id",
+            "name",
+            "school_year"
+          ]
+        },
+        {
+          "id": 2,
+          "name": "unit_classes_index_2",
           "unique": false,
           "fields": [
             "grade_level"
@@ -1276,18 +1402,11 @@
           "values": []
         }
       ],
-      "indices": [
-        {
-          "id": 0,
-          "name": "staff_index_0",
-          "unique": false,
-          "fields": []
-        }
-      ],
+      "indices": [],
       "id": "0ST0ZEKSRIK1gQbZBNBFv",
       "x": 456,
       "y": 240,
-      "locked": false
+      "locked": true
     },
     {
       "name": "subjects",
@@ -1342,7 +1461,7 @@
           "notNull": false,
           "primary": false,
           "default": "",
-          "size": 200,
+          "size": "",
           "check": ""
         },
         {
@@ -1399,6 +1518,20 @@
           "comment": "",
           "size": "",
           "values": []
+        },
+        {
+          "id": "w6NDGZtJu9KVuyxO9N93O",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         }
       ],
       "indices": [
@@ -1413,6 +1546,14 @@
         {
           "id": 1,
           "name": "subjects_index_1",
+          "unique": false,
+          "fields": [
+            "code"
+          ]
+        },
+        {
+          "id": 2,
+          "name": "subjects_index_2",
           "unique": false,
           "fields": [
             "knowledge_area"
@@ -1467,7 +1608,7 @@
         },
         {
           "id": "jkFGlmne6wFYuj6DjFWbU",
-          "name": "subjects_id",
+          "name": "subject_id",
           "type": "INTEGER",
           "comment": "",
           "unique": false,
@@ -1476,6 +1617,20 @@
           "primary": false,
           "default": "",
           "check": ""
+        },
+        {
+          "id": "XCzX6-lxXPTmSY_bDMXrL",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "mLMeVxPxzIK1E3YEkNN_M",
@@ -1510,16 +1665,24 @@
         {
           "id": 0,
           "name": "class_allocations_index_0",
-          "unique": false,
+          "unique": true,
           "fields": [
             "unit_class_id",
-            "subjects_id"
+            "subject_id"
+          ]
+        },
+        {
+          "id": 1,
+          "name": "class_allocations_index_1",
+          "unique": false,
+          "fields": [
+            "staff_id"
           ]
         }
       ],
       "id": "3u_VgZ1so5ZRDosa-edoU",
       "x": 456,
-      "y": 1560,
+      "y": 1632,
       "locked": false
     },
     {
@@ -1562,13 +1725,41 @@
           "notNull": true,
           "increment": false,
           "comment": "",
-          "size": 20
+          "size": 30
         },
         {
           "id": "XJqdB9rWbpOlXaqVh34Bq",
           "name": "is_financial_resp",
           "type": "TINYINT",
           "default": "0",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "2iEAxXlz6QrtUeah64_2S",
+          "name": "is_emergency_contact",
+          "type": "TINYINT",
+          "default": "0",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "0GX-bJOGGBg915L7asHfe",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
           "check": "",
           "primary": false,
           "unique": false,
@@ -1615,11 +1806,19 @@
           "fields": [
             "guardian_id"
           ]
+        },
+        {
+          "id": 1,
+          "name": "student_guardians_index_1",
+          "unique": false,
+          "fields": [
+            "student_id"
+          ]
         }
       ],
       "id": "NXvmRfNCwoEGogal7Gsro",
-      "x": 1248,
-      "y": 1560,
+      "x": 816,
+      "y": 1008,
       "locked": false
     },
     {
@@ -1628,6 +1827,21 @@
       "color": "#388E3C",
       "fields": [
         {
+          "id": "4ICnjNYMH3GNC3qDDqkv0",
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "size": "",
+          "values": [],
+          "unsigned": true
+        },
+        {
           "id": "hmHvDvk3AC_rphyNAGpIi",
           "name": "staff_id",
           "type": "INTEGER",
@@ -1635,7 +1849,7 @@
           "unique": false,
           "increment": false,
           "notNull": true,
-          "primary": true,
+          "primary": false,
           "default": "",
           "check": ""
         },
@@ -1647,9 +1861,23 @@
           "unique": false,
           "increment": false,
           "notNull": true,
-          "primary": true,
+          "primary": false,
           "default": "",
           "check": ""
+        },
+        {
+          "id": "sCak0zo0t407vpowXQusr",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "R5jdZsTXd1oK-rHSDF_gz",
@@ -1686,6 +1914,15 @@
           "name": "staff_units_index_0",
           "unique": false,
           "fields": [
+            "unit_id"
+          ]
+        },
+        {
+          "id": 1,
+          "name": "staff_units_index_1",
+          "unique": false,
+          "fields": [
+            "staff_id",
             "unit_id"
           ]
         }
@@ -1739,15 +1976,50 @@
         {
           "id": "OctwjF3KBOL0m-pco8d6c",
           "name": "enrollment_status",
-          "type": "VARCHAR",
+          "type": "ENUM",
           "comment": "",
           "unique": false,
           "increment": false,
           "notNull": true,
           "primary": false,
-          "default": "'ATIVO'",
+          "default": "active",
           "size": 20,
-          "check": ""
+          "check": "",
+          "values": [
+            "active",
+            "inactive",
+            "transferred",
+            "dropped_out",
+            "gratuated"
+          ]
+        },
+        {
+          "id": "zaocXLCvhjc1bLE34LeTa",
+          "name": "enrollment_date",
+          "type": "DATE",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "ZFNk0Z-dguMXyMQ9umsdR",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "ZpilF14h4RKH9DjAbmoxL",
@@ -1787,12 +2059,20 @@
             "student_id",
             "unit_class_id"
           ]
+        },
+        {
+          "id": 1,
+          "name": "student_classes_index_1",
+          "unique": false,
+          "fields": [
+            "unit_class_id"
+          ]
         }
       ],
       "id": "5cf4tNEvcjopDPBq1B3hZ",
       "x": 1248,
       "y": 1008,
-      "locked": false
+      "locked": true
     },
     {
       "name": "student_grades",
@@ -1901,17 +2181,50 @@
           "check": ""
         },
         {
-          "id": "FaUXD5pyaY-F6rNwaxDY1",
+          "id": "IJpkmVWgxat6ZphES_oY0",
           "name": "subject_status",
-          "type": "VARCHAR",
-          "comment": "",
-          "unique": false,
-          "increment": false,
-          "notNull": true,
+          "type": "ENUM",
+          "default": "studying",
+          "check": "",
           "primary": false,
-          "default": "'CURSANDO'",
-          "size": 20,
-          "check": ""
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "values": [
+            "studying",
+            "approved",
+            "failed",
+            "recovery"
+          ]
+        },
+        {
+          "id": "hk2xmXdaivrDwTxhm6WdI",
+          "name": "absences",
+          "type": "INTEGER",
+          "default": "0",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "GiR4dPn7lp1X0zzyJR9C4",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         },
         {
           "id": "GOP2Oy_AfirynveCS2UaA",
@@ -1954,9 +2267,167 @@
         }
       ],
       "id": "n13WBpdGBPFtek3BL4Fgy",
-      "x": 816,
-      "y": 1008,
+      "x": 1248,
+      "y": 1632,
       "locked": false
+    },
+    {
+      "id": "saw5OZ-pFaYbwRnH8ZZ8x",
+      "name": "attendances",
+      "x": 816,
+      "y": 1632,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "unsigned": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "Mm_j1HI1YNDmu7rO7jIyu"
+        },
+        {
+          "id": "DP16XWjGdAhSBUnzeQPUX",
+          "name": "student_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "dMhhPGNPpq1fqkuyT1YF0",
+          "name": "class_allocation_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "kw1Ygeg-TZBCP5MChNsAp",
+          "name": "date",
+          "type": "DATE",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "g-OU27o0zF46g93dRuYTv",
+          "name": "status",
+          "type": "ENUM",
+          "default": "present",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "values": [
+            "present",
+            "absent",
+            "justified"
+          ]
+        },
+        {
+          "id": "7HMs7WCOc9jLrQythbWYw",
+          "name": "notes",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        },
+        {
+          "id": "u6zARSFzj58Exl3hs-_Aq",
+          "name": "is_active",
+          "type": "TINYINT",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "myLCrJZ4UlJKvXhv91KH2",
+          "name": "created_at",
+          "type": "DATETIME",
+          "default": "CURRENT_TIMESTAMP",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "KQ0B36ch8BGcGVmBbAv8a",
+          "name": "updated_at",
+          "type": "DATETIME",
+          "default": "CURRENT_TIMESTAMP",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        }
+      ],
+      "comment": "",
+      "indices": [
+        {
+          "id": 0,
+          "name": "attendances_index_0",
+          "unique": false,
+          "fields": [
+            "student_id",
+            "class_allocation_id",
+            "date"
+          ]
+        },
+        {
+          "id": 1,
+          "name": "attendances_index_1",
+          "unique": false,
+          "fields": [
+            "date"
+          ]
+        }
+      ],
+      "color": "#175e7a"
     }
   ],
   "relationships": [
@@ -2179,6 +2650,28 @@
       "deleteConstraint": "No action",
       "name": "fk_units_id_addresses",
       "id": "AXbpvtN5HDUVqGnqOpDJH"
+    },
+    {
+      "startTableId": "JgmyRSdJAAeHk_eGcGHYF",
+      "startFieldId": "bpHFhNk2OxWZM6ONgySBG",
+      "endTableId": "saw5OZ-pFaYbwRnH8ZZ8x",
+      "endFieldId": "DP16XWjGdAhSBUnzeQPUX",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "fk_students_id_attendances",
+      "id": "UbNDApUfWaQUZrOVD-E8N"
+    },
+    {
+      "startTableId": "3u_VgZ1so5ZRDosa-edoU",
+      "startFieldId": "cGoneFhJsZIyBAjgSFII2",
+      "endTableId": "saw5OZ-pFaYbwRnH8ZZ8x",
+      "endFieldId": "dMhhPGNPpq1fqkuyT1YF0",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "fk_class_allocations_id_attendances",
+      "id": "SLJ2KAtprHAH3Ufh4dqib"
     }
   ],
   "notes": [
@@ -2187,10 +2680,10 @@
       "x": 1488,
       "y": -456,
       "title": "Relationship Map",
-      "content": "\nTier 1: Access & Base\nusers.access_level_id > access_levels.id (N:1)\naddresses.unit_id - units.id (1:1)\n\nTier 2: Actors (User & Address Links)\nstaff.user_id - users.id (1:1)\naddresses.staff_id > staff.id (N:1)\nstudents.user_id - users.id (1:1)\naddresses.student_id > students.id (N:1)\nguardians.user_id - users.id (1:1)\naddresses.guardian_id > guardians.id (N:1)\n\nTier 3: Structure & Links\nunit_classes.unit_id > units.id (N:1)\nstaff_units.staff_id > staff.id (N:1)\nstaff_units.unit_id > units.id (N:1)\nstudent_guardians.student_id > students.id (N:1)\nstudent_guardians.guardian_id > guardians.id (N:1)\n\nTier 4: Operations & Allocations\nstudent_classes.unit_class_id > unit_classes.id (N:1)\nstudent_classes.student_id > students.id (N:1)\nclass_allocations.staff_id > staff.id (N:1)\nclass_allocations.unit_class_id > unit_classes.id (N:1)\nclass_allocations.subjects_id > subjects.id (N:1)\n\nTier 5: Results (Grades)\nstudent_grades.class_allocation_id > class_allocations.id (N:1)\nstudent_grades.student_classes_id > student_classes.id (N:1)",
+      "content": "\nTier 1: Access & Base\nusers.access_level_id > access_levels.id (N:1)\naddresses.unit_id - units.id (1:1)\n\nTier 2: Actors (User & Address Links)\nstaff.user_id - users.id (1:1)\naddresses.staff_id > staff.id (N:1)\nstudents.user_id - users.id (1:1)\naddresses.student_id > students.id (N:1)\nguardians.user_id - users.id (1:1)\naddresses.guardian_id > guardians.id (N:1)\n\nTier 3: Structure & Links\nunit_classes.unit_id > units.id (N:1)\nstaff_units.staff_id > staff.id (N:1)\nstaff_units.unit_id > units.id (N:1)\nstudent_guardians.student_id > students.id (N:1)\nstudent_guardians.guardian_id > guardians.id (N:1)\n\nTier 4: Operations & Allocations\nstudent_classes.unit_class_id > unit_classes.id (N:1)\nstudent_classes.student_id > students.id (N:1)\nclass_allocations.staff_id > staff.id (N:1)\nclass_allocations.unit_class_id > unit_classes.id (N:1)\nclass_allocations.subjects_id > subjects.id (N:1)\n\nTier 5: Results (Grades)\nstudent_grades.class_allocation_id > class_allocations.id (N:1)\nstudent_grades.student_classes_id > student_classes.id (N:1)\nattendances.student_id > students.id (N:1)\nattendances.class_allocation_id > class_allocations.id (N:1)",
       "locked": false,
       "color": "#ECEFF1",
-      "height": 762,
+      "height": 810,
       "width": 462.26229428421277
     }
   ],
@@ -2221,7 +2714,7 @@
       "x": 96,
       "y": 960,
       "width": 1371.8737473481365,
-      "height": 528,
+      "height": 600,
       "color": "#E3F2FD",
       "locked": false
     },
@@ -2229,9 +2722,9 @@
       "id": 3,
       "name": "Tier 4: Academic Records",
       "x": 96,
-      "y": 1512,
+      "y": 1584,
       "width": 1371.8737473481365,
-      "height": 336,
+      "height": 600,
       "color": "#F3E5F5",
       "locked": false
     }

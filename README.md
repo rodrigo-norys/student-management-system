@@ -47,15 +47,6 @@ O grande diferencial técnico reside na **Modelagem do Banco de Dados** (dispon�
 *   **📅 Grade Horária (Alocação):** Tabela `class_allocations` modelada para o cruzamento exato entre Professor, Turma e Disciplina (`subjects`).
 *   **📊 Sistema de Avaliações:** Estrutura de notas (`student_grades`) vinculada diretamente à alocação da aula, permitindo histórico acadêmico detalhado e segmentado por bimestre.
 
-
-## 📸 Screenshots
-
-| Register | Dashboard |
-|:---:|:---:|
-| <img src="./docs/screenshots/register.png" width="400" alt="Tela de Login"> | <img src="./docs/screenshots/dashboard.png" width="400" alt="Dashboard"> |
-
----
-
 ## 🗄️ Arquitetura de Dados
 A modelagem do banco de dados segue rigorosos princípios de **normalização** e **integridade referencial** (Foreign Keys e Constraints), dividida em 4 camadas lógicas para facilitar a manutenção e escalabilidade.
 
@@ -68,44 +59,7 @@ Visualize a estrutura completa, relacionamentos e tipos de dados diretamente no 
 > O arquivo JSON da estrutura também está disponível em [`docs/database/school_schema.json`](./docs/database/school_schema.json).</br>
 > O arquivo SQL da estrutura também está disponível em [`docs/database/init.sql`](./docs/database/init.sql).
 
-### Diagrama Simplificado (Mermaid)
-```mermaid
-erDiagram
-    %% 1. A ORIGEM DO SISTEMA 
-    ACCESS_LEVELS ||--|{ USERS : "access_level_id"
-    SUBJECTS ||--|{ CLASS_ALLOCATIONS : "subjects_id"
 
-    %% 2. USERS -> ATORES
-    USERS ||--|| STUDENTS : "user_id"
-    USERS ||--|| STAFF : "user_id"
-    USERS ||--|| GUARDIANS : "user_id"
-
-    %% 3. ATORES -> ENDEREÇOS
-    STUDENTS ||--|{ ADDRESSES : "student_id"
-    STAFF ||--|{ ADDRESSES : "staff_id"
-    GUARDIANS ||--|{ ADDRESSES : "guardian_id"
-    UNITS ||--|| ADDRESSES : "unit_id"
-
-    %% 4. RELAÇÕES DE UNIDADE E STAFF
-    UNITS ||--|{ UNIT_CLASSES : "unit_id"
-    UNITS ||--|{ STAFF_UNITS : "unit_id"
-    STAFF ||--|{ STAFF_UNITS : "staff_id"
-
-    %% 5. VÍNCULOS FAMILIARES
-    STUDENTS ||--|{ STUDENT_GUARDIANS : "student_id"
-    GUARDIANS ||--|{ STUDENT_GUARDIANS : "guardian_id"
-
-    %% 6. SALA DE AULA 
-    STUDENTS ||--|{ STUDENT_CLASSES : "student_id"
-    UNIT_CLASSES ||--|{ STUDENT_CLASSES : "unit_class_id"
-    
-    STAFF ||--|{ CLASS_ALLOCATIONS : "staff_id"
-    UNIT_CLASSES ||--|{ CLASS_ALLOCATIONS : "unit_class_id"
-
-    %% 7. O FIM DO FLUXO 
-    STUDENT_CLASSES ||--|{ STUDENT_GRADES : "student_classes_id"
-    CLASS_ALLOCATIONS ||--|{ STUDENT_GRADES : "class_allocation_id"
-```
 ## 🚀 Infraestrutura & Deploy
 Diferente de projetos acadêmicos comuns, esta aplicação está hospedada em um ambiente de produção real (VPS), aplicando conceitos de DevOps e administração de servidores:
 

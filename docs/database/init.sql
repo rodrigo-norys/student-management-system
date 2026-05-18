@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS `students` (
 	`cpf` VARCHAR(14) NOT NULL UNIQUE,
 	`blood_type` VARCHAR(3),
 	`medical_notes` VARCHAR(255),
+	`is_active` ENUM('active', 'inactive', 'transferred', 'graduated', 'suspended') NOT NULL DEFAULT 'active',
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
@@ -92,7 +93,11 @@ CREATE INDEX `guardians_index_1`
 ON `guardians` (`name`, `last_name`);
 CREATE TABLE IF NOT EXISTS `units` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(50) NOT NULL,
+	`name` VARCHAR(50) NOT NULL UNIQUE,
+	`cnpj` VARCHAR(18) NOT NULL UNIQUE,
+	`email` VARCHAR(150) NOT NULL UNIQUE,
+	`phone` VARCHAR(15) NOT NULL,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
@@ -100,14 +105,17 @@ CREATE TABLE IF NOT EXISTS `units` (
 
 
 CREATE INDEX `units_index_0`
-ON `units` (`name`);
+ON `units` (`name`, `cnpj`, `email`);
 CREATE TABLE IF NOT EXISTS `unit_classes` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`unit_id` INTEGER NOT NULL,
+	`name` VARCHAR(20) NOT NULL,
 	`grade_level` VARCHAR(50) NOT NULL,
 	`room_number` VARCHAR(20) NOT NULL,
-	`shift` VARCHAR(4) NOT NULL,
+	`shift` VARCHAR(15) NOT NULL,
 	`school_year` VARCHAR(45) NOT NULL,
+	`max_students` INTEGER NOT NULL,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
@@ -117,6 +125,8 @@ CREATE TABLE IF NOT EXISTS `unit_classes` (
 CREATE UNIQUE INDEX `unit_classes_index_0`
 ON `unit_classes` (`unit_id`, `room_number`, `shift`, `school_year`);
 CREATE INDEX `unit_classes_index_1`
+ON `unit_classes` (`unit_id`, `name`, `school_year`);
+CREATE INDEX `unit_classes_index_2`
 ON `unit_classes` (`grade_level`);
 CREATE TABLE IF NOT EXISTS `staff` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -140,17 +150,16 @@ CREATE TABLE IF NOT EXISTS `staff` (
 );
 
 
-CREATE INDEX `staff_index_0`
-ON `staff` ();
 CREATE TABLE IF NOT EXISTS `subjects` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(50) NOT NULL,
 	`code` VARCHAR(10) NOT NULL UNIQUE,
-	`description` TEXT(200),
+	`description` TEXT,
 	`knowledge_area` VARCHAR(100),
 	`is_elective` TINYINT NOT NULL,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	PRIMARY KEY(`id`)
 );
 
@@ -158,25 +167,32 @@ CREATE TABLE IF NOT EXISTS `subjects` (
 CREATE INDEX `subjects_index_0`
 ON `subjects` (`name`);
 CREATE INDEX `subjects_index_1`
+ON `subjects` (`code`);
+CREATE INDEX `subjects_index_2`
 ON `subjects` (`knowledge_area`);
 CREATE TABLE IF NOT EXISTS `class_allocations` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`staff_id` INTEGER NOT NULL,
 	`unit_class_id` INTEGER NOT NULL,
-	`subjects_id` INTEGER NOT NULL,
+	`subject_id` INTEGER NOT NULL,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
 );
 
 
-CREATE INDEX `class_allocations_index_0`
-ON `class_allocations` (`unit_class_id`, `subjects_id`);
+CREATE UNIQUE INDEX `class_allocations_index_0`
+ON `class_allocations` (`unit_class_id`, `subject_id`);
+CREATE INDEX `class_allocations_index_1`
+ON `class_allocations` (`staff_id`);
 CREATE TABLE IF NOT EXISTS `student_guardians` (
 	`student_id` INTEGER NOT NULL,
 	`guardian_id` INTEGER NOT NULL,
-	`relationship_type` VARCHAR(20) NOT NULL,
+	`relationship_type` VARCHAR(30) NOT NULL,
 	`is_financial_resp` TINYINT NOT NULL DEFAULT 0,
+	`is_emergency_contact` TINYINT NOT NULL DEFAULT 0,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`student_id`, `guardian_id`)
@@ -185,22 +201,30 @@ CREATE TABLE IF NOT EXISTS `student_guardians` (
 
 CREATE INDEX `student_guardians_index_0`
 ON `student_guardians` (`guardian_id`);
+CREATE INDEX `student_guardians_index_1`
+ON `student_guardians` (`student_id`);
 CREATE TABLE IF NOT EXISTS `staff_units` (
+	`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
 	`staff_id` INTEGER NOT NULL,
 	`unit_id` INTEGER NOT NULL,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY(`staff_id`, `unit_id`)
+	PRIMARY KEY(`id`)
 );
 
 
 CREATE INDEX `staff_units_index_0`
 ON `staff_units` (`unit_id`);
+CREATE INDEX `staff_units_index_1`
+ON `staff_units` (`staff_id`, `unit_id`);
 CREATE TABLE IF NOT EXISTS `student_classes` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`student_id` INTEGER NOT NULL,
 	`unit_class_id` INTEGER NOT NULL,
-	`enrollment_status` VARCHAR(20) NOT NULL DEFAULT '''ATIVO''',
+	`enrollment_status` ENUM('active', 'inactive', 'transferred', 'dropped_out', 'gratuated') NOT NULL DEFAULT 'active',
+	`enrollment_date` DATE NOT NULL,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
@@ -209,6 +233,8 @@ CREATE TABLE IF NOT EXISTS `student_classes` (
 
 CREATE UNIQUE INDEX `student_classes_index_0`
 ON `student_classes` (`student_id`, `unit_class_id`);
+CREATE INDEX `student_classes_index_1`
+ON `student_classes` (`unit_class_id`);
 CREATE TABLE IF NOT EXISTS `student_grades` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`class_allocation_id` INTEGER NOT NULL,
@@ -218,7 +244,9 @@ CREATE TABLE IF NOT EXISTS `student_grades` (
 	`grade_3` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
 	`grade_4` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
 	`final_average` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
-	`subject_status` VARCHAR(20) NOT NULL DEFAULT '''CURSANDO''',
+	`subject_status` ENUM('studying', 'approved', 'failed', 'recovery') NOT NULL DEFAULT 'studying',
+	`absences` INTEGER NOT NULL DEFAULT 0,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(`id`)
@@ -227,6 +255,24 @@ CREATE TABLE IF NOT EXISTS `student_grades` (
 
 CREATE UNIQUE INDEX `student_grades_index_0`
 ON `student_grades` (`student_classes_id`, `class_allocation_id`);
+CREATE TABLE IF NOT EXISTS `attendances` (
+	`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	`student_id` INTEGER NOT NULL,
+	`class_allocation_id` INTEGER NOT NULL,
+	`date` DATE NOT NULL,
+	`status` ENUM('present', 'absent', 'justified') NOT NULL DEFAULT 'present',
+	`notes` VARCHAR(255) NOT NULL,
+	`is_active` TINYINT NOT NULL DEFAULT 1,
+	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE INDEX `attendances_index_0`
+ON `attendances` (`student_id`, `class_allocation_id`, `date`);
+CREATE INDEX `attendances_index_1`
+ON `attendances` (`date`);
 ALTER TABLE `users`
 ADD FOREIGN KEY(`access_level_id`) REFERENCES `access_levels`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
@@ -249,7 +295,7 @@ ALTER TABLE `class_allocations`
 ADD FOREIGN KEY(`unit_class_id`) REFERENCES `unit_classes`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `class_allocations`
-ADD FOREIGN KEY(`subjects_id`) REFERENCES `subjects`(`id`)
+ADD FOREIGN KEY(`subject_id`) REFERENCES `subjects`(`id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `student_guardians`
 ADD FOREIGN KEY(`student_id`) REFERENCES `students`(`id`)
@@ -286,4 +332,10 @@ ADD FOREIGN KEY(`id`) REFERENCES `addresses`(`staff_id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE `units`
 ADD FOREIGN KEY(`id`) REFERENCES `addresses`(`unit_id`)
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE `students`
+ADD FOREIGN KEY(`id`) REFERENCES `attendances`(`student_id`)
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE `class_allocations`
+ADD FOREIGN KEY(`id`) REFERENCES `attendances`(`class_allocation_id`)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
