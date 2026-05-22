@@ -1,6 +1,6 @@
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaExternalLinkAlt } from 'react-icons/fa';
 
-import { getStudentImageUrl } from '../../constants';
+import { getAvatarUrl } from 'utils/imageHelpers';
 import * as Styled from '../styled';
 
 export default function StudentTable({
@@ -39,7 +39,7 @@ export default function StudentTable({
                 <Styled.SmallProfilePic>
                   {student.avatar_url ? (
                     <img
-                      src={getStudentImageUrl(student.avatar_url)}
+                      src={getAvatarUrl(student.avatar_url)}
                       alt={student.name}
                     />
                   ) : (

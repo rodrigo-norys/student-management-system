@@ -1,6 +1,6 @@
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaExternalLinkAlt } from 'react-icons/fa';
+import { getAvatarUrl } from 'utils/imageHelpers';
 
-import { getStudentImageUrl } from '../../constants.js';
 import * as Styled from '../styled';
 
 export default function StudentGrid({
@@ -21,7 +21,7 @@ export default function StudentGrid({
           <Styled.ProfilePicture>
             {student.avatar_url ? (
               <img
-                src={getStudentImageUrl(student.avatar_url)}
+                src={getAvatarUrl(student.avatar_url)}
                 alt={student.name}
               />
             ) : (

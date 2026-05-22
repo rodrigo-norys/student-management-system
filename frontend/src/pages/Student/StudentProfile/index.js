@@ -7,7 +7,7 @@ import Loading from 'components/Loading';
 
 import * as actions from 'store/modules/student/actions';
 
-import { getStudentImageUrl } from '../constants';
+import { getAvatarUrl } from 'utils/imageHelpers';
 import { PROFILE_TABS, DEFAULT_TAB, TAB_KEYS } from './constants';
 
 import GeneralTab from './components/GeneralTab';
@@ -34,7 +34,7 @@ export default function StudentProfile() {
   if (!student && !isLoading) return null;
   if (!student) return <Loading isLoading={true} />;
 
-  const mainPhoto = getStudentImageUrl(student.avatar_url);
+  const mainPhoto = getAvatarUrl(student.avatar_url);
 
   return (
     <Styled.Container>

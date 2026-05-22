@@ -16,7 +16,7 @@ import { BRAZILIAN_STATES as UFs, EMPTY_ADDRESS } from 'constants/location';
 import { BLOOD_TYPES } from 'constants/medical';
 import { maskCEP } from 'utils/masks';
 
-import { getStudentImageUrl } from '../constants';
+import { getAvatarUrl } from 'utils/imageHelpers';
 import { INITIAL_STATE } from './constants';
 import * as Styled from './styled';
 
@@ -37,7 +37,7 @@ export default function StudentForm() {
     state.student?.students?.find((s) => String(s.id) === String(id)),
   );
 
-  const mainPhoto = getStudentImageUrl(form.avatar_url);
+  const mainPhoto = getAvatarUrl(form.avatar_url);
 
   useEffect(() => {
     const errorKeys = Object.keys(errors);
