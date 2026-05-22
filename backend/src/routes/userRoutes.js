@@ -14,9 +14,9 @@ router.put('/setup-password', validateRequest(userValidationSchema), userControl
 router.get('/search-targets', roleAuth('manage_account'), userController.searchTargets);
 
 router.post('/', roleAuth('manage_account'), userController.create);
-router.get('/:id', userController.show);
 router.get('/', roleAuth('manage_account'), userController.index);
-router.put('/:id', userController.update);
+router.get('/:id', userController.show);
+router.put('/:id', roleAuth('manage_account'), userController.update);
 router.delete('/:id', roleAuth('manage_account'), userController.delete);
 
 export default router;

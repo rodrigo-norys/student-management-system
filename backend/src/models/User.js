@@ -67,24 +67,12 @@ export default class User extends Model {
           },
         },
         is_active: {
-          type: Sequelize.TINYINT,
-          defaultValue: 1,
-          validate: {
-            isIn: {
-              args: [[0, 1]],
-              msg: 'is_active must be TRUE or FALSE',
-            },
-          },
+          type: Sequelize.BOOLEAN,
+          defaultValue: true,
         },
         is_temporary: {
-          type: Sequelize.TINYINT,
-          defaultValue: 1,
-          validate: {
-            isIn: {
-              args: [[0, 1]],
-              msg: 'is_temporary must be TRUE or FALSE',
-            },
-          },
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
         },
       },
       {

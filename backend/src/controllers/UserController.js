@@ -14,8 +14,394 @@ function isValidId(id) {
 }
 
 class UserController {
+  create = async (req, res) => {
+    const transaction = await User.sequelize.transaction();
+    try {
+      const {
+        access_level_id,
+        email,
+        password,
+        is_active,
+        is_temporary,
+        student_id,
+        guardian_id,
+        staff_id,
+        targetId,
+        targetType,
+      } = req.body;
+
+      if (!access_level_id || !email) {
+        await transaction.rollback();
+        return res
+          .status(400)
+          .json({ errors: ['Access level and email are required.'] });
+      }
+
+      const targetAccessLevel = await AccessLevel.findByPk(access_level_id);
+      if (!targetAccessLevel) {
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Invalid access level.'] });
+      }
+
+      if (req.userWeight <= targetAccessLevel.hierarchy_weight) {
+        await transaction.rollback();
+        return res.status(403).json({
+          errors: [
+            'You cannot create a user with a hierarchy level equal to or higher than yours.',
+          ],
+        });
+      }
+
+      let finalStaffId = staff_id;
+      let finalStudentId = student_id;
+      let finalGuardianId = guardian_id;
+
+      if (targetType && targetId) {
+        if (targetType === 'staff') finalStaffId = targetId;
+        if (targetType === 'student') finalStudentId = targetId;
+        if (targetType === 'guardian') finalGuardianId = targetId;
+      }
+
+      let TargetModel;
+      let personId;
+
+      if (finalStaffId) {
+        TargetModel = Staff;
+        personId = finalStaffId;
+      } else if (finalStudentId) {
+        TargetModel = Student;
+        personId = finalStudentId;
+      } else if (finalGuardianId) {
+        TargetModel = Guardian;
+        personId = finalGuardianId;
+      }
+
+      if (!TargetModel) {
+        await transaction.rollback();
+        return res.status(400).json({
+          errors: [
+            'A valid staff_id, student_id, guardian_id, or target entity must be provided.',
+          ],
+        });
+      }
+
+      const person = await TargetModel.findByPk(personId);
+      if (!person) {
+        await transaction.rollback();
+        return res
+          .status(404)
+          .json({ errors: ['Associated person profile not found.'] });
+      }
+
+      if (person.user_id) {
+        await transaction.rollback();
+        return res.status(400).json({
+          errors: ['This profile already has an active user account.'],
+        });
+      }
+
+      const userExists = await User.findOne({ where: { email } });
+      if (userExists) {
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Email already in use.'] });
+      }
+
+      let folderName = 'users';
+      if (targetType === 'student') folderName = 'students';
+      if (targetType === 'guardian') folderName = 'guardians';
+      if (targetType === 'staff') folderName = 'staff';
+
+      let finalAvatarUrl = null;
+      if (req.body.avatar_url) {
+        finalAvatarUrl = `users/${req.body.avatar_url}`;
+      } else if (person.avatar_url) {
+        finalAvatarUrl = `${folderName}/${person.avatar_url}`;
+      }
+
+      const newUser = await User.create(
+        {
+          access_level_id,
+          email,
+          avatar_url: finalAvatarUrl,
+          password,
+          is_active: is_active ?? true,
+          is_temporary: is_temporary ?? true,
+        },
+        { transaction },
+      );
+
+      await person.update({ user_id: newUser.id }, { transaction });
+
+      await transaction.commit();
+
+      return res.status(201).json({
+        id: newUser.id,
+        email: newUser.email,
+        access_level_id: newUser.access_level_id,
+        avatar_url: newUser.avatar_url,
+        is_active: newUser.is_active,
+        is_temporary: newUser.is_temporary,
+      });
+    } catch (e) {
+      await transaction.rollback();
+      return this.handleErrors(e, res);
+    }
+  }
+
+  index = async (req, res) => {
+    try {
+      const { status, searchTerm, page = 1, limit = 15 } = req.query;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
+
+      const where = {};
+
+      if (status === 'active') where.is_active = true;
+      if (status === 'inactive') where.is_active = false;
+
+      if (searchTerm) {
+        where[Operators.or] = [
+          { email: { [Operators.like]: `%${searchTerm}%` } },
+        ];
+      }
+
+      const { count, rows } = await User.findAndCountAll({
+        where,
+        attributes: [
+          'id',
+          'email',
+          'avatar_url',
+          'is_active',
+          'is_temporary',
+          'access_level_id',
+        ],
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+            attributes: [
+              'name',
+              'hierarchy_weight',
+              'manage_account',
+              'manage_record',
+              'manage_academic',
+              'manage_finance',
+            ],
+          },
+        ],
+        order: [['id', 'DESC']],
+        limit: limitNum,
+        offset: offset,
+      });
+
+      const totalPages = Math.ceil(count / limitNum);
+
+      return res.json({
+        rows,
+        totalPages,
+        totalCount: count,
+      });
+    } catch (e) {
+      return this.handleErrors(e, res);
+    }
+  };
+
+  show = async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({ errors: ['Missing user ID.'] });
+      }
+
+      const user = await User.findByPk(id, {
+        attributes: [
+          'id',
+          'email',
+          'avatar_url',
+          'is_active',
+          'is_temporary',
+          'access_level_id',
+        ],
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+            attributes: [
+              'name',
+              'hierarchy_weight',
+              'manage_account',
+              'manage_record',
+              'manage_academic',
+              'manage_finance',
+            ],
+          },
+        ],
+      });
+
+      if (!user) {
+        return res.status(404).json({ errors: ['User not found.'] });
+      }
+
+      return res.json(user);
+    } catch (e) {
+      return this.handleErrors(e, res);
+    }
+  };
+
+  update = async (req, res) => {
+    const transaction = await database.transaction();
+    try {
+      const { id } = req.params;
+
+      if (!isValidId(id)) {
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+      }
+
+      const userToUpdate = await User.findByPk(id, {
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+          },
+        ],
+        transaction,
+      });
+
+      if (!userToUpdate) {
+        await transaction.rollback();
+        return res.status(404).json({ errors: ['User not found.'] });
+      }
+
+      const isEditingSelf = Number(id) === Number(req.userId);
+      const myWeight = req.userWeight;
+      const targetWeight = userToUpdate.access_level?.hierarchy_weight || 0;
+
+      if (!isEditingSelf && myWeight <= targetWeight) {
+        await transaction.rollback();
+        return res.status(403).json({
+          errors: [
+            'Forbidden. You do not have enough authority to edit this user.',
+          ],
+        });
+      }
+
+      const {
+        email,
+        avatar_url,
+        access_level_id,
+        is_active,
+        is_temporary,
+        password,
+      } = req.body;
+
+      if (
+        access_level_id &&
+        Number(access_level_id) !== userToUpdate.access_level_id
+      ) {
+        const newLevel = await AccessLevel.findByPk(access_level_id, {
+          transaction,
+        });
+        if (!newLevel || myWeight <= newLevel.hierarchy_weight) {
+          await transaction.rollback();
+          return res.status(403).json({
+            errors: [
+              'Forbidden. You cannot assign an access level higher than or equal to your own.',
+            ],
+          });
+        }
+      }
+
+      const updateData = {
+        email,
+        avatar_url,
+        access_level_id,
+        is_active,
+        is_temporary,
+      };
+
+      if (password) updateData.password = password;
+
+      await userToUpdate.update(updateData, { transaction });
+
+      const updatedUser = await User.findByPk(id, {
+        attributes: [
+          'id',
+          'email',
+          'avatar_url',
+          'access_level_id',
+          'is_active',
+          'is_temporary',
+        ],
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+            attributes: ['name', 'description'],
+          },
+        ],
+        transaction,
+      });
+
+      await transaction.commit();
+      return res.json(updatedUser);
+    } catch (e) {
+      if (transaction) await transaction.rollback();
+      return this.handleErrors(e, res);
+    }
+  };
+
+  delete = async (req, res) => {
+    const transaction = await database.transaction();
+    try {
+      const { id } = req.params;
+
+      if (!isValidId(id)) {
+        await transaction.rollback();
+        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+      }
+
+      const userToDelete = await User.findByPk(id, {
+        include: [
+          {
+            model: AccessLevel,
+            as: 'access_level',
+          },
+        ],
+        transaction,
+      });
+
+      const isSelf = Number(id) === Number(req.userId);
+      const hasAuthority =
+        req.userWeight > userToDelete.access_level.hierarchy_weight;
+
+      if (isSelf || !hasAuthority) {
+        await transaction.rollback();
+        return res.status(403).json({
+          errors: [
+            'Forbidden. Insufficient authority to deactivate this user or self-deactivation attempt.',
+          ],
+        });
+      }
+
+      // Soft Delete
+      await userToDelete.update({ is_active: 0 }, { transaction });
+
+      await transaction.commit();
+      return res.json({
+        message:
+          'User successfully deactivated while preserving historical data.',
+      });
+    } catch (e) {
+      if (transaction) await transaction.rollback();
+      return this.handleErrors(e, res);
+    }
+  };
+
   // Método de busca para as entidades que não possuem um usuário.
-  async searchTargets(req, res) {
+  searchTargets = async (req, res) => {
     try {
       const { searchTerm, page = 1, limit = 15 } = req.query;
       const pageNum = parseInt(page, 10);
@@ -96,361 +482,9 @@ class UserController {
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
-
-  async create(req, res) {
-    const transaction = await database.transaction();
-    try {
-      const {
-        access_level_id,
-        email,
-        avatar_url,
-        password,
-        is_active,
-        is_temporary,
-        student_id,
-        guardian_id,
-        staff_id,
-      } = req.body;
-
-      const targetLevel = await AccessLevel.findByPk(access_level_id, {
-        transaction,
-      });
-      if (!targetLevel) {
-        await transaction.rollback();
-        return res.status(400).json({ errors: ['Access level not found.'] });
-      }
-
-      // Um usuário só pode criar outro usuário com peso menor que ele.
-      if (req.userWeight < targetLevel.hierarchy_weight) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: [
-            'Forbidden. You do not have the authority to create a user with this access level.',
-          ],
-        });
-      }
-
-      let TargetModel;
-      let personId;
-
-      if (staff_id) {
-        TargetModel = Staff;
-        personId = staff_id;
-      } else if (student_id) {
-        TargetModel = Student;
-        personId = student_id;
-      } else if (guardian_id) {
-        TargetModel = Guardian;
-        personId = guardian_id;
-      }
-
-      if (!TargetModel) {
-        await transaction.rollback();
-        return res.status(400).json({
-          errors: [
-            'A user must be linked to a person (Staff, Student, or Guardian).',
-          ],
-        });
-      }
-
-      const person = await TargetModel.findByPk(personId, { transaction });
-      if (!person) {
-        await transaction.rollback();
-        return res.status(404).json({
-          errors: ['The specified person does not exist in the system.'],
-        });
-      }
-
-      // Prevenção de duplicação de conta para um mesmo usuário.
-      if (person.user_id) {
-        await transaction.rollback();
-        return res
-          .status(400)
-          .json({ errors: ['This person already has a linked user account.'] });
-      }
-
-      const emailExists = await User.findOne({ where: { email }, transaction });
-      if (emailExists) {
-        await transaction.rollback();
-        return res
-          .status(400)
-          .json({ errors: ['This email is already registered.'] });
-      }
-
-      const newUser = await User.create(
-        {
-          email,
-          password,
-          access_level_id,
-          avatar_url,
-          is_active: is_active ?? 1,
-          is_temporary: is_temporary ?? 0,
-        },
-        { transaction },
-      );
-
-      await person.update({ user_id: newUser.id }, { transaction });
-
-      const userCreated = await User.findByPk(newUser.id, {
-        attributes: ['id', 'email', 'avatar_url', 'is_active', 'is_temporary'],
-        include: [
-          {
-            model: AccessLevel,
-            as: 'access_level',
-            attributes: ['name', 'hierarchy_weight'],
-          },
-        ],
-        transaction,
-      });
-
-      await transaction.commit();
-      return res.status(201).json(userCreated);
-    } catch (e) {
-      if (transaction) await transaction.rollback();
-      return this.handleErrors(e, res);
-    }
-  }
-
-  async index(req, res) {
-    try {
-      const { searchTerm, page = 1, limit = 15 } = req.query;
-      const pageNum = parseInt(page, 10);
-      const limitNum = parseInt(limit, 10);
-      const offset = (pageNum - 1) * limitNum;
-
-      const where = {};
-
-      if (searchTerm) {
-        where[Operators.or] = [
-          { email: { [Operators.like]: `%${searchTerm}%` } },
-        ];
-      }
-
-      const { count, rows } = await User.findAndCountAll({
-        where,
-        attributes: [
-          'id',
-          'email',
-          'avatar_url',
-          'is_active',
-          'is_temporary',
-          'access_level_id',
-        ],
-        include: [
-          {
-            model: AccessLevel,
-            as: 'access_level',
-            attributes: [
-              'name',
-              'hierarchy_weight',
-              'manage_account',
-              'manage_record',
-              'manage_academic',
-              'manage_finance',
-            ],
-          },
-        ],
-        order: [['id', 'DESC']],
-        limit: limitNum,
-        offset: offset,
-      });
-
-      const totalPages = Math.ceil(count / limitNum);
-
-      return res.json({
-        rows,
-        totalPages,
-        totalCount: count,
-      });
-    } catch (e) {
-      return this.handleErrors(e, res);
-    }
-  }
-
-  async show(req, res) {
-    try {
-      const { id } = req.params;
-
-      if (!id) {
-        return res.status(400).json({ errors: ['Missing user ID.'] });
-      }
-
-      const user = await User.findByPk(id, {
-        attributes: [
-          'id',
-          'email',
-          'avatar_url',
-          'is_active',
-          'is_temporary',
-          'access_level_id',
-        ],
-        include: [
-          {
-            model: AccessLevel,
-            as: 'access_level',
-            attributes: [
-              'name',
-              'hierarchy_weight',
-              'manage_account',
-              'manage_record',
-              'manage_academic',
-              'manage_finance',
-            ],
-          },
-        ],
-      });
-
-      if (!user) {
-        return res.status(404).json({ errors: ['User not found.'] });
-      }
-
-      return res.json(user);
-    } catch (e) {
-      return this.handleErrors(e, res);
-    }
-  }
-
-  async update(req, res) {
-    const transaction = await database.transaction();
-    try {
-      const { id } = req.params;
-      if (!isValidId(id)) {
-        await transaction.rollback();
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
-      }
-
-      const userToUpdate = await User.findByPk(id, {
-        include: [
-          {
-            model: AccessLevel,
-            as: 'access_level',
-          },
-        ],
-        transaction,
-      });
-
-      const isEditingSelf = Number(id) === Number(req.userId);
-      const myWeight = req.userWeight;
-      const targetWeight = userToUpdate.access_level.hierarchy_weight;
-
-      if (!isEditingSelf && myWeight <= targetWeight) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: [
-            'Forbidden. You do not have enough authority to edit this user.',
-          ],
-        });
-      }
-      const {
-        email,
-        avatar_url,
-        access_level_id,
-        is_active,
-        is_temporary,
-        password,
-      } = req.body;
-
-      // REGRA DE PROMOÇÃO: Não pode atribuir um nível de acesso com peso maior que o seu próprio.
-      if (
-        access_level_id &&
-        Number(access_level_id) !== userToUpdate.access_level_id
-      ) {
-        const newLevel = await AccessLevel.findByPk(access_level_id, {
-          transaction,
-        });
-        if (!newLevel || myWeight < newLevel.hierarchy_weight) {
-          await transaction.rollback();
-          return res.status(403).json({
-            errors: [
-              'Forbidden. You cannot assign an access level higher than your own.',
-            ],
-          });
-        }
-      }
-      const updateData = {
-        email,
-        avatar_url,
-        access_level_id,
-        is_active,
-        is_temporary,
-      };
-      if (password) updateData.password = password;
-      await userToUpdate.update(updateData, { transaction });
-      const updatedUser = await User.findByPk(id, {
-        attributes: [
-          'id',
-          'email',
-          'avatar_url',
-          'access_level_id',
-          'is_active',
-          'is_temporary',
-        ],
-        include: [
-          {
-            model: AccessLevel,
-            as: 'access_level',
-            attributes: ['name', 'description'],
-          },
-        ],
-        transaction,
-      });
-      await transaction.commit();
-      return res.json(updatedUser);
-    } catch (e) {
-      if (transaction) await transaction.rollback();
-      return this.handleErrors(e, res);
-    }
-  }
-
-  async delete(req, res) {
-    const transaction = await database.transaction();
-    try {
-      const { id } = req.params;
-
-      if (!isValidId(id)) {
-        await transaction.rollback();
-        return res.status(400).json({ errors: ['Missing or invalid ID.'] });
-      }
-
-      const userToDelete = await User.findByPk(id, {
-        include: [
-          {
-            model: AccessLevel,
-            as: 'access_level',
-          },
-        ],
-        transaction,
-      });
-
-      const isSelf = Number(id) === Number(req.userId);
-      const hasAuthority =
-        req.userWeight > userToDelete.access_level.hierarchy_weight;
-
-      if (isSelf || !hasAuthority) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: [
-            'Forbidden. Insufficient authority to deactivate this user or self-deactivation attempt.',
-          ],
-        });
-      }
-
-      // Soft Delete
-      await userToDelete.update({ is_active: 0 }, { transaction });
-
-      await transaction.commit();
-      return res.json({
-        message:
-          'User successfully deactivated while preserving historical data.',
-      });
-    } catch (e) {
-      if (transaction) await transaction.rollback();
-      return this.handleErrors(e, res);
-    }
-  }
-
-  async setupPassword(req, res) {
+  };
+  // Método para settar o password.
+  setupPassword = async (req, res) => {
     try {
       const { password } = req.body;
 
@@ -479,7 +513,7 @@ class UserController {
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
+  };
 
   handleErrors(error, res) {
     if (error instanceof Sequelize.ValidationError) {
