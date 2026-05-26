@@ -66,13 +66,20 @@ export default class User extends Model {
             return avatar ? `${process.env.APP_URL}/images/${avatar}` : null;
           },
         },
-        is_active: {
-          type: Sequelize.BOOLEAN,
-          defaultValue: true,
-        },
         is_temporary: {
           type: Sequelize.BOOLEAN,
           defaultValue: false,
+        },
+        status: {
+          type: Sequelize.ENUM(
+            'active',
+            'inactive',
+            'transferred',
+            'graduated',
+            'suspended',
+          ),
+          allowNull: false,
+          defaultValue: 'active',
         },
       },
       {

@@ -38,9 +38,10 @@ export default class Subject extends Model {
           type: Sequelize.TINYINT,
           defaultValue: 0,
         },
-        is_active: {
-          type: Sequelize.TINYINT,
-          defaultValue: 1,
+        status: {
+          type: Sequelize.ENUM('active', 'inactive'),
+          allowNull: false,
+          defaultValue: 'active',
         },
       },
       {

@@ -4,6 +4,11 @@ export default class StudentClass extends Model {
   static init(sequelize) {
     super.init(
       {
+        enrollment_date: {
+          type: Sequelize.DATEONLY,
+          allowNull: false,
+          defaultValue: Sequelize.NOW,
+        },
         enrollment_status: {
           type: Sequelize.ENUM(
             'active',
@@ -28,14 +33,10 @@ export default class StudentClass extends Model {
             },
           },
         },
-        is_active: {
-          type: Sequelize.TINYINT,
-          defaultValue: 1,
-        },
-        enrollment_date: {
-          type: Sequelize.DATEONLY,
+        status: {
+          type: Sequelize.ENUM('active', 'inactive'),
           allowNull: false,
-          defaultValue: Sequelize.NOW,
+          defaultValue: 'active',
         },
       },
       {

@@ -15,15 +15,6 @@ export default class Staff extends Model {
           type: Sequelize.STRING,
           allowNull: true,
         },
-        url: {
-          type: Sequelize.VIRTUAL,
-          get() {
-            const avatar = this.getDataValue('avatar_url');
-            return avatar
-              ? `${process.env.APP_URL}/images/staff/${avatar}`
-              : null;
-          },
-        },
         full_name: {
           type: Sequelize.STRING,
           allowNull: false,
@@ -117,14 +108,12 @@ export default class Staff extends Model {
             },
           },
         },
-        status: {
-          type: Sequelize.STRING,
-          allowNull: false,
-          defaultValue: 'active',
+        termination_date: {
+          type: Sequelize.DATEONLY,
+          allowNull: true,
           validate: {
-            len: {
-              args: [3, 20],
-              msg: 'Status must be between 3 and 20 characters.',
+            isDate: {
+              msg: 'Invalid termination date format.',
             },
           },
         },
@@ -138,25 +127,10 @@ export default class Staff extends Model {
             },
           },
         },
-        is_active: {
-          type: Sequelize.TINYINT,
+        status: {
+          type: Sequelize.ENUM('active', 'inactive', 'suspended', 'on_leave'),
           allowNull: false,
-          defaultValue: 1,
-          validate: {
-            isIn: {
-              args: [[0, 1]],
-              msg: 'Invalid value for active status.',
-            },
-          },
-        },
-        termination_date: {
-          type: Sequelize.DATEONLY,
-          allowNull: true,
-          validate: {
-            isDate: {
-              msg: 'Invalid termination date format.',
-            },
-          },
+          defaultValue: 'active',
         },
       },
       {

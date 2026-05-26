@@ -21,15 +21,6 @@ export default class Guardian extends Model {
             },
           },
         },
-        url: {
-          type: Sequelize.VIRTUAL,
-          get() {
-            const avatar = this.getDataValue('avatar_url');
-            return avatar
-              ? `${process.env.APP_URL}/images/guardians/${avatar}`
-              : null;
-          },
-        },
         name: {
           type: Sequelize.STRING(50),
           defaultValue: '',
@@ -100,6 +91,11 @@ export default class Guardian extends Model {
               msg: 'Email must be between 5 and 100 characters.',
             },
           },
+        },
+        status: {
+          type: Sequelize.ENUM('active', 'inactive'),
+          allowNull: false,
+          defaultValue: 'active',
         },
       },
       {

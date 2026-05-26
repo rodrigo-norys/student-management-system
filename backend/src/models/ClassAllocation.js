@@ -4,9 +4,10 @@ export default class ClassAllocation extends Model {
   static init(sequelize) {
     super.init(
       {
-        is_active: {
-          type: Sequelize.TINYINT,
-          defaultValue: 1,
+        status: {
+          type: Sequelize.ENUM('active', 'inactive'),
+          allowNull: false,
+          defaultValue: 'active',
         },
       },
       {

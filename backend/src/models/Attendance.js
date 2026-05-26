@@ -9,7 +9,7 @@ export default class Attendance extends Model {
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
-        status: {
+        attendance_status: {
           type: Sequelize.ENUM('present', 'absent', 'justified'),
           defaultValue: 'present',
         },
@@ -17,9 +17,10 @@ export default class Attendance extends Model {
           type: Sequelize.STRING(255),
           allowNull: true,
         },
-        is_active: {
-          type: Sequelize.TINYINT,
-          defaultValue: 1,
+        status: {
+          type: Sequelize.ENUM('active', 'inactive'),
+          allowNull: false,
+          defaultValue: 'active',
         },
       },
       {

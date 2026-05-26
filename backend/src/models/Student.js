@@ -8,16 +8,6 @@ export default class Student extends Model {
           type: Sequelize.INTEGER,
           allowNull: true,
         },
-        is_active: {
-          type: Sequelize.ENUM(
-            'active',
-            'inactive',
-            'transferred',
-            'graduated',
-            'suspended',
-          ),
-          defaultValue: 'active',
-        },
         avatar_url: {
           type: Sequelize.STRING(150),
           allowNull: true,
@@ -26,15 +16,6 @@ export default class Student extends Model {
               args: [0, 150],
               msg: 'Avatar URL/Path must be up to 150 characters',
             },
-          },
-        },
-        url: {
-          type: Sequelize.VIRTUAL,
-          get() {
-            const avatar = this.getDataValue('avatar_url');
-            return avatar
-              ? `${process.env.APP_URL}/images/students/${avatar}`
-              : null;
           },
         },
         name: {
@@ -129,6 +110,17 @@ export default class Student extends Model {
               msg: 'Medical notes must be up to 255 characters',
             },
           },
+        },
+        status: {
+          type: Sequelize.ENUM(
+            'active',
+            'inactive',
+            'transferred',
+            'graduated',
+            'suspended',
+          ),
+          allowNull: false,
+          defaultValue: 'active',
         },
       },
       {

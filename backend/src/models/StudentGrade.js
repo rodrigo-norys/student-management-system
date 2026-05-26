@@ -44,6 +44,10 @@ export default class StudentGrade extends Model {
             max: 10,
           },
         },
+        absences: {
+          type: Sequelize.INTEGER,
+          defaultValue: 0,
+        },
         subject_status: {
           type: Sequelize.ENUM('studying', 'approved', 'failed', 'recovery'),
           defaultValue: 'studying',
@@ -54,13 +58,10 @@ export default class StudentGrade extends Model {
             },
           },
         },
-        absences: {
-          type: Sequelize.INTEGER,
-          defaultValue: 0,
-        },
-        is_active: {
-          type: Sequelize.TINYINT,
-          defaultValue: 1,
+        status: {
+          type: Sequelize.ENUM('active', 'inactive'),
+          allowNull: false,
+          defaultValue: 'active',
         },
       },
       {
