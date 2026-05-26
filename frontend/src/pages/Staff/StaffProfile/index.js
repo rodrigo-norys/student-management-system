@@ -14,6 +14,7 @@ import AddressTab from './components/AddressTab';
 import MedicalTab from './components/MedicalTab';
 
 import * as Styled from './styled';
+import { PageContainer } from 'components/ui';
 
 export default function StaffProfile() {
   const { id } = useParams();
@@ -37,7 +38,7 @@ export default function StaffProfile() {
   const mainPhoto = `${process.env.REACT_APP_API_URL}/images/staff/${staffMember.avatar_url}`;
 
   return (
-    <Styled.Container>
+    <PageContainer>
       <Loading isLoading={isLoading} />
       <Styled.HeaderContent>
         <h1>Staff Profile</h1>
@@ -94,6 +95,6 @@ export default function StaffProfile() {
           </Styled.Section>
         </Styled.MainContent>
       </Styled.FormGrid>
-    </Styled.Container>
+    </PageContainer>
   );
 }

@@ -76,7 +76,6 @@ export default function Guardians() {
 
     return (
       fullName.includes(searchLower) ||
-      guardian.is_active.toString().toLowerCase().includes(searchLower) ||
       guardian.email.toLowerCase().includes(searchLower) ||
       (guardian.phone && guardian.phone.includes(searchLower)) ||
       (guardian.cpf && guardian.cpf.includes(searchLower))

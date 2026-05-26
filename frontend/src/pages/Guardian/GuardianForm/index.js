@@ -6,8 +6,7 @@ import { isEmail } from 'validator';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import Loading from 'components/Loading';
-import ValidatedInput from 'components/Form/ValidatedInput';
-import ValidatedSelect from 'components/Form/ValidatedSelect';
+import { ValidatedInput, ValidatedSelect } from 'components/ui';
 
 import * as actions from 'store/modules/guardian/actions';
 
@@ -16,7 +15,9 @@ import { maskCEP, maskPhone } from 'utils/masks';
 
 import { getGuardianImageUrl } from '../constants';
 import { INITIAL_STATE } from './constants';
+
 import * as Styled from './styled';
+import { PageContainer } from 'components/ui';
 
 export default function GuardianForm() {
   const { id } = useParams();
@@ -187,7 +188,7 @@ export default function GuardianForm() {
   };
 
   return (
-    <Styled.Container>
+    <PageContainer>
       <Loading isLoading={isLoading} />
       <Styled.HeaderContent>
         <h1>{id ? 'Edit Guardian' : 'New Guardian'}</h1>
@@ -360,6 +361,6 @@ export default function GuardianForm() {
           </Styled.MainContent>
         </Styled.FormGrid>
       </Styled.Form>
-    </Styled.Container>
+    </PageContainer>
   );
 }

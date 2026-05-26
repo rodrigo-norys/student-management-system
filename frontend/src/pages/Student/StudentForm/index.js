@@ -6,9 +6,11 @@ import { isEmail } from 'validator';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import Loading from 'components/Loading';
-import ValidatedInput from 'components/Form/ValidatedInput';
-import ValidatedSelect from 'components/Form/ValidatedSelect';
-import ValidatedTextarea from 'components/Form/ValidatedTextarea';
+import {
+  ValidatedInput,
+  ValidatedSelect,
+  ValidatedTextarea,
+} from 'components/ui';
 
 import * as actions from 'store/modules/student/actions';
 
@@ -18,7 +20,9 @@ import { maskCEP } from 'utils/masks';
 
 import { getAvatarUrl } from 'utils/imageHelpers';
 import { INITIAL_STATE } from './constants';
+
 import * as Styled from './styled';
+import { PageContainer } from 'components/ui';
 
 export default function StudentForm() {
   const { id } = useParams();
@@ -202,7 +206,7 @@ export default function StudentForm() {
   };
 
   return (
-    <Styled.Container>
+    <PageContainer>
       <Loading isLoading={isLoading} />
       <Styled.HeaderContent>
         <h1>{id ? 'Edit Student' : 'New Student'}</h1>
@@ -402,6 +406,6 @@ export default function StudentForm() {
           </Styled.MainContent>
         </Styled.FormGrid>
       </Styled.Form>
-    </Styled.Container>
+    </PageContainer>
   );
 }

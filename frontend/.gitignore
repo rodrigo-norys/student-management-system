@@ -12,6 +12,7 @@
 .pnp.js
 /scripts/
 src/assets/
+repomix-output.xml
 
 # testing
 /coverage

@@ -15,6 +15,7 @@ import AddressTab from './components/AddressTab';
 import MedicalTab from './components/MedicalTab';
 
 import * as Styled from './styled.js';
+import { PageContainer } from 'components/ui';
 
 export default function StudentProfile() {
   const { id } = useParams();
@@ -37,15 +38,15 @@ export default function StudentProfile() {
   const mainPhoto = getAvatarUrl(student.avatar_url);
 
   return (
-    <Styled.Container>
+    <PageContainer>
       <Loading isLoading={isLoading} />
 
       <Styled.HeaderContent>
-  <h1>Student Profile</h1>
-  <Styled.PrimaryButton as={Link} to={`/student/${id}/edit`}>
-    <FaEdit size={16} /> To form
-  </Styled.PrimaryButton>
-</Styled.HeaderContent>
+        <h1>Student Profile</h1>
+        <Styled.PrimaryButton as={Link} to={`/student/${id}/edit`}>
+          <FaEdit size={16} /> To form
+        </Styled.PrimaryButton>
+      </Styled.HeaderContent>
 
       <Styled.FormGrid>
         <Styled.Sidebar>
@@ -91,6 +92,6 @@ export default function StudentProfile() {
           </Styled.Section>
         </Styled.MainContent>
       </Styled.FormGrid>
-    </Styled.Container>
+    </PageContainer>
   );
 }

@@ -14,18 +14,18 @@ export default function StudentGrid({
     <Styled.StudentContainer ref={animationParent}>
       {students.map((student) => (
         <Styled.StudentCard key={String(student.id)}>
-          <Styled.StudentStatus $status={student.is_active}>
-            {student.is_active.toUpperCase()}
+          <Styled.StudentStatus $status={student.status}>
+            {student.status.toUpperCase()}
           </Styled.StudentStatus>
 
           <Styled.ProfilePicture>
             {student.avatar_url ? (
               <img
-                src={getAvatarUrl(student.avatar_url)}
+                src={getAvatarUrl(`students/${student.avatar_url}`)}
                 alt={student.name}
               />
             ) : (
-              <FaUserCircle size={100} />
+              <FaUserCircle size={28} />
             )}
           </Styled.ProfilePicture>
 

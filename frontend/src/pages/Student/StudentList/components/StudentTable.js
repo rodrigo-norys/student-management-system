@@ -32,14 +32,14 @@ export default function StudentTable({
               <td>
                 <strong>{(currentPage - 1) * limit + index + 1}</strong>
               </td>
-              <Styled.StatusCell $status={student.is_active}>
-                <span>{student.is_active}</span>
+              <Styled.StatusCell $status={student.status}>
+                <span>{student.status}</span>
               </Styled.StatusCell>
               <td>
                 <Styled.SmallProfilePic>
                   {student.avatar_url ? (
                     <img
-                      src={getAvatarUrl(student.avatar_url)}
+                      src={getAvatarUrl(`students/${student.avatar_url}`)}
                       alt={student.name}
                     />
                   ) : (

@@ -9,15 +9,16 @@ import Loading from 'components/Loading';
 
 import * as actions from 'store/modules/staff/actions';
 
-import ValidatedInput from 'components/Form/ValidatedInput';
-import ValidatedSelect from 'components/Form/ValidatedSelect';
+import { ValidatedInput, ValidatedSelect } from 'components/ui';
 
 import { BRAZILIAN_STATES as UFs, EMPTY_ADDRESS } from 'constants/location.js';
 import { maskPhone, maskCEP } from 'utils/masks';
 
 import { STAFF_STATUS_OPTIONS, getStaffImageUrl } from '../constants.js';
 import { INITIAL_STATE } from './constants.js';
+
 import * as Styled from './styled.js';
+import { PageContainer } from 'components/ui';
 
 export default function StaffForm() {
   const { id } = useParams();
@@ -204,7 +205,7 @@ export default function StaffForm() {
   };
 
   return (
-    <Styled.Container>
+    <PageContainer>
       <Loading isLoading={isLoading} />
       <Styled.HeaderContent>
         <h1>{id ? 'Edit Member' : 'New Member'}</h1>
@@ -417,6 +418,6 @@ export default function StaffForm() {
           </Styled.MainContent>
         </Styled.FormGrid>
       </Styled.Form>
-    </Styled.Container>
+    </PageContainer>
   );
 }

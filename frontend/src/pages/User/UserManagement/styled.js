@@ -1,15 +1,24 @@
 import styled from 'styled-components';
 import * as colors from 'config/colors';
 
-// ==========================================
-// 1. VARIÁVEIS E CONFIGURAÇÕES BASE
-// ==========================================
-const bgColor = '#0f172a';
-const surfaceColor = '#1e293b';
-const borderColor = '#334155';
-const textPrimary = '#f8fafc';
-const textSecondary = '#94a3b8';
-const accentColor = colors.primaryColor || '#3b82f6';
+export {
+  ListContainer as Container,
+  HeaderToolbar,
+  ControlsArea,
+  SearchInput,
+  TableContainer,
+  TableActions,
+  ActionRow,
+  DetailRow,
+  PaginationArea,
+  NoResultsMessage,
+  PageButton,
+  Table as StyledTable,
+  CardGrid as GridContainer,
+  CardSubtitle as UserSubTitle,
+  CardDetails as UserDetails,
+  EntityCard as UserCard,
+} from 'components/ui';
 
 const statusTheme = {
   active: { text: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
@@ -17,53 +26,20 @@ const statusTheme = {
 };
 
 // ==========================================
-// 2. LAYOUT PRINCIPAL
+// 1. CONTROLES DA PÁGINA (TOOLBAR)
 // ==========================================
-export const Container = styled.div`
-  width: 100%;
-  margin: 0;
-  padding: 0 40px;
-  @media (max-width: 768px) {
-    padding: 0 20px;
-  }
-`;
-
-export const HeaderToolbar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid ${borderColor};
-  padding-bottom: 20px;
-  margin-bottom: 25px;
-  h1 {
-    font-size: 28px;
-    color: ${textPrimary};
-    font-weight: 800;
-  }
-`;
-
-// ==========================================
-// 3. CONTROLES DA PÁGINA (TOOLBAR)
-// ==========================================
-export const ControlsArea = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  gap: 15px;
-`;
-
 export const Tabs = styled.div`
   display: flex;
-  background: ${bgColor};
+  background: ${colors.bgColor};
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid ${borderColor};
+  border: 1px solid ${colors.borderColor};
   height: 44px;
 `;
 
 export const TabButton = styled.button`
-  background: ${(props) => (props.$active ? accentColor : 'transparent')};
+  background: ${(props) =>
+    props.$active ? colors.accentColor : 'transparent'};
   border: none;
   padding: 0 20px;
   cursor: pointer;
@@ -71,37 +47,10 @@ export const TabButton = styled.button`
   align-items: center;
   font-weight: 700;
   font-size: 14px;
-  color: ${(props) => (props.$active ? '#fff' : textSecondary)};
+  color: ${(props) => (props.$active ? '#fff' : colors.textSecondary)};
   transition: all 0.2s;
   &:hover:not(:disabled) {
-    color: ${(props) => (props.$active ? '#fff' : textPrimary)};
-  }
-`;
-
-export const SearchInput = styled.div`
-  display: flex;
-  align-items: center;
-  background: ${bgColor};
-  border-radius: 8px;
-  padding: 0 15px;
-  flex: 1;
-  max-width: 500px;
-  border: 1px solid ${borderColor};
-  height: 44px;
-  input {
-    border: none;
-    outline: none;
-    width: 100%;
-    background: transparent;
-    font-size: 14px;
-    color: ${textPrimary};
-    margin-left: 10px;
-    &::placeholder {
-      color: ${textSecondary};
-    }
-  }
-  svg {
-    color: ${textSecondary};
+    color: ${(props) => (props.$active ? '#fff' : colors.textPrimary)};
   }
 `;
 
@@ -134,74 +83,16 @@ export const ToggleButton = styled.button`
 `;
 
 // ==========================================
-// 4. ESTRUTURAS DE LISTA E CARDS (GRID MODE)
+// 2. ESTRUTURAS DE LISTA E CARDS (GRID MODE)
 // ==========================================
-export const TableContainer = styled.div`
-  width: 100%;
-  background: ${surfaceColor};
-  border-radius: 12px;
-  overflow-x: auto;
-  border: 1px solid ${borderColor};
-`;
-
-export const StyledTable = styled.table`
-  /* ... mantenha o conteúdo atual da tabela que já configuramos ... */
-  width: 100%;
-  border-collapse: collapse;
-  th {
-    background-color: rgba(15, 23, 42, 0.4);
-    color: ${textSecondary};
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 16px 20px;
-    border-bottom: 1px solid ${borderColor};
-    text-align: center;
-  }
-  td {
-    padding: 16px 20px;
-    border-bottom: 1px solid ${borderColor};
-    color: ${textPrimary};
-    font-size: 14px;
-    text-align: center;
-    vertical-align: middle;
-  }
-  tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.02);
-  }
-`;
-
-export const GridContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-`;
-
-export const UserCard = styled.div`
-  background: ${surfaceColor};
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid ${borderColor};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  transition: all 0.2s ease;
-  &:hover {
-    border-color: ${accentColor}80;
-    transform: translateY(-4px);
-  }
-`;
-
 export const UserStatus = styled.div`
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 900;
   text-transform: uppercase;
-  background: ${(props) => statusTheme[props.$status]?.bg || bgColor};
-  color: ${(props) => statusTheme[props.$status]?.text || textSecondary};
+  background: ${(props) => statusTheme[props.$status]?.bg || colors.bgColor};
+  color: ${(props) => statusTheme[props.$status]?.text || colors.textSecondary};
   margin-bottom: 15px;
   text-align: center;
   display: inline-flex;
@@ -214,70 +105,30 @@ export const ProfilePicture = styled.div`
   height: 100px;
   border-radius: 20px;
   overflow: hidden;
-  border: 3px solid ${bgColor};
-  box-shadow: 0 0 0 1px ${borderColor};
+  border: 3px solid ${colors.bgColor};
+  box-shadow: 0 0 0 1px ${colors.borderColor};
   margin-bottom: 15px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${bgColor};
+  background: ${colors.bgColor};
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
   svg {
-    color: ${borderColor};
+    color: ${colors.borderColor};
   }
 `;
 
 export const UserMainTitle = styled.h3`
-  color: ${textPrimary};
+  color: ${colors.textPrimary};
   font-size: 16px;
   margin-bottom: 4px;
   text-align: center;
   word-break: break-all;
-`;
-
-export const UserSubTitle = styled.span`
-  color: ${textSecondary};
-  font-size: 13px;
-  margin-bottom: 20px;
-`;
-
-export const UserDetails = styled.div`
-  width: 100%;
-  border-top: 1px solid ${borderColor};
-  padding-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-export const DetailRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  span:first-child {
-    color: ${textSecondary};
-    font-weight: 600;
-  }
-  span:last-child {
-    color: ${textPrimary};
-    font-weight: 700;
-  }
-`;
-
-export const ActionRow = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid ${borderColor};
 `;
 
 export const EditActionButton = styled.button`
@@ -287,7 +138,7 @@ export const EditActionButton = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
-  color: ${textSecondary};
+  color: ${colors.textSecondary};
   transition: all 0.2s ease-in-out;
   &:hover {
     color: #f1c40f;
@@ -296,7 +147,7 @@ export const EditActionButton = styled.button`
 `;
 
 // ==========================================
-// 5. ELEMENTOS DE LINHA / CÉLULA
+// 3. ELEMENTOS DE LINHA / CÉLULA
 // ==========================================
 export const StatusCell = styled.td`
   span {
@@ -305,8 +156,9 @@ export const StatusCell = styled.td`
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
-    background: ${(props) => statusTheme[props.$status]?.bg || bgColor};
-    color: ${(props) => statusTheme[props.$status]?.text || textSecondary};
+    background: ${(props) => statusTheme[props.$status]?.bg || colors.bgColor};
+    color: ${(props) =>
+      statusTheme[props.$status]?.text || colors.textSecondary};
   }
 `;
 
@@ -316,11 +168,11 @@ export const TableNameCol = styled.div`
   text-align: center;
   align-items: center;
   strong {
-    color: ${textPrimary};
+    color: ${colors.textPrimary};
     font-size: 14px;
   }
   span {
-    color: ${textSecondary};
+    color: ${colors.textSecondary};
     font-size: 12px;
   }
 `;
@@ -330,8 +182,8 @@ export const SmallProfilePic = styled.div`
   height: 40px;
   border-radius: 10px;
   overflow: hidden;
-  background: ${bgColor};
-  border: 1px solid ${borderColor};
+  background: ${colors.bgColor};
+  border: 1px solid ${colors.borderColor};
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -342,7 +194,7 @@ export const SmallProfilePic = styled.div`
     object-fit: cover;
   }
   svg {
-    color: ${borderColor};
+    color: ${colors.borderColor};
   }
 `;
 
@@ -359,20 +211,13 @@ export const RoleCell = styled.td`
 `;
 
 // ==========================================
-// 6. BOTÕES DE AÇÃO
+// 4. BOTÕES DE AÇÃO
 // ==========================================
-export const TableActions = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-`;
-
 export const EditButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${textSecondary};
+  color: ${colors.textSecondary};
   transition: all 0.2s ease-in-out;
   background: none;
   border: none;
@@ -385,7 +230,7 @@ export const EditButton = styled.button`
 `;
 
 export const GrantButton = styled.button`
-  background: ${accentColor};
+  background: ${colors.accentColor};
   color: #fff;
   padding: 8px 16px;
   border: none;
@@ -405,7 +250,7 @@ export const GrantButton = styled.button`
 `;
 
 // ==========================================
-// 7. FORMULÁRIOS E INPUTS GENÉRICOS
+// 5. FORMULÁRIOS E INPUTS GENÉRICOS
 // ==========================================
 export const FormGroup = styled.div`
   display: flex;
@@ -414,19 +259,19 @@ export const FormGroup = styled.div`
   label {
     font-size: 13px;
     font-weight: 700;
-    color: ${textPrimary};
+    color: ${colors.textPrimary};
   }
   select {
-    background: ${bgColor};
-    color: ${textPrimary};
-    border: 1px solid ${borderColor};
+    background: ${colors.bgColor};
+    color: ${colors.textPrimary};
+    border: 1px solid ${colors.borderColor};
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 14px;
     outline: none;
     cursor: pointer;
     &:focus {
-      border-color: ${accentColor};
+      border-color: ${colors.accentColor};
     }
   }
 `;
@@ -480,8 +325,8 @@ export const ToggleSwitch = styled.label`
     position: relative;
     width: 44px;
     height: 24px;
-    background-color: ${bgColor};
-    border: 1px solid ${borderColor};
+    background-color: ${colors.bgColor};
+    border: 1px solid ${colors.borderColor};
     border-radius: 24px;
     transition: 0.3s;
     &:before {
@@ -491,7 +336,7 @@ export const ToggleSwitch = styled.label`
       width: 16px;
       left: 3px;
       bottom: 3px;
-      background-color: ${textSecondary};
+      background-color: ${colors.textSecondary};
       border-radius: 50%;
       transition: 0.3s;
     }
@@ -506,7 +351,7 @@ export const ToggleSwitch = styled.label`
   }
   .label-text {
     font-size: 14px;
-    color: ${textSecondary};
+    color: ${colors.textSecondary};
     font-weight: 600;
   }
   input:checked ~ .label-text {
@@ -547,7 +392,7 @@ export const ErrorMessage = styled.span`
 `;
 
 // ==========================================
-// 8. MODAIS
+// 6. MODAIS
 // ==========================================
 export const ModalBackdrop = styled.div`
   position: fixed;
@@ -564,8 +409,8 @@ export const ModalBackdrop = styled.div`
 `;
 
 export const ModalCard = styled.div`
-  background: ${surfaceColor};
-  border: 1px solid ${borderColor};
+  background: ${colors.surfaceColor};
+  border: 1px solid ${colors.borderColor};
   border-radius: 12px;
   width: 100%;
   max-width: 480px;
@@ -592,16 +437,16 @@ export const ModalHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid ${borderColor};
+  border-bottom: 1px solid ${colors.borderColor};
   h2 {
     margin: 0;
     font-size: 18px;
-    color: ${textPrimary};
+    color: ${colors.textPrimary};
   }
   button {
     background: transparent;
     border: none;
-    color: ${textSecondary};
+    color: ${colors.textSecondary};
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -623,19 +468,19 @@ export const ModalBody = styled.form`
 export const StaticInfo = styled.div`
   display: flex;
   flex-direction: column;
-  background: ${bgColor};
+  background: ${colors.bgColor};
   padding: 12px 16px;
   border-radius: 8px;
-  border: 1px solid ${borderColor};
+  border: 1px solid ${colors.borderColor};
   span {
     font-size: 12px;
-    color: ${textSecondary};
+    color: ${colors.textSecondary};
     text-transform: uppercase;
     font-weight: 700;
   }
   strong {
     font-size: 15px;
-    color: ${textPrimary};
+    color: ${colors.textPrimary};
     margin-top: 4px;
   }
 `;
@@ -649,20 +494,20 @@ export const ModalFooter = styled.div`
 
 export const CancelButton = styled.button`
   background: transparent;
-  color: ${textPrimary};
-  border: 1px solid ${borderColor};
+  color: ${colors.textPrimary};
+  border: 1px solid ${colors.borderColor};
   padding: 10px 20px;
   border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
   &:hover {
-    background: ${bgColor};
+    background: ${colors.bgColor};
   }
 `;
 
 export const SaveButton = styled.button`
-  background: ${accentColor};
+  background: ${colors.accentColor};
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -688,59 +533,14 @@ export const ModalAvatarContainer = styled.div`
     height: 72px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid ${borderColor};
+    border: 3px solid ${colors.borderColor};
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   }
   svg {
     width: 72px;
     height: 72px;
-    color: ${textSecondary};
+    color: ${colors.textSecondary};
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
   }
 `;
 
-// ==========================================
-// 9. PAGINAÇÃO E FEEDBACKS VISUAIS
-// ==========================================
-export const PaginationArea = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 40px;
-  padding-bottom: 20px;
-  span {
-    font-size: 13px;
-    font-weight: 700;
-    color: ${textSecondary};
-  }
-`;
-
-export const PageButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: ${surfaceColor};
-  color: ${textPrimary};
-  border: 1px solid ${borderColor};
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover:not(:disabled) {
-    background: ${borderColor};
-  }
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-`;
-
-export const NoResultsMessage = styled.p`
-  color: ${textSecondary};
-  text-align: center;
-  padding: 60px 0;
-  font-weight: 600;
-`;

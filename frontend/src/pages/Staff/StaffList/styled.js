@@ -1,13 +1,33 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 import * as colors from 'config/colors';
 
-const bgColor = '#0f172a';
-const surfaceColor = '#1e293b';
-const borderColor = '#334155';
-const textPrimary = '#f8fafc';
-const textSecondary = '#94a3b8';
-const accentColor = colors.primaryColor || '#3b82f6';
+export {
+  ListContainer as Container,
+  HeaderToolbar,
+  ControlsArea,
+  SearchInput,
+  TableContainer,
+  TableActions,
+  ActionRow,
+  DetailRow,
+  PaginationArea,
+  NoResultsMessage,
+  ViewToggle,
+  ToggleButton,
+  PageButton,
+  Table as StyledTable,
+  TableNameCol,
+  SmallProfilePic,
+  EditButton,
+  DeleteButton,
+  ProfileButton,
+  CardGrid as StaffContainer,
+  CardSubtitle as StaffEmail,
+  CardDetails as StaffDetails,
+  EntityCard as StaffCard,
+  CardTitle as StaffName,
+  NewEntityLink as NewStaffLink,
+} from 'components/ui';
 
 const statusTheme = {
   active: { text: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
@@ -16,75 +36,25 @@ const statusTheme = {
   on_leave: { text: '#3498db', bg: 'rgba(52, 152, 219, 0.1)' },
 };
 
-export const Container = styled.div`
-  width: 100%;
-  margin: 0;
-  padding: 0 40px;
-  @media (max-width: 768px) {
-    padding: 0 20px;
-  }
-`;
-
-export const HeaderToolbar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid ${borderColor};
-  padding-bottom: 20px;
-  margin-bottom: 25px;
-  h1 {
-    font-size: 28px;
-    color: ${textPrimary};
-    font-weight: 800;
-  }
-`;
-
-export const NewStaffLink = styled(Link)`
-  background: ${accentColor};
-  color: #fff;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 700;
-  transition: all 0.2s ease;
-  &:hover {
-    filter: brightness(1.1);
-    transform: translateY(-2px);
-  }
-`;
-
-export const StaffContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-`;
-
-export const StaffCard = styled.div`
-  background: ${surfaceColor};
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid ${borderColor};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: all 0.2s ease;
-  &:hover {
-    border-color: ${accentColor}80;
-    transform: translateY(-4px);
-  }
-`;
-
 export const StaffStatus = styled.div`
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 900;
   text-transform: uppercase;
-  background: ${(props) => statusTheme[props.$status]?.bg || bgColor};
-  color: ${(props) => statusTheme[props.$status]?.text || textSecondary};
+  background: ${(props) => statusTheme[props.$status]?.bg || colors.bgColor};
+  color: ${(props) => statusTheme[props.$status]?.text || colors.textSecondary};
   margin-bottom: 15px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+`;
+
+export const StatusCell = styled.td`
+  color: ${(props) => statusTheme[props.$status]?.text || colors.textSecondary};
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
 `;
 
 export const ProfilePicture = styled.div`
@@ -92,8 +62,8 @@ export const ProfilePicture = styled.div`
   height: 100px;
   border-radius: 20px;
   overflow: hidden;
-  border: 3px solid ${bgColor};
-  box-shadow: 0 0 0 1px ${borderColor};
+  border: 3px solid ${colors.bgColor};
+  box-shadow: 0 0 0 1px ${colors.borderColor};
   margin-bottom: 15px;
   img {
     width: 100%;
@@ -101,248 +71,6 @@ export const ProfilePicture = styled.div`
     object-fit: cover;
   }
   svg {
-    color: ${borderColor};
+    color: ${colors.borderColor};
   }
-`;
-
-export const EditButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${textSecondary};
-  transition: all 0.2s ease;
-  &:hover {
-    color: #f1c40f;
-    transform: scale(1.1);
-  }
-`;
-
-export const DeleteButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0;
-  color: ${(props) => (props.$isConfirming ? '#ef4444' : textSecondary)};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  &:hover {
-    color: #ef4444;
-    transform: scale(1.1);
-  }
-`;
-
-export const ProfileButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${textSecondary};
-  transition: all 0.2s ease;
-  &:hover {
-    color: ${accentColor};
-    transform: scale(1.1);
-  }
-`;
-
-export const ActionRow = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid ${borderColor};
-`;
-
-export const TableActions = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-`;
-
-export const StatusCell = styled.td`
-  color: ${(props) => statusTheme[props.$status]?.text || textSecondary};
-  font-weight: 800;
-  font-size: 11px;
-  text-transform: uppercase;
-`;
-
-export const ControlsArea = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  gap: 15px;
-`;
-export const SearchInput = styled.div`
-  display: flex;
-  align-items: center;
-  background: ${bgColor};
-  border-radius: 8px;
-  padding: 0 15px;
-  flex: 1;
-  max-width: 500px;
-  border: 1px solid ${borderColor};
-  height: 44px;
-  input {
-    border: none;
-    outline: none;
-    width: 100%;
-    background: transparent;
-    font-size: 14px;
-    color: ${textPrimary};
-    margin-left: 10px;
-    &::placeholder {
-      color: ${textSecondary};
-    }
-  }
-  svg {
-    color: ${textSecondary};
-  }
-`;
-export const ViewToggle = styled.div`
-  display: flex;
-  background: ${bgColor};
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid ${borderColor};
-  height: 44px;
-`;
-export const ToggleButton = styled.button`
-  background: ${(props) => (props.$active ? accentColor : 'transparent')};
-  border: none;
-  padding: 0 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  color: ${(props) => (props.$active ? '#fff' : textSecondary)};
-  transition: all 0.2s;
-`;
-export const TableContainer = styled.div`
-  width: 100%;
-  background: ${surfaceColor};
-  border-radius: 12px;
-  overflow-x: auto;
-  border: 1px solid ${borderColor};
-`;
-export const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  th {
-    background-color: rgba(15, 23, 42, 0.4);
-    color: ${textSecondary};
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    padding: 16px 20px;
-    border-bottom: 1px solid ${borderColor};
-  }
-  td {
-    padding: 16px 20px;
-    border-bottom: 1px solid ${borderColor};
-    color: ${textPrimary};
-    font-size: 14px;
-    text-align: center;
-  }
-`;
-export const StaffName = styled.h3`
-  color: ${textPrimary};
-  font-size: 18px;
-  margin-bottom: 4px;
-`;
-export const StaffEmail = styled.span`
-  color: ${textSecondary};
-  font-size: 13px;
-  margin-bottom: 20px;
-`;
-export const StaffDetails = styled.div`
-  width: 100%;
-  border-top: 1px solid ${borderColor};
-  padding-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-export const DetailRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  span:first-child {
-    color: ${textSecondary};
-    font-weight: 600;
-  }
-  span:last-child {
-    color: ${textPrimary};
-    font-weight: 700;
-  }
-`;
-export const TableNameCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  strong {
-    color: ${textPrimary};
-    font-size: 14px;
-  }
-  span {
-    color: ${textSecondary};
-    font-size: 12px;
-  }
-`;
-export const SmallProfilePic = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: ${bgColor};
-  border: 1px solid ${borderColor};
-  margin: 0 auto;
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  svg {
-    color: ${borderColor};
-  }
-`;
-export const PaginationArea = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 40px;
-  padding-bottom: 20px;
-  span {
-    font-size: 13px;
-    font-weight: 700;
-    color: ${textSecondary};
-  }
-`;
-export const PageButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: ${surfaceColor};
-  color: ${textPrimary};
-  border: 1px solid ${borderColor};
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-`;
-export const NoResultsMessage = styled.p`
-  color: ${textSecondary};
-  text-align: center;
-  padding: 60px 0;
-  font-weight: 600;
 `;

@@ -15,6 +15,7 @@ import AddressTab from './components/AddressTab';
 import DependentsTab from './components/DependentsTab';
 
 import * as Styled from './styled';
+import { PageContainer } from 'components/ui';
 
 export default function GuardianProfile() {
   const { id } = useParams();
@@ -38,7 +39,7 @@ export default function GuardianProfile() {
   const mainPhoto = getGuardianImageUrl(guardian.avatar_url);
 
   return (
-    <Styled.Container>
+    <PageContainer>
       <Loading isLoading={isLoading} />
       <Styled.HeaderContent>
         <h1>Guardian Profile</h1>
@@ -97,6 +98,6 @@ export default function GuardianProfile() {
           </Styled.Section>
         </Styled.MainContent>
       </Styled.FormGrid>
-    </Styled.Container>
+    </PageContainer>
   );
 }

@@ -45,7 +45,7 @@ export default function Students() {
         }),
       );
     }
-  }, [isLoggedIn, currentPage, navigate, dispatch]);
+  }, [isLoggedIn, currentPage, navigate, dispatch, limit]);
 
   const handleDeleteAsk = (e, id) => {
     e.preventDefault();
@@ -75,7 +75,7 @@ export default function Students() {
     const fullName = `${student.name} ${student.last_name || ''}`.toLowerCase();
     return (
       fullName.includes(searchLower) ||
-      student.is_active.toLowerCase().includes(searchLower) ||
+      student.status.toLowerCase().includes(searchLower) ||
       student.email.toLowerCase().includes(searchLower) ||
       student.registration_number.includes(searchLower) ||
       student.blood_type.includes(searchLower)
