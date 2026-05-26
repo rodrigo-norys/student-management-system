@@ -97,7 +97,7 @@ export default function guardianReducer(state = initialState, action) {
           return {
             ...guardian,
             isLoading: false,
-            is_active: 'inactive',
+            status: 'inactive',
           };
         }
         return guardian;

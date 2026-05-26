@@ -2,6 +2,7 @@ import React from 'react';
 import { FaUserCircle, FaUserCheck } from 'react-icons/fa';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 import * as Styled from '../styled';
+import { getAvatarUrl } from 'utils/imageHelpers';
 
 export default function PendingAccessView({
   dataList,
@@ -10,22 +11,64 @@ export default function PendingAccessView({
   onValidateClick,
   viewMode = 'table',
 }) {
-
-  // GRID VIEW - RENDERIZAÇÃO DO MODO GRID
+  // GRID
   if (viewMode === 'grid') {
     return (
       <Styled.GridContainer>
-        {dataList.map((target) => (
-          <Styled.UserCard key={`pending-grid-${target.type}-${target.id}`}>
+        {dataList.map((target) => {
+          const formattedCpf = cpfValidator.format(target.cpf) || target.cpf;
 
-            <p>{target.displayName}</p>
-          </Styled.UserCard>
-        ))}
+          return (
+            <Styled.UserCard key={`pending-grid-${target.type}-${target.id}`}>
+              <Styled.ProfilePicture>
+                {target.avatar_url ? (
+                  <img
+                    src={getAvatarUrl(
+                      `${target.type === 'student'
+                        ? 'students'
+                        : target.type === 'staff'
+                          ? 'staff'
+                          : 'guardians'}/${target.avatar_url}`,
+                    )}
+                    alt={target.displayName}
+                  />
+                ) : (
+                  <FaUserCircle size={100} />
+                )}
+              </Styled.ProfilePicture>
+
+              <Styled.UserMainTitle>{target.displayName}</Styled.UserMainTitle>
+              <Styled.UserSubTitle>{target.email || 'No email provided'}</Styled.UserSubTitle>
+
+              <Styled.UserDetails>
+                <Styled.DetailRow>
+                  <span>Role</span>
+                  <span style={{ textTransform: 'uppercase' }}>{target.type}</span>
+                </Styled.DetailRow>
+                <Styled.DetailRow>
+                  <span>CPF</span>
+                  <span>{formattedCpf}</span>
+                </Styled.DetailRow>
+              </Styled.UserDetails>
+
+              <Styled.ActionRow>
+                <Styled.GrantButton
+                  type="button"
+                  title="Validate"
+                  onClick={() => onValidateClick(target)}
+                >
+                  <FaUserCheck size={14} />
+                  <span>Validate</span>
+                </Styled.GrantButton>
+              </Styled.ActionRow>
+            </Styled.UserCard>
+          );
+        })}
       </Styled.GridContainer>
     );
   }
 
-  // TABLE VIEW - RENDERIZAÇÃO DO MODO TABELA (DEFAULT)
+  // TABLE
   return (
     <Styled.TableContainer>
       <Styled.StyledTable>
@@ -52,7 +95,20 @@ export default function PendingAccessView({
 
                 <td>
                   <Styled.SmallProfilePic>
-                    <FaUserCircle size={28} />
+                    {target.avatar_url ? (
+                      <img
+                        src={getAvatarUrl(
+                          `${target.type === 'student'
+                            ? 'students'
+                            : target.type === 'staff'
+                              ? 'staff'
+                              : 'guardians'}/${target.avatar_url}`,
+                        )}
+                        alt={target.displayName}
+                      />
+                    ) : (
+                      <FaUserCircle size={28} />
+                    )}
                   </Styled.SmallProfilePic>
                 </td>
 
@@ -63,9 +119,7 @@ export default function PendingAccessView({
                   </Styled.TableNameCol>
                 </td>
 
-                <Styled.RoleCell>
-                  {target.type || ''}
-                </Styled.RoleCell>
+                <Styled.RoleCell>{target.type || ''}</Styled.RoleCell>
 
                 <td>{formattedCpf}</td>
 

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { FaTimes, FaUserCheck, FaSyncAlt } from 'react-icons/fa';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FaTimes, FaUserCircle, FaSyncAlt } from 'react-icons/fa';
 import { isEmail } from 'validator';
 import * as Styled from '../styled';
+import { getAvatarUrl } from 'utils/imageHelpers';
 
 export default function ValidateAccessModal({
   isOpen,
@@ -18,11 +19,11 @@ export default function ValidateAccessModal({
   const [accessError, setAccessError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const generatePassword = () => {
+  const generatePassword = useCallback(() => {
     const tempPassword = Math.random().toString(36).slice(-8) + 'X9@';
     setPassword(tempPassword);
-    if (passwordError) setPasswordError('');
-  };
+    setPasswordError('');
+  }, []);
 
   useEffect(() => {
     if (target) {
@@ -33,7 +34,7 @@ export default function ValidateAccessModal({
       setPasswordError('');
       generatePassword();
     }
-  }, [target]);
+  }, [target, generatePassword]);
 
   if (!isOpen || !target) return null;
 
@@ -88,11 +89,17 @@ export default function ValidateAccessModal({
           <Styled.ModalAvatarContainer>
             {target.avatar_url ? (
               <img
-                src={target.avatar_url}
-                alt={target.name || 'Target profile'}
+                src={getAvatarUrl(
+                  `${target.type === 'student'
+                    ? 'students'
+                    : target.type === 'staff'
+                      ? 'staff'
+                      : 'guardians'}/${target.avatar_url}`,
+                )}
+                alt={target.displayName}
               />
             ) : (
-              <FaUserCheck />
+              <FaUserCircle size={28} />
             )}
           </Styled.ModalAvatarContainer>
 

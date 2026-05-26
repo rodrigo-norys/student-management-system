@@ -94,7 +94,7 @@ export default function studentReducer(state = initialState, action) {
           return {
             ...student,
             isLoading: false,
-            is_active: 'inactive',
+            status: 'inactive',
           };
         }
         return student;

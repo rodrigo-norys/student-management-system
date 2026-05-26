@@ -32,7 +32,7 @@ function* register({ payload }) {
     email,
     password,
     access_level_id,
-    is_active,
+    status,
     is_temporary,
     student_id,
     guardian_id,
@@ -45,7 +45,7 @@ function* register({ payload }) {
         email,
         password: password || undefined,
         access_level_id,
-        is_active,
+        status,
         is_temporary,
       });
       toast.success('Account updated');
@@ -55,7 +55,7 @@ function* register({ payload }) {
         email,
         password,
         access_level_id,
-        is_active,
+        status,
         is_temporary,
         student_id,
         guardian_id,

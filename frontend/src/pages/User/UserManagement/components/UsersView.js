@@ -16,8 +16,8 @@ export default function UsersView({
       <Styled.GridContainer>
         {dataList.map((user) => (
           <Styled.UserCard key={`user-grid-${user.id}`}>
-            <Styled.UserStatus $status={user.is_active ? 'active' : 'inactive'}>
-              {user.is_active ? 'ACTIVE' : 'INACTIVE'}
+            <Styled.UserStatus $status={user.status}>
+              {user.status?.toUpperCase()}
             </Styled.UserStatus>
 
             <Styled.ProfilePicture>
@@ -79,10 +79,8 @@ export default function UsersView({
                   <strong>{displayIndex}</strong>
                 </td>
 
-                <Styled.StatusCell
-                  $status={user.is_active ? 'active' : 'inactive'}
-                >
-                  <span>{user.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
+                <Styled.StatusCell $status={user.status}>
+                  <span>{user.status?.toUpperCase()}</span>
                 </Styled.StatusCell>
 
                 <td>

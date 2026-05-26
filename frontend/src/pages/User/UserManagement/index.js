@@ -67,6 +67,7 @@ export default function UserManagement() {
           currentPage={currentPage}
           limit={limit}
           onValidateClick={setValidatingTarget}
+          viewMode={viewMode}
         />
       );
     }

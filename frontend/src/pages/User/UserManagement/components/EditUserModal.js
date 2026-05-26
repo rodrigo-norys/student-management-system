@@ -12,7 +12,7 @@ export default function EditUserModal({
 }) {
   const [formData, setFormData] = useState({
     access_level_id: '',
-    is_active: true,
+    status: 'active',
     is_temporary: false,
   });
 
@@ -20,7 +20,7 @@ export default function EditUserModal({
     if (user) {
       setFormData({
         access_level_id: user.access_level?.id || user.access_level_id || '',
-        is_active: user.is_active ?? true,
+        status: user.status ?? 'active',
         is_temporary: user.is_temporary ?? false,
       });
     }
@@ -86,18 +86,23 @@ export default function EditUserModal({
           </Styled.FormGroup>
 
           <Styled.FormGroup>
-            <label htmlFor="is_active">Account Status</label>
+            <label htmlFor="status">Account Status</label>
             <Styled.ToggleSwitch>
               <input
                 type="checkbox"
-                name="is_active"
-                id="is_active"
-                checked={formData.is_active}
-                onChange={handleChange}
+                name="status"
+                id="status"
+                checked={formData.status === 'active'}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    status: e.target.checked ? 'active' : 'inactive',
+                  }))
+                }
               />
               <span className="slider" />
               <span className="label-text">
-                {formData.is_active
+                {formData.status === 'active'
                   ? 'Active (Can login)'
                   : 'Inactive (Suspended)'}
               </span>

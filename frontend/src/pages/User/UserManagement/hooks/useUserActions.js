@@ -20,7 +20,7 @@ export default function useUserActions({
     try {
       const response = await axios.put(`/users/${id}`, updatedData);
 
-      if (updatedData.is_active !== (activeTab === 'active')) {
+      if (updatedData.status !== activeTab) {
         setDataList((prevList) => prevList.filter((user) => user.id !== id));
       } else {
         setDataList((prevList) =>

@@ -94,7 +94,7 @@ export default function staffReducer(state = initialState, action) {
           return {
             ...staff,
             isLoading: false,
-            is_active: 'inactive',
+            status: 'inactive',
           };
         }
         return staff;
