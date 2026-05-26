@@ -99,7 +99,7 @@ class GuardianController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'access_level_id', 'is_active'],
+            attributes: ['id', 'email', 'access_level_id', 'status'],
           },
           {
             model: Address,
@@ -154,7 +154,7 @@ class GuardianController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'is_active'],
+            attributes: ['id', 'email', 'status'],
           },
           {
             model: Address,
@@ -312,10 +312,10 @@ class GuardianController {
         });
       }
 
-      await guardian.update({ is_active: 'inactive' }, { transaction });
+      await guardian.update({ status: 'inactive' }, { transaction });
 
       if (guardian.user) {
-        await guardian.user.update({ is_active: 0 }, { transaction });
+        await guardian.user.update({ status: 'inactive' }, { transaction });
       }
 
       await transaction.commit();

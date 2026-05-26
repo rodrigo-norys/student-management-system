@@ -13,15 +13,20 @@ function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
 }
 
+// Escapa wildcards do LIKE (% _ \) para tratá-los como literais na busca.
+function escapeLike(term) {
+  return String(term).replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
 class UserController {
   create = async (req, res) => {
-    const transaction = await User.sequelize.transaction();
+    const transaction = await database.transaction();
     try {
       const {
         access_level_id,
         email,
         password,
-        is_active,
+        status,
         is_temporary,
         student_id,
         guardian_id,
@@ -124,7 +129,7 @@ class UserController {
           email,
           avatar_url: finalAvatarUrl,
           password,
-          is_active: is_active ?? true,
+          status: status ?? 'active',
           is_temporary: is_temporary ?? true,
         },
         { transaction },
@@ -139,14 +144,14 @@ class UserController {
         email: newUser.email,
         access_level_id: newUser.access_level_id,
         avatar_url: newUser.avatar_url,
-        is_active: newUser.is_active,
+        status: newUser.status,
         is_temporary: newUser.is_temporary,
       });
     } catch (e) {
       await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
   index = async (req, res) => {
     try {
@@ -157,13 +162,10 @@ class UserController {
 
       const where = {};
 
-      if (status === 'active') where.is_active = true;
-      if (status === 'inactive') where.is_active = false;
+      if (status) where.status = status;
 
       if (searchTerm) {
-        where[Operators.or] = [
-          { email: { [Operators.like]: `%${searchTerm}%` } },
-        ];
+        where.email = { [Operators.like]: `%${escapeLike(searchTerm)}%` };
       }
 
       const { count, rows } = await User.findAndCountAll({
@@ -172,7 +174,7 @@ class UserController {
           'id',
           'email',
           'avatar_url',
-          'is_active',
+          'status',
           'is_temporary',
           'access_level_id',
         ],
@@ -220,7 +222,7 @@ class UserController {
           'id',
           'email',
           'avatar_url',
-          'is_active',
+          'status',
           'is_temporary',
           'access_level_id',
         ],
@@ -292,7 +294,7 @@ class UserController {
         email,
         avatar_url,
         access_level_id,
-        is_active,
+        status,
         is_temporary,
         password,
       } = req.body;
@@ -318,7 +320,7 @@ class UserController {
         email,
         avatar_url,
         access_level_id,
-        is_active,
+        status,
         is_temporary,
       };
 
@@ -332,7 +334,7 @@ class UserController {
           'email',
           'avatar_url',
           'access_level_id',
-          'is_active',
+          'status',
           'is_temporary',
         ],
         include: [
@@ -373,9 +375,14 @@ class UserController {
         transaction,
       });
 
+      if (!userToDelete) {
+        await transaction.rollback();
+        return res.status(404).json({ errors: ['User not found.'] });
+      }
+
       const isSelf = Number(id) === Number(req.userId);
       const hasAuthority =
-        req.userWeight > userToDelete.access_level.hierarchy_weight;
+        req.userWeight > (userToDelete.access_level?.hierarchy_weight || 0);
 
       if (isSelf || !hasAuthority) {
         await transaction.rollback();
@@ -387,7 +394,7 @@ class UserController {
       }
 
       // Soft Delete
-      await userToDelete.update({ is_active: 0 }, { transaction });
+      await userToDelete.update({ status: 'inactive' }, { transaction });
 
       await transaction.commit();
       return res.json({
@@ -400,7 +407,11 @@ class UserController {
     }
   };
 
-  // Método de busca para as entidades que não possuem um usuário.
+  /**
+   * Busca Global de Alvos sem Credencial (User) vinculada.
+   * Varre simultaneamente as tabelas de Students, Guardians e Staff procurando
+   * registros com user_id nulo.
+   */
   searchTargets = async (req, res) => {
     try {
       const { searchTerm, page = 1, limit = 15 } = req.query;
@@ -413,7 +424,7 @@ class UserController {
       const staffWhere = { user_id: null };
 
       if (searchTerm) {
-        const searchPattern = `%${searchTerm}%`;
+        const searchPattern = `%${escapeLike(searchTerm)}%`;
 
         studentWhere[Operators.or] = [
           { name: { [Operators.like]: searchPattern } },
@@ -440,7 +451,7 @@ class UserController {
       const [students, guardians, staffMembers] = await Promise.all([
         Student.findAll({
           where: studentWhere,
-          attributes: ['id', 'name', 'last_name', 'email', 'cpf'],
+          attributes: ['id', 'avatar_url', 'name', 'last_name', 'email', 'cpf'],
         }),
         Guardian.findAll({
           where: guardianWhere,
@@ -483,7 +494,11 @@ class UserController {
       return this.handleErrors(e, res);
     }
   };
-  // Método para settar o password.
+
+  /**
+   * Ativação de Conta (First Access).
+   * Exclusivo para usuários com a flag 'is_temporary' ativa.
+   */
   setupPassword = async (req, res) => {
     try {
       const { password } = req.body;

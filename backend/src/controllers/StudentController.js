@@ -11,26 +11,36 @@ function isValidId(id) {
 }
 
 class StudentController {
-  async create(req, res) {
+  create = async (req, res) => {
     const transaction = await database.transaction();
+
     try {
-      if (req.userLevel > 2) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: ['Access denied. You cannot create student records.'],
-        });
-      }
+      const { addresses, guardian_ids, ...rawStudentData } = req.body;
 
-      const { addresses, guardian_ids, ...studentData } = req.body;
+      const sanitizedStudentData = {
+        name: rawStudentData.name,
+        last_name: rawStudentData.last_name,
+        email: rawStudentData.email,
+        cpf: rawStudentData.cpf,
+        birth_date: rawStudentData.birth_date,
+        blood_type: rawStudentData.blood_type,
+        avatar_url: null,
+        user_id: null,
+      };
 
-      const newStudent = await Student.create(
-        { ...studentData, user_id: null },
-        { transaction },
-      );
+      const newStudent = await Student.create(sanitizedStudentData, {
+        transaction,
+      });
 
       if (addresses && Array.isArray(addresses) && addresses.length > 0) {
         const addressesToSave = addresses.map((address) => ({
-          ...address,
+          zip_code: address.zip_code,
+          street: address.street,
+          number: address.number,
+          complement: address.complement,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          state: address.state,
           student_id: newStudent.id,
         }));
         await Address.bulkCreate(addressesToSave, { transaction });
@@ -45,9 +55,17 @@ class StudentController {
       }
 
       const fullStudent = await Student.findByPk(newStudent.id, {
-        attributes: {
-          exclude: ['created_at', 'updated_at'],
-        },
+        attributes: [
+          'id',
+          'name',
+          'last_name',
+          'email',
+          'cpf',
+          'birth_date',
+          'blood_type',
+          'status',
+          'avatar_url',
+        ],
         include: [
           {
             model: Address,
@@ -76,14 +94,31 @@ class StudentController {
       await transaction.commit();
       return res.status(201).json(fullStudent);
     } catch (e) {
-      if (transaction) await transaction.rollback();
+      if (transaction && !transaction.finished) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async index(req, res) {
+  index = async (req, res) => {
     try {
-      const whereClause = req.userLevel === 5 ? { user_id: req.userId } : {};
+      let whereClause = {};
+
+      const guardianInclude = {
+        model: Guardian,
+        as: 'guardians',
+        attributes: ['id', 'name', 'last_name', 'phone'],
+        through: { attributes: [] },
+      };
+
+      // Regra de visualização do que Student e Guardian podem ver
+      if (req.userRole === 'Student') {
+        whereClause.user_id = req.userId;
+      } else if (req.userRole === 'Guardian') {
+        guardianInclude.where = { user_id: req.userId };
+        guardianInclude.required = true;
+      }
+
+      // PAGINAÇÃO
       const { page = 1, limit = 15 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
 
@@ -98,7 +133,7 @@ class StudentController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'access_level_id', 'is_active'],
+            attributes: ['id', 'email', 'access_level_id', 'status'],
           },
           {
             model: Address,
@@ -114,12 +149,7 @@ class StudentController {
               'state',
             ],
           },
-          {
-            model: Guardian,
-            as: 'guardians',
-            attributes: ['id', 'name', 'last_name', 'phone'],
-            through: { attributes: [] },
-          },
+          guardianInclude,
         ],
       });
 
@@ -134,11 +164,12 @@ class StudentController {
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async show(req, res) {
+  show = async (req, res) => {
     try {
       const { id } = req.params;
+
       if (!isValidId(id)) {
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
@@ -149,7 +180,7 @@ class StudentController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'is_active'],
+            attributes: ['id', 'email', 'status'],
           },
           {
             model: Address,
@@ -168,7 +199,14 @@ class StudentController {
           {
             model: Guardian,
             as: 'guardians',
-            attributes: ['id', 'name', 'last_name', 'phone', 'email'],
+            attributes: [
+              'id',
+              'name',
+              'last_name',
+              'phone',
+              'email',
+              'user_id',
+            ],
             through: { attributes: [] },
           },
         ],
@@ -179,47 +217,78 @@ class StudentController {
         return res.status(404).json({ errors: ['Student not found.'] });
       }
 
-      if (
-        [5].includes(req.userLevel) &&
-        Number(student.user_id) !== Number(req.userId)
-      ) {
-        return res.status(403).json({ errors: ['Forbidden.'] });
+      // Regra para o aluno ver somente o perfil dele.
+      if (req.userRole === 'Student') {
+        if (Number(student.user_id) !== Number(req.userId)) {
+          return res.status(403).json({
+            errors: ['Forbidden. You can only view your own profile.'],
+          });
+        }
+      }
+      // Regra para o responsável ver somente os alunos vinculados a ele.
+      else if (req.userRole === 'Guardian') {
+        const isGuardianLinked = student.guardians.some(
+          (guardian) => Number(guardian.user_id) === Number(req.userId),
+        );
+
+        if (!isGuardianLinked) {
+          return res.status(403).json({
+            errors: [
+              'Forbidden. This student is not registered as your dependent.',
+            ],
+          });
+        }
       }
 
       return res.json(student);
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async update(req, res) {
+  update = async (req, res) => {
     const transaction = await database.transaction();
+
     try {
       const { id } = req.params;
+
       if (!isValidId(id)) {
         await transaction.rollback();
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
       }
 
       const student = await Student.findByPk(id, { transaction });
+
       if (!student) {
         await transaction.rollback();
         return res.status(404).json({ errors: ['Student not found.'] });
       }
 
-      if ([4, 5].includes(req.userLevel)) {
-        await transaction.rollback();
-        return res.status(403).json({ errors: ['Forbidden.'] });
-      }
+      const { addresses, guardian_ids, ...rawStudentData } = req.body;
+      const safeUpdateData = {
+        name: rawStudentData.name,
+        last_name: rawStudentData.last_name,
+        email: rawStudentData.email,
+        cpf: rawStudentData.cpf,
+        birth_date: rawStudentData.birth_date,
+        blood_type: rawStudentData.blood_type,
+      };
 
-      const { addresses, guardian_ids, ...studentData } = req.body;
-      await student.update(studentData, { transaction });
+      await student.update(safeUpdateData, { transaction });
 
+      // Atualização dos endereços.
       if (addresses) {
         await Address.destroy({ where: { student_id: id }, transaction });
+
         if (Array.isArray(addresses) && addresses.length > 0) {
           const addressesToSave = addresses.map((addr) => ({
-            ...addr,
+            zip_code: addr.zip_code,
+            street: addr.street,
+            number: addr.number,
+            complement: addr.complement,
+            neighborhood: addr.neighborhood,
+            city: addr.city,
+            state: addr.state,
             student_id: id,
           }));
           await Address.bulkCreate(addressesToSave, { transaction });
@@ -231,7 +300,17 @@ class StudentController {
       }
 
       const updatedStudent = await Student.findByPk(id, {
-        attributes: { exclude: ['created_at', 'updated_at'] },
+        attributes: [
+          'id',
+          'name',
+          'last_name',
+          'email',
+          'cpf',
+          'birth_date',
+          'blood_type',
+          'status',
+          'avatar_url',
+        ],
         include: [
           {
             model: Address,
@@ -260,18 +339,30 @@ class StudentController {
       await transaction.commit();
       return res.json(updatedStudent);
     } catch (e) {
-      if (transaction) await transaction.rollback();
+      if (transaction && !transaction.finished) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async delete(req, res) {
+  delete = async (req, res) => {
     const transaction = await database.transaction();
     try {
       const { id } = req.params;
+
       if (!isValidId(id)) {
         await transaction.rollback();
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
+      }
+
+      if (!req.userPermissions || !req.userPermissions.manage_record) {
+        await transaction.rollback();
+        return res
+          .status(403)
+          .json({
+            errors: [
+              'Forbidden. You lack the necessary manage_record permission.',
+            ],
+          });
       }
 
       const student = await Student.findByPk(id, {
@@ -284,23 +375,20 @@ class StudentController {
         return res.status(404).json({ errors: ['Student not found.'] });
       }
 
-      if (Number(student.user_id) === Number(req.userId) || req.userLevel > 3) {
-        await transaction.rollback();
-        return res.status(403).json({ errors: ['Forbidden.'] });
-      }
+      // SOFT DELETE
+      await student.update({ status: 'inactive' }, { transaction });
 
-      await student.update({ is_active: 'inactive' }, { transaction });
       if (student.user) {
-        await student.user.update({ is_active: 0 }, { transaction });
+        await student.user.update({ status: 'inactive' }, { transaction });
       }
 
       await transaction.commit();
       return res.json({ message: 'Student deactivated successfully.' });
     } catch (e) {
-      if (transaction) await transaction.rollback();
+      if (transaction && !transaction.finished) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
   handleErrors(e, res) {
     if (e instanceof Sequelize.ValidationError) {
@@ -313,7 +401,6 @@ class StudentController {
         .status(400)
         .json({ errors: ['Referenced ID does not exist.'] });
     }
-    console.log('REAL_ERROR:', e);
     return res.status(500).json({ errors: ['Internal server error.'] });
   }
 }

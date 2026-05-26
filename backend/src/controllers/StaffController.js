@@ -92,7 +92,7 @@ class StaffController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'access_level_id', 'is_active'],
+            attributes: ['id', 'email', 'access_level_id', 'status'],
           },
           {
             model: Address,
@@ -155,7 +155,7 @@ class StaffController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'access_level_id', 'is_active'],
+            attributes: ['id', 'email', 'access_level_id', 'status'],
           },
         ],
         order: [[{ model: Address, as: 'addresses' }, 'id', 'ASC']],
@@ -290,7 +290,7 @@ class StaffController {
       await staffMember.update({ status: 'inactive' }, { transaction });
 
       if (staffMember.user) {
-        await staffMember.user.update({ is_active: false }, { transaction });
+        await staffMember.user.update({ status: 'inactive' }, { transaction });
       }
 
       await transaction.commit();

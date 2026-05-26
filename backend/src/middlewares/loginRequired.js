@@ -12,10 +12,7 @@ export default async (req, res, next) => {
   }
 
   try {
-    const data = jwt.verify(
-      access_token,
-      process.env.ACCESS_TOKEN_SECRET
-    );
+    const data = jwt.verify(access_token, process.env.ACCESS_TOKEN_SECRET);
 
     const { id, email } = data;
 
@@ -24,12 +21,20 @@ export default async (req, res, next) => {
         {
           model: AccessLevel,
           as: 'access_level',
-          attributes: ['hierarchy_weight'],
+          attributes: [
+            'name',
+            'hierarchy_weight',
+            'is_system_level',
+            'manage_account',
+            'manage_record',
+            'manage_academic',
+            'manage_finance',
+          ],
         },
       ],
     });
 
-    if (!user || !user.is_active) {
+    if (!user || user.status !== 'active') {
       return res.status(401).json({
         errors: ['User not found or inactive.'],
       });
@@ -38,6 +43,15 @@ export default async (req, res, next) => {
     req.userId = id;
     req.userEmail = email;
     req.userWeight = user.access_level.hierarchy_weight;
+    req.userRole = user.access_level.name;
+
+    req.userPermissions = {
+      is_system_level: user.access_level.is_system_level,
+      manage_account: user.access_level.manage_account,
+      manage_record: user.access_level.manage_record,
+      manage_academic: user.access_level.manage_academic,
+      manage_finance: user.access_level.manage_finance,
+    };
 
     return next();
   } catch (e) {
