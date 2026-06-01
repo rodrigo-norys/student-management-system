@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import * as colors from 'config/colors';
+import { StatusBadge } from 'components/ui';
 
 export {
   ListContainer as Container,
@@ -14,6 +15,7 @@ export {
   NoResultsMessage,
   PageButton,
   Table as StyledTable,
+  CardProfilePicture as ProfilePicture,
   CardGrid as GridContainer,
   CardSubtitle as UserSubTitle,
   CardDetails as UserDetails,
@@ -21,9 +23,14 @@ export {
 } from 'components/ui';
 
 const statusTheme = {
-  active: { text: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-  inactive: { text: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' },
+  active: { text: colors.successColor, bg: 'rgba(16, 185, 129, 0.1)' },
+  inactive: { text: colors.dangerColor, bg: 'rgba(239, 68, 68, 0.1)' },
 };
+
+const resolveStatusColors = (props) => ({
+  $color: statusTheme[props.$status]?.text || colors.textSecondary,
+  $bg: statusTheme[props.$status]?.bg || colors.bgColor,
+});
 
 // ==========================================
 // 1. CONTROLES DA PÁGINA (TOOLBAR)
@@ -85,43 +92,10 @@ export const ToggleButton = styled.button`
 // ==========================================
 // 2. ESTRUTURAS DE LISTA E CARDS (GRID MODE)
 // ==========================================
-export const UserStatus = styled.div`
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 900;
-  text-transform: uppercase;
-  background: ${(props) => statusTheme[props.$status]?.bg || colors.bgColor};
-  color: ${(props) => statusTheme[props.$status]?.text || colors.textSecondary};
-  margin-bottom: 15px;
-  text-align: center;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-export const ProfilePicture = styled.div`
-  width: 100px;
-  height: 100px;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 3px solid ${colors.bgColor};
-  box-shadow: 0 0 0 1px ${colors.borderColor};
-  margin-bottom: 15px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${colors.bgColor};
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  svg {
-    color: ${colors.borderColor};
-  }
-`;
+export const UserStatus = styled(StatusBadge).attrs((props) => ({
+  $variant: 'card',
+  ...resolveStatusColors(props),
+}))``;
 
 export const UserMainTitle = styled.h3`
   color: ${colors.textPrimary};
@@ -149,18 +123,10 @@ export const EditActionButton = styled.button`
 // ==========================================
 // 3. ELEMENTOS DE LINHA / CÉLULA
 // ==========================================
-export const StatusCell = styled.td`
-  span {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    background: ${(props) => statusTheme[props.$status]?.bg || colors.bgColor};
-    color: ${(props) =>
-      statusTheme[props.$status]?.text || colors.textSecondary};
-  }
-`;
+export const StatusCell = styled(StatusBadge).attrs((props) => ({
+  $variant: 'cell',
+  ...resolveStatusColors(props),
+}))``;
 
 export const TableNameCol = styled.div`
   display: flex;

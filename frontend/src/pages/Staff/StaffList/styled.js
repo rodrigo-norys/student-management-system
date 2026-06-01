@@ -21,6 +21,7 @@ export {
   EditButton,
   DeleteButton,
   ProfileButton,
+  CardProfilePicture as ProfilePicture,
   CardGrid as StaffContainer,
   CardSubtitle as StaffEmail,
   CardDetails as StaffDetails,
@@ -55,22 +56,4 @@ export const StatusCell = styled.td`
   font-weight: 800;
   font-size: 11px;
   text-transform: uppercase;
-`;
-
-export const ProfilePicture = styled.div`
-  width: 100px;
-  height: 100px;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 3px solid ${colors.bgColor};
-  box-shadow: 0 0 0 1px ${colors.borderColor};
-  margin-bottom: 15px;
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  svg {
-    color: ${colors.borderColor};
-  }
 `;

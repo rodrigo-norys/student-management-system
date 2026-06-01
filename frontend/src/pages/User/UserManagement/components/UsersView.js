@@ -79,9 +79,11 @@ export default function UsersView({
                   <strong>{displayIndex}</strong>
                 </td>
 
-                <Styled.StatusCell $status={user.status}>
-                  <span>{user.status?.toUpperCase()}</span>
-                </Styled.StatusCell>
+                <td>
+                  <Styled.StatusCell $status={user.status}>
+                    {user.status?.toUpperCase()}
+                  </Styled.StatusCell>
+                </td>
 
                 <td>
                   <Styled.SmallProfilePic>

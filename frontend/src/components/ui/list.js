@@ -225,7 +225,8 @@ export const ViewToggle = styled.div`
 `;
 
 export const ToggleButton = styled.button`
-  background: ${(props) => (props.$active ? colors.accentColor : 'transparent')};
+  background: ${(props) =>
+    props.$active ? colors.accentColor : 'transparent'};
   border: none;
   padding: 0 20px;
   cursor: pointer;
@@ -298,4 +299,46 @@ export const SmallProfilePic = styled.div`
   svg {
     color: ${colors.borderColor};
   }
+`;
+
+// Avatar do card de listagem (quadrado arredondado, centraliza o ícone de fallback).
+export const CardProfilePicture = styled.div`
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 3px solid ${colors.bgColor};
+  box-shadow: 0 0 0 1px ${colors.borderColor};
+  margin-bottom: 15px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${colors.bgColor};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  svg {
+    color: ${colors.borderColor};
+  }
+`;
+
+// Selo de status parametrizado por cor. A cor vem resolvida via $color/$bg
+// (cada página injeta seu próprio mapa de status). $variant: 'card' | 'cell'.
+export const StatusBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  text-transform: uppercase;
+  background: ${(props) => props.$bg || colors.bgColor};
+  color: ${(props) => props.$color || colors.textSecondary};
+  padding: ${(props) => (props.$variant === 'cell' ? '4px 10px' : '6px 14px')};
+  font-size: ${(props) => (props.$variant === 'cell' ? '11px' : '14px')};
+  font-weight: ${(props) => (props.$variant === 'cell' ? 800 : 900)};
+  margin-bottom: ${(props) => (props.$variant === 'cell' ? '0' : '15px')};
 `;

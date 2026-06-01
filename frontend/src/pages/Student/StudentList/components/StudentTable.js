@@ -1,6 +1,6 @@
 import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaExternalLinkAlt } from 'react-icons/fa';
 
-import { getAvatarUrl } from 'utils/imageHelpers';
+import { getStudentAvatarUrl } from 'utils/imageHelpers';
 import * as Styled from '../styled';
 
 export default function StudentTable({
@@ -32,14 +32,16 @@ export default function StudentTable({
               <td>
                 <strong>{(currentPage - 1) * limit + index + 1}</strong>
               </td>
-              <Styled.StatusCell $status={student.status}>
-                <span>{student.status}</span>
-              </Styled.StatusCell>
+              <td>
+                <Styled.StatusCell $status={student.status}>
+                  {student.status}
+                </Styled.StatusCell>
+              </td>
               <td>
                 <Styled.SmallProfilePic>
                   {student.avatar_url ? (
                     <img
-                      src={getAvatarUrl(`students/${student.avatar_url}`)}
+                      src={getStudentAvatarUrl(student.avatar_url)}
                       alt={student.name}
                     />
                   ) : (
