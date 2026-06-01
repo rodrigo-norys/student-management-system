@@ -10,92 +10,148 @@ function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
 }
 
+// Escapa wildcards do LIKE (% _ \) para tratá-los como literais na busca.
+function escapeLike(term) {
+  return String(term).replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
 class StudentController {
+  // Gera a matrícula no formato AAAA + sequencial de 6 dígitos, reiniciando a
+  // cada ano. O sequencial é zero-padded de largura fixa, então a ordenação
+  // lexicográfica dentro do mesmo ano equivale à numérica.
+  generateRegistrationNumber = async (transaction) => {
+    const yearPrefix = String(new Date().getFullYear());
+
+    const lastStudent = await Student.findOne({
+      where: { registration_number: { [Sequelize.Op.like]: `${yearPrefix}%` } },
+      order: [['registration_number', 'DESC']],
+      attributes: ['registration_number'],
+      transaction,
+    });
+
+    const lastSequence = lastStudent
+      ? Number(lastStudent.registration_number.slice(yearPrefix.length))
+      : 0;
+
+    const nextSequence = String(lastSequence + 1).padStart(6, '0');
+    return `${yearPrefix}${nextSequence}`;
+  };
+
+  // Identifica colisão específica de matrícula sob concorrência, para distinguir
+  // de duplicidade de email/cpf (que não deve disparar retry).
+  isRegistrationCollision(e) {
+    return (
+      e instanceof Sequelize.UniqueConstraintError &&
+      Array.isArray(e.errors) &&
+      e.errors.some((err) => err.path === 'registration_number')
+    );
+  }
+
   create = async (req, res) => {
-    const transaction = await database.transaction();
+    const MAX_REGISTRATION_RETRIES = 3;
 
-    try {
-      const { addresses, guardian_ids, ...rawStudentData } = req.body;
+    for (let attempt = 1; attempt <= MAX_REGISTRATION_RETRIES; attempt++) {
+      const transaction = await database.transaction();
 
-      const sanitizedStudentData = {
-        name: rawStudentData.name,
-        last_name: rawStudentData.last_name,
-        email: rawStudentData.email,
-        cpf: rawStudentData.cpf,
-        birth_date: rawStudentData.birth_date,
-        blood_type: rawStudentData.blood_type,
-        avatar_url: null,
-        user_id: null,
-      };
+      try {
+        const { addresses, guardian_ids, ...rawStudentData } = req.body;
 
-      const newStudent = await Student.create(sanitizedStudentData, {
-        transaction,
-      });
+        const registration_number =
+          await this.generateRegistrationNumber(transaction);
 
-      if (addresses && Array.isArray(addresses) && addresses.length > 0) {
-        const addressesToSave = addresses.map((address) => ({
-          zip_code: address.zip_code,
-          street: address.street,
-          number: address.number,
-          complement: address.complement,
-          neighborhood: address.neighborhood,
-          city: address.city,
-          state: address.state,
-          student_id: newStudent.id,
-        }));
-        await Address.bulkCreate(addressesToSave, { transaction });
+        const sanitizedStudentData = {
+          name: rawStudentData.name,
+          last_name: rawStudentData.last_name,
+          email: rawStudentData.email,
+          cpf: rawStudentData.cpf,
+          birth_date: rawStudentData.birth_date,
+          blood_type: rawStudentData.blood_type,
+          medical_notes: rawStudentData.medical_notes,
+          registration_number,
+          avatar_url: null,
+          user_id: null,
+        };
+
+        const newStudent = await Student.create(sanitizedStudentData, {
+          transaction,
+        });
+
+        if (addresses && Array.isArray(addresses) && addresses.length > 0) {
+          const addressesToSave = addresses.map((address) => ({
+            zip_code: address.zip_code,
+            street: address.street,
+            number: address.number,
+            complement: address.complement,
+            neighborhood: address.neighborhood,
+            city: address.city,
+            state: address.state,
+            student_id: newStudent.id,
+          }));
+          await Address.bulkCreate(addressesToSave, { transaction });
+        }
+
+        if (
+          guardian_ids &&
+          Array.isArray(guardian_ids) &&
+          guardian_ids.length > 0
+        ) {
+          await newStudent.setGuardians(guardian_ids, { transaction });
+        }
+
+        const fullStudent = await Student.findByPk(newStudent.id, {
+          attributes: [
+            'id',
+            'name',
+            'last_name',
+            'email',
+            'cpf',
+            'registration_number',
+            'birth_date',
+            'blood_type',
+            'medical_notes',
+            'status',
+            'avatar_url',
+          ],
+          include: [
+            {
+              model: Address,
+              as: 'addresses',
+              attributes: [
+                'id',
+                'zip_code',
+                'street',
+                'number',
+                'complement',
+                'neighborhood',
+                'city',
+                'state',
+              ],
+            },
+            {
+              model: Guardian,
+              as: 'guardians',
+              attributes: ['id', 'name', 'last_name', 'phone'],
+              through: { attributes: [] },
+            },
+          ],
+          transaction,
+        });
+
+        await transaction.commit();
+        return res.status(201).json(fullStudent);
+      } catch (e) {
+        if (transaction && !transaction.finished) await transaction.rollback();
+
+        // Colisão de matrícula sob concorrência: regenera e tenta de novo.
+        if (
+          this.isRegistrationCollision(e) &&
+          attempt < MAX_REGISTRATION_RETRIES
+        ) {
+          continue;
+        }
+
+        return this.handleErrors(e, res);
       }
-
-      if (
-        guardian_ids &&
-        Array.isArray(guardian_ids) &&
-        guardian_ids.length > 0
-      ) {
-        await newStudent.setGuardians(guardian_ids, { transaction });
-      }
-
-      const fullStudent = await Student.findByPk(newStudent.id, {
-        attributes: [
-          'id',
-          'name',
-          'last_name',
-          'email',
-          'cpf',
-          'birth_date',
-          'blood_type',
-          'status',
-          'avatar_url',
-        ],
-        include: [
-          {
-            model: Address,
-            as: 'addresses',
-            attributes: [
-              'id',
-              'zip_code',
-              'street',
-              'number',
-              'complement',
-              'neighborhood',
-              'city',
-              'state',
-            ],
-          },
-          {
-            model: Guardian,
-            as: 'guardians',
-            attributes: ['id', 'name', 'last_name', 'phone'],
-            through: { attributes: [] },
-          },
-        ],
-        transaction,
-      });
-
-      await transaction.commit();
-      return res.status(201).json(fullStudent);
-    } catch (e) {
-      if (transaction && !transaction.finished) await transaction.rollback();
-      return this.handleErrors(e, res);
     }
   };
 
@@ -110,12 +166,23 @@ class StudentController {
         through: { attributes: [] },
       };
 
-      // Regra de visualização do que Student e Guardian podem ver
+      // Regra de visualização do que Student e Guardian podem ver.
       if (req.userRole === 'Student') {
         whereClause.user_id = req.userId;
       } else if (req.userRole === 'Guardian') {
         guardianInclude.where = { user_id: req.userId };
         guardianInclude.required = true;
+      }
+
+      const { searchTerm } = req.query;
+      if (searchTerm) {
+        const searchPattern = `%${escapeLike(searchTerm)}%`;
+        whereClause[Sequelize.Op.or] = [
+          { name: { [Sequelize.Op.like]: searchPattern } },
+          { last_name: { [Sequelize.Op.like]: searchPattern } },
+          { email: { [Sequelize.Op.like]: searchPattern } },
+          { registration_number: { [Sequelize.Op.like]: searchPattern } },
+        ];
       }
 
       // PAGINAÇÃO
@@ -272,16 +339,30 @@ class StudentController {
         cpf: rawStudentData.cpf,
         birth_date: rawStudentData.birth_date,
         blood_type: rawStudentData.blood_type,
+        medical_notes: rawStudentData.medical_notes,
       };
 
       await student.update(safeUpdateData, { transaction });
 
-      // Atualização dos endereços.
-      if (addresses) {
-        await Address.destroy({ where: { student_id: id }, transaction });
+      // Lógica para preservar o ID dos endereços existentes
+      // e excluir os que não retornarem no array.
+      if (addresses && Array.isArray(addresses)) {
+        const incomingIds = addresses
+          .filter((addr) => addr.id)
+          .map((addr) => Number(addr.id));
 
-        if (Array.isArray(addresses) && addresses.length > 0) {
-          const addressesToSave = addresses.map((addr) => ({
+        await Address.destroy({
+          where: {
+            student_id: id,
+            ...(incomingIds.length > 0
+              ? { id: { [Sequelize.Op.notIn]: incomingIds } }
+              : {}),
+          },
+          transaction,
+        });
+
+        for (const addr of addresses) {
+          const addressData = {
             zip_code: addr.zip_code,
             street: addr.street,
             number: addr.number,
@@ -290,8 +371,17 @@ class StudentController {
             city: addr.city,
             state: addr.state,
             student_id: id,
-          }));
-          await Address.bulkCreate(addressesToSave, { transaction });
+          };
+
+          if (addr.id) {
+            // Ignora id de endereço de outro aluno.
+            await Address.update(addressData, {
+              where: { id: Number(addr.id), student_id: id },
+              transaction,
+            });
+          } else {
+            await Address.create(addressData, { transaction });
+          }
         }
       }
 
@@ -306,8 +396,10 @@ class StudentController {
           'last_name',
           'email',
           'cpf',
+          'registration_number',
           'birth_date',
           'blood_type',
+          'medical_notes',
           'status',
           'avatar_url',
         ],
@@ -352,17 +444,6 @@ class StudentController {
       if (!isValidId(id)) {
         await transaction.rollback();
         return res.status(400).json({ errors: ['Missing or invalid ID.'] });
-      }
-
-      if (!req.userPermissions || !req.userPermissions.manage_record) {
-        await transaction.rollback();
-        return res
-          .status(403)
-          .json({
-            errors: [
-              'Forbidden. You lack the necessary manage_record permission.',
-            ],
-          });
       }
 
       const student = await Student.findByPk(id, {
