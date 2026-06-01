@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'services/axios';
 import { ITEMS_PER_PAGE } from '../constants.js';
-import useDebounce from './useDebounce';
+import useDebounce from 'hooks/useDebounce';
 
 /**
  * Hook responsável por gerenciar todo o estado de leitura e exibição da tela de Gerenciamento de Usuários.

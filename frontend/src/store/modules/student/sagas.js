@@ -34,10 +34,10 @@ function* createStudent({ payload }) {
 function* updateStudent({ payload }) {
   try {
     const { id, ...studentData } = payload;
-    yield call(axios.put, `/students/${id}`, studentData);
+    const response = yield call(axios.put, `/students/${id}`, studentData);
 
     toast.success('Student record updated');
-    yield put(actions.updateStudentSuccess({ id, ...studentData }));
+    yield put(actions.updateStudentSuccess(response.data));
 
     history.push('/students');
   } catch (e) {
@@ -61,9 +61,9 @@ function* getStudents({ payload }) {
       typeof payload === 'string' || typeof payload === 'number';
 
     if (isPaginationRequest) {
-      const { page, limit } = payload;
+      const { page, limit, searchTerm } = payload;
       response = yield call(axios.get, '/students', {
-        params: { page, limit },
+        params: { page, limit, searchTerm },
       });
     } else if (isSingleStudentRequest) {
       response = yield call(axios.get, `/students/${payload}`);

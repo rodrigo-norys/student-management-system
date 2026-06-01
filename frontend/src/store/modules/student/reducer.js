@@ -1,5 +1,6 @@
 import * as types from './types';
 import * as photoTypes from '../photo/types';
+import { STUDENT_STATUS } from 'constants/student';
 
 const initialState = {
   students: [],
@@ -77,7 +78,7 @@ export default function studentReducer(state = initialState, action) {
       const newStudents = exists
         ? state.students.map(student =>
           String(student.id) === String(id)
-            ? { ...student, ...action.payload }
+            ? action.payload
             : student)
         : [...state.students, action.payload];
 
@@ -93,8 +94,7 @@ export default function studentReducer(state = initialState, action) {
         if (student.id === action.payload) {
           return {
             ...student,
-            isLoading: false,
-            status: 'inactive',
+            status: STUDENT_STATUS.INACTIVE,
           };
         }
         return student;

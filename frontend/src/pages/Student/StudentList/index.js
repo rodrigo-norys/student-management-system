@@ -10,6 +10,7 @@ import * as Styled from './styled.js';
 import { ITEMS_PER_PAGE, VIEW_MODES, INITIAL_SEARCH_STATE, } from './constants.js';
 
 import * as actions from 'store/modules/student/actions';
+import useDebounce from 'hooks/useDebounce';
 import Loading from 'components/Loading';
 
 import StudentGrid from './components/StudentGrid.js';
@@ -34,6 +35,8 @@ export default function Students() {
 
   const limit = ITEMS_PER_PAGE;
 
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login');
@@ -42,10 +45,16 @@ export default function Students() {
         actions.getStudentsRequest({
           page: currentPage,
           limit,
+          searchTerm: debouncedSearchTerm,
         }),
       );
     }
-  }, [isLoggedIn, currentPage, navigate, dispatch, limit]);
+  }, [isLoggedIn, currentPage, debouncedSearchTerm, navigate, dispatch, limit]);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
 
   const handleDeleteAsk = (e, id) => {
     e.preventDefault();
@@ -70,18 +79,6 @@ export default function Students() {
     }
   };
 
-  const filteredStudents = students.filter((student) => {
-    const searchLower = searchTerm.toLowerCase();
-    const fullName = `${student.name} ${student.last_name || ''}`.toLowerCase();
-    return (
-      fullName.includes(searchLower) ||
-      student.status.toLowerCase().includes(searchLower) ||
-      student.email.toLowerCase().includes(searchLower) ||
-      student.registration_number.includes(searchLower) ||
-      student.blood_type.includes(searchLower)
-    );
-  });
-
   return (
     <Styled.Container>
       <Loading isLoading={isLoading} />
@@ -100,7 +97,7 @@ export default function Students() {
             type="text"
             placeholder="Search students..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
           />
         </Styled.SearchInput>
 
@@ -120,11 +117,11 @@ export default function Students() {
         </Styled.ViewToggle>
       </Styled.ControlsArea>
 
-      {filteredStudents.length === 0 ? (
+      {students.length === 0 ? (
         <Styled.NoResultsMessage>No students found.</Styled.NoResultsMessage>
       ) : viewMode === VIEW_MODES.GRID ? (
         <StudentGrid
-          students={filteredStudents}
+          students={students}
           animationParent={animationParent}
           confirmDeleteId={confirmDeleteId}
           handleDeleteAsk={handleDeleteAsk}
@@ -132,7 +129,7 @@ export default function Students() {
         />
       ) : (
         <StudentTable
-          students={filteredStudents}
+          students={students}
           animationParent={animationParent}
           confirmDeleteId={confirmDeleteId}
           handleDeleteAsk={handleDeleteAsk}
