@@ -8,14 +8,12 @@ export default function AddressTab({ student }) {
     <Styled.AddressGrid>
       {addressList.length > 0 ? (
         addressList.map((address, index) => (
-          <Styled.AddressCard key={address.id}>
-            <Styled.AddressCardHeader>
+          <Styled.ProfileAddressCard key={address.id}>
+            <Styled.ProfileAddressCardHeader>
               <h3>Location #{index + 1}</h3>
-            </Styled.AddressCardHeader>
+            </Styled.ProfileAddressCardHeader>
 
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
-            >
+            <Styled.StackedFields>
               <div>
                 <Styled.Label>
                   <FaRoad /> Street & Number
@@ -47,13 +45,13 @@ export default function AddressTab({ student }) {
                 </Styled.Label>
                 <Styled.Value>{address.zip_code}</Styled.Value>
               </div>
-            </div>
-          </Styled.AddressCard>
+            </Styled.StackedFields>
+          </Styled.ProfileAddressCard>
         ))
       ) : (
-        <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>
+        <Styled.EmptyStateText>
           No addresses registered for this student.
-        </p>
+        </Styled.EmptyStateText>
       )}
     </Styled.AddressGrid>
   );

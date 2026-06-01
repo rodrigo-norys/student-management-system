@@ -7,15 +7,15 @@ import Loading from 'components/Loading';
 
 import * as actions from 'store/modules/student/actions';
 
-import { getAvatarUrl } from 'utils/imageHelpers';
+import { getStudentAvatarUrl } from 'utils/imageHelpers';
 import { PROFILE_TABS, DEFAULT_TAB, TAB_KEYS } from './constants';
 
 import GeneralTab from './components/GeneralTab';
 import AddressTab from './components/AddressTab';
 import MedicalTab from './components/MedicalTab';
+import GuardiansTab from './components/GuardiansTab';
 
 import * as Styled from './styled.js';
-import { PageContainer } from 'components/ui';
 
 export default function StudentProfile() {
   const { id } = useParams();
@@ -35,10 +35,10 @@ export default function StudentProfile() {
   if (!student && !isLoading) return null;
   if (!student) return <Loading isLoading={true} />;
 
-  const mainPhoto = getAvatarUrl(student.avatar_url);
+  const mainPhoto = getStudentAvatarUrl(student.avatar_url);
 
   return (
-    <PageContainer>
+    <Styled.PageContainer>
       <Loading isLoading={isLoading} />
 
       <Styled.HeaderContent>
@@ -60,14 +60,12 @@ export default function StudentProfile() {
               )}
             </Styled.ProfilePicture>
 
-            <div style={{ textAlign: 'center' }}>
-              <h2 style={{ fontSize: '18px', marginBottom: '5px' }}>
+            <Styled.IdentityHeader>
+              <h2>
                 {student.name} {student.last_name}
               </h2>
-              <span style={{ color: '#94a3b8', fontSize: '13px' }}>
-                RN: {student.registration_number}
-              </span>
-            </div>
+              <span>RN: {student.registration_number}</span>
+            </Styled.IdentityHeader>
 
           </Styled.Section>
         </Styled.Sidebar>
@@ -89,9 +87,12 @@ export default function StudentProfile() {
             {activeTab === TAB_KEYS.GENERAL && <GeneralTab student={student} />}
             {activeTab === TAB_KEYS.ADDRESS && <AddressTab student={student} />}
             {activeTab === TAB_KEYS.MEDICAL && <MedicalTab student={student} />}
+            {activeTab === TAB_KEYS.GUARDIANS && (
+              <GuardiansTab student={student} />
+            )}
           </Styled.Section>
         </Styled.MainContent>
       </Styled.FormGrid>
-    </PageContainer>
+    </Styled.PageContainer>
   );
 }
