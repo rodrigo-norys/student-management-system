@@ -17,6 +17,10 @@ export {
   PersistenceToggle,
   FormProfilePicture as ProfilePicture,
   PrimaryButton,
+  PageContainer,
+  ValidatedInput,
+  ValidatedSelect,
+  ValidatedTextarea,
 } from 'components/ui';
 
 export const MainContent = styled.div`

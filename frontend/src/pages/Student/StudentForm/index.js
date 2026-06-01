@@ -1,28 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link } from 'react-router-dom';
-import { FaUserCircle, FaEdit, FaPlus } from 'react-icons/fa';
-import { isEmail } from 'validator';
-import { cpf as cpfValidator } from 'cpf-cnpj-validator';
+import { FaUserCircle, FaPlus } from 'react-icons/fa';
 
 import Loading from 'components/Loading';
-import {
-  ValidatedInput,
-  ValidatedSelect,
-  ValidatedTextarea,
-} from 'components/ui';
 
 import * as actions from 'store/modules/student/actions';
 
-import { BRAZILIAN_STATES as UFs, EMPTY_ADDRESS } from 'constants/location';
-import { BLOOD_TYPES } from 'constants/medical';
+import { EMPTY_ADDRESS } from 'constants/location';
 import { maskCEP } from 'utils/masks';
+import { getStudentAvatarUrl } from 'utils/imageHelpers';
 
-import { getAvatarUrl } from 'utils/imageHelpers';
 import { INITIAL_STATE } from './constants';
+import { validateStudentForm } from './validation';
+
+import IdentitySidebar from './components/IdentitySidebar';
+import GeneralInfoFieldset from './components/GeneralInfoFieldset';
+import AddressFieldset from './components/AddressFieldset';
 
 import * as Styled from './styled';
-import { PageContainer } from 'components/ui';
 
 export default function StudentForm() {
   const { id } = useParams();
@@ -41,7 +37,7 @@ export default function StudentForm() {
     state.student?.students?.find((s) => String(s.id) === String(id)),
   );
 
-  const mainPhoto = getAvatarUrl(form.avatar_url);
+  const mainPhoto = getStudentAvatarUrl(form.avatar_url);
 
   useEffect(() => {
     const errorKeys = Object.keys(errors);
@@ -106,7 +102,7 @@ export default function StudentForm() {
       const currentAddress = updatedAddresses[activeAddressIndex];
 
       const filteredSuggestion = Object.fromEntries(
-        Object.entries(addressSuggestion).filter(([_, value]) => !!value)
+        Object.entries(addressSuggestion).filter(([_, value]) => !!value),
       );
 
       updatedAddresses[activeAddressIndex] = {
@@ -170,33 +166,14 @@ export default function StudentForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newErrors = {};
-    const { name, last_name, email, registration_number, cpf, birth_date } =
-      form;
-
-    if (name.length < 3 || name.length > 50)
-      newErrors.name = 'Invalid name length';
-    if (last_name.length < 3 || last_name.length > 100)
-      newErrors.last_name = 'Invalid last name length';
-    if (!isEmail(email)) newErrors.email = 'Invalid email';
-    if (!registration_number) newErrors.registration_number = 'Required';
-    if (!cpfValidator.isValid(cpf)) newErrors.cpf = 'Invalid CPF';
-    if (!birth_date) newErrors.birth_date = 'Required';
-
-    form.addresses.forEach((addr, idx) => {
-      if (addr.zip_code.replace(/\D/g, '').length !== 8)
-        newErrors[`address_${idx}_zip_code`] = 'Invalid CEP';
-      if (addr.street.length < 3)
-        newErrors[`address_${idx}_street`] = 'Min 3 chars';
-      if (!addr.number) newErrors[`address_${idx}_number`] = 'Required';
-    });
-
+    const newErrors = validateStudentForm(form);
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
 
     setIsSubmitting(true);
-    const payload = { ...form, shouldStay: stayOnPage };
+    const { registration_number, avatar_url, ...formData } = form;
+    const payload = { ...formData, shouldStay: stayOnPage };
 
     dispatch(
       id
@@ -206,7 +183,7 @@ export default function StudentForm() {
   };
 
   return (
-    <PageContainer>
+    <Styled.PageContainer>
       <Loading isLoading={isLoading} />
       <Styled.HeaderContent>
         <h1>{id ? 'Edit Student' : 'New Student'}</h1>
@@ -218,164 +195,33 @@ export default function StudentForm() {
       </Styled.HeaderContent>
       <Styled.Form onSubmit={handleSubmit}>
         <Styled.FormGrid>
-          <Styled.Sidebar>
-            <Styled.Section>
-              <Styled.SectionTitle>Identity</Styled.SectionTitle>
-              <Styled.ProfilePicture>
-                {mainPhoto ? (
-                  <img src={mainPhoto} alt={form.name} />
-                ) : (
-                  <FaUserCircle size={150} color="#323245" />
-                )}
-                <Link to={id ? `/avatar/students/${id}` : '#'}>
-                  <FaEdit size={20} />
-                </Link>
-              </Styled.ProfilePicture>
-              <Styled.InputGroup>
-                <ValidatedSelect
-                  label="Blood Type"
-                  name="blood_type"
-                  value={form.blood_type}
-                  onChange={handleChange}
-                  array={BLOOD_TYPES}
-                  error={errors.blood_type}
-                />
-              </Styled.InputGroup>
-              <Styled.MedicalNotesWrapper>
-                <ValidatedTextarea
-                  label="Medical Notes"
-                  name="medical_notes"
-                  value={form.medical_notes}
-                  onChange={handleChange}
-                  maxLength="255"
-                  error={errors.medical_notes}
-                />
-              </Styled.MedicalNotesWrapper>
-            </Styled.Section>
-          </Styled.Sidebar>
+          <IdentitySidebar
+            form={form}
+            errors={errors}
+            onChange={handleChange}
+            mainPhoto={mainPhoto}
+            studentId={id}
+          />
           <Styled.MainContent>
-            <Styled.Section>
-              <Styled.SectionTitle>General Information</Styled.SectionTitle>
-              <Styled.InputGroup>
-                <ValidatedInput
-                  label="First Name"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  error={errors.name}
-                />
-                <ValidatedInput
-                  label="Last Name"
-                  name="last_name"
-                  value={form.last_name}
-                  onChange={handleChange}
-                  error={errors.last_name}
-                />
-              </Styled.InputGroup>
-              <Styled.InputGroup>
-                <ValidatedInput
-                  label="Email"
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  error={errors.email}
-                />
-                <ValidatedInput
-                  label="Registration"
-                  name="registration_number"
-                  value={form.registration_number}
-                  onChange={handleChange}
-                  error={errors.registration_number}
-                />
-              </Styled.InputGroup>
-              <Styled.InputGroup>
-                <ValidatedInput
-                  label="CPF"
-                  name="cpf"
-                  value={cpfValidator.format(form.cpf)}
-                  onChange={handleChange}
-                  error={errors.cpf}
-                />
-                <ValidatedInput
-                  label="Birth Date"
-                  type="date"
-                  name="birth_date"
-                  value={form.birth_date}
-                  onChange={handleChange}
-                  error={errors.birth_date}
-                />
-              </Styled.InputGroup>
-            </Styled.Section>
+            <GeneralInfoFieldset
+              form={form}
+              errors={errors}
+              onChange={handleChange}
+            />
             <Styled.Section>
               <Styled.SectionTitle>Address Records</Styled.SectionTitle>
               <Styled.AddressesWrapper>
                 {form.addresses.map((address, index) => (
-                  <Styled.AddressCard key={index}>
-                    <Styled.AddressCardHeader>
-                      <h4>Address #{index + 1}</h4>
-                      {form.addresses.length > 1 && (
-                        <Styled.RemoveAddressButton
-                          type="button"
-                          onClick={() => removeAddress(index)}
-                        >
-                          Remove
-                        </Styled.RemoveAddressButton>
-                      )}
-                    </Styled.AddressCardHeader>
-                    <Styled.InputGroup>
-                      <ValidatedInput
-                        label="Zip Code"
-                        name="zip_code"
-                        value={address.zip_code}
-                        onChange={(e) => handleCepChange(index, e)}
-                        error={errors[`address_${index}_zip_code`]}
-                      />
-                      <ValidatedInput
-                        label="Street"
-                        name="street"
-                        value={address.street}
-                        onChange={(e) => handleAddressChange(index, e)}
-                        error={errors[`address_${index}_street`]}
-                      />
-                    </Styled.InputGroup>
-                    <Styled.InputGroup>
-                      <ValidatedInput
-                        label="Number"
-                        name="number"
-                        value={address.number}
-                        onChange={(e) => handleAddressChange(index, e)}
-                        error={errors[`address_${index}_number`]}
-                      />
-                      <ValidatedInput
-                        label="Complement"
-                        name="complement"
-                        value={address.complement}
-                        onChange={(e) => handleAddressChange(index, e)}
-                      />
-                    </Styled.InputGroup>
-                    <Styled.InputGroup>
-                      <ValidatedInput
-                        label="Neighborhood"
-                        name="neighborhood"
-                        value={address.neighborhood}
-                        onChange={(e) => handleAddressChange(index, e)}
-                      />
-                      <ValidatedInput
-                        label="City"
-                        name="city"
-                        value={address.city}
-                        onChange={(e) => handleAddressChange(index, e)}
-                      />
-                      <ValidatedSelect
-                        label="UF"
-                        name="state"
-                        value={address.state}
-                        onChange={(e) => handleAddressChange(index, e)}
-                        array={UFs}
-                      />
-                    </Styled.InputGroup>
-                  </Styled.AddressCard>
+                  <AddressFieldset
+                    key={index}
+                    address={address}
+                    index={index}
+                    errors={errors}
+                    onAddressChange={(e) => handleAddressChange(index, e)}
+                    onCepChange={(e) => handleCepChange(index, e)}
+                    onRemove={() => removeAddress(index)}
+                    showRemove={form.addresses.length > 1}
+                  />
                 ))}
               </Styled.AddressesWrapper>
               {form.addresses.length < 3 && (
@@ -406,6 +252,6 @@ export default function StudentForm() {
           </Styled.MainContent>
         </Styled.FormGrid>
       </Styled.Form>
-    </PageContainer>
+    </Styled.PageContainer>
   );
 }
