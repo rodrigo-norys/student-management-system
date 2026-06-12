@@ -26,6 +26,18 @@ function* login({ payload }) {
   }
 }
 
+function* demoLogin() {
+  try {
+    const response = yield call(axios.post, '/tokens/demo');
+    yield put(actions.loginSuccess(response.data));
+    toast.success('Você entrou no modo demonstração');
+    yield call(history.push, '/dashboard');
+  } catch (e) {
+    toast.error('Não foi possível iniciar a demonstração. Tente novamente.');
+    yield put(actions.loginFailure());
+  }
+}
+
 function* register({ payload }) {
   const {
     id,
@@ -106,6 +118,7 @@ function* logout() {
 
 export default all([
   takeLatest(types.LOGIN_REQUEST, login),
+  takeLatest(types.DEMO_LOGIN_REQUEST, demoLogin),
   takeLatest(types.LOGOUT_REQUEST, logout),
   takeLatest(types.REGISTER_REQUEST, register),
   takeLatest(types.VALIDATE_SESSION_REQUEST, validateSession),

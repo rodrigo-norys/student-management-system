@@ -195,6 +195,23 @@ export const ContentWrapper = styled.div`
   }
 `;
 
+export const DemoBanner = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: rgba(245, 158, 11, 0.12);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 600;
+
+  svg {
+    font-size: 14px;
+  }
+`;
+
 export const SidebarFooter = styled.div`
   padding: 15px 0;
   border-top: 1px solid ${borderColor};
