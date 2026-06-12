@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { FaShieldAlt, FaThLarge, FaCode, FaLayerGroup, FaDatabase, FaGithub, FaLinkedin } from 'react-icons/fa';
+import * as authActions from 'store/modules/auth/actions';
 import * as Styled from './styled.js';
 
 import tableGrid from 'assets/images/table-grid.gif';
@@ -28,6 +30,7 @@ function InteractivePreview({ staticSrc, gifSrc, altText, isCode }) {
 
 export default function LandingPreview() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   return (
     <Styled.Container>
@@ -48,8 +51,11 @@ export default function LandingPreview() {
           foco total em segurança e usabilidade.
         </Styled.HeroDescription>
         <Styled.HeroActions>
+          <Styled.PrimaryButton onClick={() => dispatch(authActions.demoLoginRequest())}>
+            Acessar demo
+          </Styled.PrimaryButton>
           <Styled.SecondaryButton onClick={() => navigate('/login')}>
-            Para o Login
+            Entrar
           </Styled.SecondaryButton>
         </Styled.HeroActions>
       </Styled.Hero>

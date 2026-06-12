@@ -8,7 +8,7 @@ import Loading from 'components/Loading';
 import * as actions from 'store/modules/auth/actions';
 
 import { Container } from 'styles/GlobalStyles';
-import { LoginWrapper, Form, Title } from './styled';
+import { LoginWrapper, Form, Title, DemoDivider, DemoButton } from './styled';
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -60,6 +60,16 @@ export default function Login() {
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </Form>
+
+        <DemoDivider>ou</DemoDivider>
+
+        <DemoButton
+          type="button"
+          disabled={isLoading}
+          onClick={() => dispatch(actions.demoLoginRequest())}
+        >
+          Acessar demo (somente leitura)
+        </DemoButton>
       </Container>
     </LoginWrapper>
   );

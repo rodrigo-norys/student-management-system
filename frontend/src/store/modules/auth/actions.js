@@ -22,6 +22,14 @@ export function loginFailure(payload) {
   };
 }
 
+// Login one-click da demo: sem credenciais no front, o backend resolve o
+// usuário demo conhecido em POST /tokens/demo.
+export function demoLoginRequest() {
+  return {
+    type: types.DEMO_LOGIN_REQUEST,
+  };
+}
+
 // VALIDATE SESSION
 export function validateSessionRequest() {
   return {

@@ -4,11 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as actions from 'store/modules/auth/actions.js';
 import {
   FaHome, FaUserGraduate, FaUserTie, FaUsers,
-  FaCog, FaPowerOff, FaBars, FaTimes, FaUserFriends
+  FaCog, FaPowerOff, FaBars, FaTimes, FaUserFriends, FaEye
 } from 'react-icons/fa';
 import {
   LayoutContainer, Sidebar, SidebarHeader, NavMenu, NavItem, MainArea, Topbar,
-  UserProfile, ContentWrapper, SidebarFooter, SidebarLogoutBtn, Overlay, MenuToggleButton
+  UserProfile, ContentWrapper, SidebarFooter, SidebarLogoutBtn, Overlay, MenuToggleButton,
+  DemoBanner
 } from './styled';
 
 export default function Layout() {
@@ -113,6 +114,11 @@ export default function Layout() {
             <div className="avatar">{userInitial}</div>
           </UserProfile>
         </Topbar>
+        {user?.is_demo && (
+          <DemoBanner>
+            <FaEye /> Modo demonstração — somente leitura
+          </DemoBanner>
+        )}
         <ContentWrapper>
           <Outlet />
         </ContentWrapper>

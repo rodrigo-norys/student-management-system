@@ -5,13 +5,15 @@ const initialState = {
   isLoading: false,
   isLoggedIn: false,
   isPowerUser: false,
+  isDemo: false,
   user: {},
 };
 
 export default function auth(state = initialState, action) {
   switch (action.type) {
     ///////////// LOGIN /////////////
-    case types.LOGIN_REQUEST: {
+    case types.LOGIN_REQUEST:
+    case types.DEMO_LOGIN_REQUEST: {
       return {
         ...state,
         isLoading: true,
@@ -25,6 +27,7 @@ export default function auth(state = initialState, action) {
         user,
         isLoggedIn: true,
         isPowerUser: user.access_level_id <= 2,
+        isDemo: !!user.is_demo,
         isLoading: false,
         isCheckingSession: false,
       };
