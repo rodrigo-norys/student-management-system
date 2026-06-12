@@ -53,6 +53,21 @@ export default async (req, res, next) => {
       manage_finance: user.access_level.manage_finance,
     };
 
+    // Demo é somente leitura: bloqueia qualquer mutação do nível público de
+    // demonstração, independente das flags do roleAuth nas rotas. Como todo
+    // router protegido passa por aqui, é a trava única e à prova de rota que
+    // esqueça o roleAuth.
+    const demoLevelId = Number(process.env.DEMO_LEVEL_ID);
+    if (
+      demoLevelId &&
+      user.access_level_id === demoLevelId &&
+      req.method !== 'GET'
+    ) {
+      return res.status(403).json({
+        errors: ['Demo mode is read-only.'],
+      });
+    }
+
     return next();
   } catch (e) {
     return res.status(401).json({
