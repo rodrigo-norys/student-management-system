@@ -1,5 +1,7 @@
 export async function up(queryInterface) {
-  await queryInterface.bulkDelete('access_levels', { id: [1, 2, 3, 4, 5, 6, 7] });
+  const now = new Date();
+
+  await queryInterface.bulkDelete('access_levels', { id: [1, 2, 3, 4, 5, 6, 7, 8] });
 
   await queryInterface.bulkInsert('access_levels', [
     {
@@ -12,8 +14,8 @@ export async function up(queryInterface) {
       manage_record: 1,
       manage_academic: 1,
       manage_finance: 1,
-      created_at: new Date(),
-      updated_at: new Date(),
+      created_at: now,
+      updated_at: now,
     },
     {
       id: 2,
@@ -21,12 +23,12 @@ export async function up(queryInterface) {
       description: 'Administrative management, student enrollments, and academic record profiles.',
       hierarchy_weight: 80,
       is_system_level: 1,
-      manage_account: 0,
+      manage_account: 1,
       manage_record: 1,
       manage_academic: 1,
       manage_finance: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
+      created_at: now,
+      updated_at: now,
     },
     {
       id: 3,
@@ -38,8 +40,8 @@ export async function up(queryInterface) {
       manage_record: 1,
       manage_academic: 0,
       manage_finance: 1,
-      created_at: new Date(),
-      updated_at: new Date(),
+      created_at: now,
+      updated_at: now,
     },
     {
       id: 4,
@@ -51,8 +53,8 @@ export async function up(queryInterface) {
       manage_record: 0,
       manage_academic: 1,
       manage_finance: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
+      created_at: now,
+      updated_at: now,
     },
     {
       id: 5,
@@ -64,11 +66,11 @@ export async function up(queryInterface) {
       manage_record: 0,
       manage_academic: 1,
       manage_finance: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
+      created_at: now,
+      updated_at: now,
     },
     {
-      id: 7,
+      id: 6,
       name: 'Security / Front Desk',
       description: 'Access control and verification of authorized guardians for student dismissal.',
       hierarchy_weight: 20,
@@ -77,12 +79,12 @@ export async function up(queryInterface) {
       manage_record: 0,
       manage_academic: 0,
       manage_finance: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
+      created_at: now,
+      updated_at: now,
     },
     {
-      id: 6,
-      name: 'Student / Guardian',
+      id: 7,
+      name: 'Student',
       description: 'View-only access to academic performance, attendance, and financial status.',
       hierarchy_weight: 10,
       is_system_level: 1,
@@ -90,12 +92,25 @@ export async function up(queryInterface) {
       manage_record: 0,
       manage_academic: 0,
       manage_finance: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      id: 8,
+      name: 'Guardian',
+      description: 'View-only access to academic performance, attendance, and financial status.',
+      hierarchy_weight: 10,
+      is_system_level: 1,
+      manage_account: 0,
+      manage_record: 0,
+      manage_academic: 0,
+      manage_finance: 0,
+      created_at: now,
+      updated_at: now,
     },
   ]);
 }
 
 export async function down(queryInterface) {
-  await queryInterface.bulkDelete('access_levels', null, {});
+  await queryInterface.bulkDelete('access_levels', { id: [1, 2, 3, 4, 5, 6, 7, 8] });
 }
