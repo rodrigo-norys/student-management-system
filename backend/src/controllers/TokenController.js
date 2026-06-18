@@ -3,8 +3,7 @@ import jwt from 'jsonwebtoken';
 import logger from '../config/logger.js';
 
 class TokenController {
-  // Assina o JWT e seta o cookie HttpOnly. Choke point único de emissão de
-  // token — reutilizado pelo login normal e pelo acesso demo.
+  // Assina o JWT e seta o cookie HttpOnly.
   issueToken = (res, user) => {
     const expiresInSeconds = Number(process.env.ACCESS_TOKEN_EXPIRATION);
 

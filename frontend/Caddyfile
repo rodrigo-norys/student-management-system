@@ -1,0 +1,43 @@
+{
+	# E-mail da conta ACME (Let's Encrypt) — usado só em domínios públicos.
+	# Em localhost / *.localhost o Caddy usa CA interna e ignora este campo.
+	email {$ACME_EMAIL:dev@localhost}
+}
+
+# ---- Site (SPA React) ----
+{$SITE_DOMAIN} {
+	root * /srv
+	encode zstd gzip
+
+	# Fallback de SPA: rotas client-side caem no index.html
+	try_files {path} /index.html
+	file_server
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+# ---- API (proxy reverso para o backend) ----
+{$API_DOMAIN} {
+	encode zstd gzip
+
+	# Limite de corpo da requisição (uploads de imagem)
+	request_body {
+		max_size 10MB
+	}
+
+	# O serviço "api" é resolvido pela rede docker (edge). O Caddy injeta
+	# X-Forwarded-For / X-Forwarded-Proto automaticamente.
+	reverse_proxy api:3001
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+}
