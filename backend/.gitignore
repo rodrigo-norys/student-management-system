@@ -3,6 +3,3 @@ node_modules
 
 .env
 uploads
-docker-compose.yml
-Dockerfile
-nginx.conf
