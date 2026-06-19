@@ -1,5 +1,5 @@
 ---
-name: revisar-mudancas
+name: review-changes
 description: Umbrella de code review. Lê o diff atual (git status/diff), classifica os arquivos alterados por domínio e dispara em paralelo os agentes revisores certos (migration-review, controller-review, backend-auth-review, api-contract-review, ui-kit-review), consolidando os achados em um relatório único por severidade. Use antes de commitar/abrir PR para um passe de revisão completo.
 ---
 
@@ -24,11 +24,14 @@ Mapeie cada arquivo alterado para os agentes correspondentes (um arquivo pode ac
 
 | Caminho alterado | Agente(s) |
 |---|---|
-| `backend/src/database/migrations/*.js` | `migration-review` |
+| `backend/src/database/migrations/*.js` | `migration-review` **+** `db-schema-review` (se muda estrutura/FK/índice) |
 | `backend/src/controllers/*.js` | `controller-review` **+** `backend-auth-review` |
 | `backend/src/routes/*.js` | `backend-auth-review` |
 | **≥ 2** controllers/rotas tocados, ou mudança em `middlewares/validateRequest.js` | `api-contract-review` |
 | `frontend/src/pages/**` | `ui-kit-review` |
+| `backend/src/models/*.js` | `model-review` *(quando existir; até lá, revisão manual)* |
+| `docker-compose.yml`, `Dockerfile*`, `frontend/Caddyfile`, `.env.example` | `infra-review` |
+| auth/upload/query pesada (rate-limit, bcrypt, N+1, índices aninhados) | `security-perf-review` *(quando existir)* |
 
 Regras de roteamento:
 - **`api-contract-review` é transversal**: dispare quando a mudança puder afetar a coerência entre endpoints (vários controllers, novo endpoint, mexeu no envelope de erro/paginação). Para um controller isolado, `controller-review` já basta.
@@ -44,6 +47,6 @@ Use a ferramenta Agent para cada revisor selecionado, **em um único bloco de ch
 Junte os retornos em **um** relatório, agrupado por severidade (Bloqueante / Alto / Médio / Informativo), **não** por agente. Cada item mantém `arquivo:linha` + problema + risco, com a tag do revisor de origem. No fim:
 - **Veredito**: pode commitar/abrir PR, ou há bloqueante a resolver antes.
 - Se algum domínio ficou sem revisor, registre o que você checou manualmente.
-- **Fechamento consolidado** (formato em `.claude/context/governanca.md`): **tipo de mudança** do diff · **gates aplicáveis** e se rodaram ou ficam recomendados · **gaps/riscos** e aprovações human-in-the-loop pendentes (migration destrutiva, auth/peso, exclusão de dados, schema core).
+- **Fechamento consolidado** (formato em `.claude/context/governance.md`): **tipo de mudança** do diff · **gates aplicáveis** e se rodaram ou ficam recomendados · **gaps/riscos** e aprovações human-in-the-loop pendentes (migration destrutiva, auth/peso, exclusão de dados, schema core).
 
-> Não corrija aqui — os agentes apontam, você decide. Para os fixes, volte ao contexto da sessão do domínio. Depois de limpo: `descrever-pr` para a descrição e `sugerir-commits` para o plano de commits.
+> Não corrija aqui — os agentes apontam, você decide. Para os fixes, volte ao contexto da sessão do domínio. Depois de limpo: `suggest-prs` para a descrição e `suggest-commits` para o plano de commits.

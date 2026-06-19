@@ -3,7 +3,7 @@
 > Artefato de planejamento de projeto (do início ao fim), ancorado no **estado real do
 > código** lido em 2026-06-18. Read-only: tudo aqui é **diagnóstico + proposta**, nada foi
 > implementado nem commitado. Reestruturações saem como proposta para OK humano e respeitam
-> os gates human-in-the-loop do `CLAUDE.md` / `.claude/context/governanca.md`.
+> os gates human-in-the-loop do `CLAUDE.md` / `.claude/context/governance.md`.
 >
 > **Como ler:** §1 é o diagnóstico por domínio (com `arquivo:linha`); §2 é o roadmap por
 > fases com o **VOCÊ ESTÁ AQUI** marcado; §3 quick wins vs reestruturações; §4 a matriz
@@ -26,7 +26,7 @@ Disso derivam as quatro fronteiras de escopo:
 | **Definição de pronto** | Feature-complete dos 5 Tiers: o sistema fecha o ciclo escolar — matricular aluno → alocar professor a turma×disciplina → lançar nota e frequência. | Tiers 3–5 já têm model. Um sistema de "gestão escolar" sem turmas/notas/frequência não realiza o próprio nome. |
 | **Multitenant** | **Entra** (fase de hardening). Isolamento por unidade via `staff_units`. | `units` + `staff_units` + `class_allocations` existem no schema. CLAUDE.md chama o app de "escalável". O modelo exige o isolamento. |
 | **Teto de infra** | **Até o cutover** Caddy/VPS em produção. | Prod-target é MariaDB/Docker/Caddy (CLAUDE.md). O stack já está no repo, só falta fechar e virar a chave. |
-| **Perpetuar a capability** | Skill `planejar-projeto` + agente read-only de auditoria de estado. | Feature-complete dos Tiers = N ciclos de planejamento/auditoria. Capability recorrente → vira ativo versionado. |
+| **Perpetuar a capability** | Skill `plan-project` + agente read-only de auditoria de estado. | Feature-complete dos Tiers = N ciclos de planejamento/auditoria. Capability recorrente → vira ativo versionado. |
 
 **Critério de pronto global (v1.0):** todos os 5 Tiers expostos via HTTP + UI; auth correta
 e testada; isolamento multitenant ativo; suíte de testes + CI verdes; segurança endurecida;
@@ -76,7 +76,7 @@ Status: ✅ sólido · 🔶 parcial/preparado · ⚠️ funcional mas com dívid
 | Infra / deploy | 🔶 | Stack Docker+Caddy com rede segmentada pronto; faltam ajustes de cutover (portas, DB user). |
 | Testes / CI | ❌ | Infra vitest/supertest instalada, **zero testes, zero CI**. |
 | Segurança | 🔶 | Bons fundamentos (helmet, CORS allowlist, cookies httpOnly, demo trap sólido) com furos (bcrypt cost 8, rate-limit só no login, sem limite de upload, multitenant ausente). |
-| Tooling `.claude` | ✅ | 7 agentes + 10 skills; cobre build-out e review; falta planner de projeto, skill de testes e reviewer de segurança/perf. |
+| Tooling `.claude` | ✅ | 8 agentes ativos + 12 skills; cobre planejamento, build-out e review. `plan-project`, `create-test`, `state-audit` e `db-schema-review` **criados**; faltam só `model-review` (F3) e `security-perf-review` (F4), planejados. |
 
 ### 1.1 Modelo de dados — ✅ sólido (com dívida cosmética)
 
@@ -225,19 +225,21 @@ mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
 | Global error handler | ❌ | só try/catch por controller |
 | Multitenant isolation | ❌ | §1.2 — furo de dados entre unidades |
 
-### 1.7 Tooling `.claude` — ✅ maduro para build-out/review
+### 1.7 Tooling `.claude` — ✅ maduro; reorg de tooling executada em 2026-06-19
 
-- **7 agentes** (read-only, Observe): `migration-review`, `controller-review`,
-  `backend-auth-review`, `api-contract-review`, `ui-kit-review`, `infra-review`. (O 6º/7º
-  `infra-review` foi adicionado mas `guia-agentes.md`/`governanca.md` ainda dizem "5 reviewers"
-  — doc-drift.)
-- **10 skills:** `criar-model`, `criar-migration`, `criar-controller`, `criar-rota`,
-  `criar-pagina` (Act-with-approval); `planejar-feature`, `revisar-mudancas`, `descrever-pr`,
-  `sugerir-commits`, `auditar-vps` (Advise).
-- **Gaps:** sem **planner de projeto** (`planejar-feature` é feature-única); sem **skill de
-  testes** (`criar-teste`) apesar do setup vitest pronto; sem **agente de auditoria de estado**
-  do projeto; sem **reviewer de segurança/perf** app-layer (N+1, índices, OWASP, deps); sem
-  **model-review** (única quebra no par make→check); sem skill de **self-update do setup**.
+- **8 agentes ativos** (read-only, Observe): `migration-review`, `db-schema-review`, `controller-review`,
+  `backend-auth-review`, `api-contract-review`, `ui-kit-review`, `infra-review`, `state-audit`
+  (macro, lê o roadmap e reporta drift). O doc-drift "5 reviewers" em `agents-guide.md`/
+  `governance.md` foi **corrigido** (contagem real sincronizada).
+- **12 skills:** `create-model`, `create-migration`, `create-controller`, `create-route`,
+  `create-page`, `create-test` (Act-with-approval); `plan-feature`, `plan-project`,
+  `review-changes`, `suggest-prs`, `suggest-commits`, `audit-vps` (Advise/Observe).
+- **Resolvido nesta reorg:** planner de projeto (`plan-project`), skill de testes
+  (`create-test`), auditor de estado (`state-audit`); re-grounding da dupla migration no baseline
+  consolidado; roteamento de infra na `review-changes`; regra `req.*` indefinido no `backend-auth-review`.
+- **Gaps remanescentes (planejados):** `model-review` (Fase 3, fecha a quebra no par make→check)
+  e `security-perf-review` (Fase 4, app-layer: N+1, índices, OWASP, deps). Self-update do setup
+  permanece como **processo** (`governance.md §Atualização controlada`), não como skill.
 
 ---
 
@@ -287,8 +289,8 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
 
 ### Fase 3 — Build-out do núcleo acadêmico (Tiers 3–5) · ⬜ NÃO INICIADO — **MAIOR FASE**
 - **Objetivo:** dar à vida o que o modelo promete: estrutura → operações → resultados. Cada
-  entidade é uma **fatia vertical** pela cadeia canônica (`criar-controller` → `criar-rota` →
-  `criar-pagina`; model já existe; `criar-migration` só se houver ajuste de schema).
+  entidade é uma **fatia vertical** pela cadeia canônica (`create-controller` → `create-route` →
+  `create-page`; model já existe; `create-migration` só se houver ajuste de schema).
 - **Entregáveis (em ordem de dependência):**
   - **3A — Estrutura:** `Unit`, `Subject`, `UnitClass` (turmas), `StaffUnit` (lotação).
     > Construir **StaffUnit primeiro entre os de operação**: o isolamento multitenant da Fase 4
@@ -297,7 +299,7 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   - **3C — Resultados:** `StudentGrade` (notas), `Attendance` (frequência).
   - Cada fatia: controller (forma canônica do `UserController` — transação, projeção
     whitelisted, peso, `handleErrors`), rota (flags corretas desde o início, sem repetir o bug
-    F1), página (decidir LOCAL vs GLOBAL pelo `criar-pagina`), revisão pelos agentes do par.
+    F1), página (decidir LOCAL vs GLOBAL pelo `create-page`), revisão pelos agentes do par.
 - **Dependências:** **Fase 1 fechada** (não construir sobre auth quebrada/contrato divergente).
   3B depende de 3A; 3C depende de 3B.
 - **HITL / gates:** qualquer migration que toque schema core/FK das bases = HITL; migrations
@@ -335,17 +337,17 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   - **R2 — Prod env:** domínios reais (`SITE_DOMAIN`/`API_DOMAIN`), DNS A-records (apex + api),
     ACME/TLS pelo Caddy. Sincronizar `.env` ↔ `docker-compose.yml`.
   - **R3 — Backup/restore** do DB documentado (runbook).
-  - **R4 — Cutover** HostGator→VPS; validar com a skill `auditar-vps` (read-only) pós-virada.
+  - **R4 — Cutover** HostGator→VPS; validar com a skill `audit-vps` (read-only) pós-virada.
 - **Dependências:** Fases 1–4 (não publicar sistema com auth quebrada / sem testes). Prazo
   **TLS 26/jul**.
 - **HITL / gates:** **cutover de produção = human-in-the-loop.** Gate: `infra-review` (estático)
-  + `auditar-vps` (live) antes e depois.
+  + `audit-vps` (live) antes e depois.
 - **Saída:** app público na VPS, HTTPS válido, DB isolado e com least-privilege, backup testado.
 
 ### Fase 6 — Manutenção & Evolução · ⬜
 - **Objetivo:** sustentar o sistema e os próprios ativos de IA.
-- **Entregáveis:** self-update controlado do setup (`governanca.md §Atualização controlada`);
-  corrigir doc-drift (CLAUDE.md Tier-map; "5 reviewers"→7 em `guia-agentes`/`governanca`);
+- **Entregáveis:** self-update controlado do setup (`governance.md §Atualização controlada`);
+  corrigir doc-drift remanescente (CLAUDE.md Tier-map: `subject_id`, `attendances`, `photos`);
   resolver dívidas diferidas (hard-delete/cascade module, staff self-action UI, `photos` drop,
   Home dashboard real); hygiene de dependências (`npm audit`).
 - **HITL / gates:** drop de `photos`/hard-delete = HITL (destrutivo/exclusão de dados).
@@ -384,7 +386,7 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
    filesystem via multer). Se confirmado legado → **drop** (migration destrutiva = HITL).
    *Reversível:* só com backup do schema.
 4. **R-D · Schemas de validação por endpoint.** *Ganho:* validação de body consistente (hoje só
-   `userSchema`). *Entra:* yup por endpoint mutador (gerável pelo `criar-controller`/`criar-rota`).
+   `userSchema`). *Entra:* yup por endpoint mutador (gerável pelo `create-controller`/`create-route`).
    *Risco:* baixo. Construir junto na Fase 3 (cada fatia nasce com schema).
 5. **R-E · Multitenant scoping helper** — ver H1 (Fase 4). Arquitetural; depende de StaffUnit HTTP.
 
@@ -392,37 +394,39 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
 
 ## 4. Matriz tooling × fases
 
-### Agentes (7 atuais + 3 a criar)
+### Agentes (8 ativos + 2 planejados)
 | Agente | Veredito | Fase(s) | Observação |
 |---|---|---|---|
-| `migration-review` | **mantém** | 3, 4 | usado a cada ajuste de schema das fatias / hardening |
+| `migration-review` | **mantém** | 3, 4 | usado a cada ajuste de schema das fatias / hardening; re-aterrado no baseline consolidado |
+| `db-schema-review` | **✅ criado** | 3, 4 | design de dados (DBA sênior): integridade referencial, índices, tipos, normalização |
 | `controller-review` | **mantém** | 1 (auditar), 3 (build-out) | workhorse de forma do controller |
-| `backend-auth-review` | **muda (leve)** | 1, 3, 4 | **principal** ferramenta de F1/H1. Adicionar regra para flagar uso de `req.*` indefinido (ex.: `req.userLevel`) — teria pego o bug crítico |
+| `backend-auth-review` | **ajustado** | 1, 3, 4 | **principal** ferramenta de F1/H1. Regra de `req.*` indefinido (ex.: `req.userLevel`) **já aplicada** — pega o bug crítico |
 | `api-contract-review` | **mantém** | 1, 3 | F2 (canonizar contrato) é exatamente seu papel |
 | `ui-kit-review` | **mantém** | 3 | build-out de frontend Tier 3–5 |
-| `infra-review` | **mantém** | 5 | prep do cutover (estático) |
-| **`model-review`** | **criar** | 3 | fecha a única quebra no par make→check (pareia `criar-model`) |
-| **`security-perf-review`** | **criar** | 4 | app-layer: rate-limit, bcrypt, upload, N+1, índices, deps (OWASP). Nasce no hardening |
-| **`state-audit`** (read-only) | **criar** | **agora** | auditor de estado do projeto; lê `docs/roadmap.md` + código e reporta drift/progresso (deliverable 4) |
+| `infra-review` | **mantém** | 5 | prep do cutover (estático); grounding `docs/infra/` corrigido |
+| `state-audit` (read-only) | **✅ criado** | agora | auditor de estado do projeto; lê `docs/roadmap.md` + código e reporta drift/progresso (deliverable 4) |
+| **`model-review`** | **planejado** | 3 | fecha a única quebra no par make→check (pareia `create-model`) |
+| **`security-perf-review`** | **planejado** | 4 | app-layer: rate-limit, bcrypt, upload, N+1, índices, deps (OWASP). Nasce no hardening |
 
-### Skills (10 atuais + 2 a criar)
+### Skills (12 ativas)
 | Skill | Veredito | Fase(s) | Observação |
 |---|---|---|---|
-| `criar-model` | **mantém** | 3 | models Tier 3–5 já existem; usar para novos/ajustes |
-| `criar-migration` | **mantém** | 3, 4 | ajustes de schema, índices de perf |
-| `criar-controller` | **mantém** | 3 | **workhorse** do build-out acadêmico |
-| `criar-rota` | **mantém** | 3 | já gera flags corretas (não repetir bug F1) |
-| `criar-pagina` | **mantém** | 3 | decide LOCAL vs GLOBAL por entidade |
-| `planejar-feature` | **muda (leve)** | 3 | delegar multi-entidade ao novo `planejar-projeto`; permanece para 1 fatia |
-| `revisar-mudancas` | **mantém** | todas | umbrella de review |
-| `descrever-pr` | **mantém** | todas | |
-| `sugerir-commits` | **mantém** | todas | |
-| `auditar-vps` | **mantém** | 5 | validação live do cutover |
-| **`planejar-projeto`** | **criar** | **agora** | macro-planner irmã da `planejar-feature`; sequencia roadmap/épicos sobre `docs/roadmap.md` (deliverable 4) |
-| **`criar-teste`** | **criar** | 1 (nasce), 4 (expande) | autoria vitest+supertest; o gate `npm test` existe mas a cadeia gerativa para no código |
+| `create-model` | **mantém** | 3 | models Tier 3–5 já existem; usar para novos/ajustes |
+| `create-migration` | **mantém** | 3, 4 | ajustes de schema, índices de perf; re-aterrada no baseline consolidado |
+| `create-controller` | **mantém** | 3 | **workhorse** do build-out acadêmico |
+| `create-route` | **mantém** | 3 | já gera flags corretas (não repetir bug F1) |
+| `create-page` | **mantém** | 3 | decide LOCAL vs GLOBAL por entidade |
+| `create-test` | **✅ criado** | 1 (usa), 4 (expande) | vitest+supertest; preenche o gate `npm test` (suíte ainda a escrever) |
+| `plan-feature` | **ajustado** | 3 | já delega multi-entidade ao `plan-project`; permanece para 1 fatia |
+| `plan-project` | **✅ criado** | agora | macro-planner irmã da `plan-feature`; sequencia roadmap/épicos sobre `docs/roadmap.md` (deliverable 4) |
+| `review-changes` | **mantém** | todas | umbrella de review; roteia infra/model/security |
+| `suggest-prs` | **ajustado** | todas | era `describe-pr`; agora fatia a pilha em 1+ PRs + descreve cada |
+| `suggest-commits` | **mantém** | todas | |
+| `audit-vps` | **mantém** | 5 | validação live do cutover |
 
-**Doc-drift a corrigir (Fase 6):** `guia-agentes.md`/`governanca.md` dizem "5 reviewers"; já são
-7 (e viram 9 com os novos). Atualizar junto da criação dos novos agentes.
+**Doc-drift (resolvido em 2026-06-19):** `agents-guide.md`/`governance.md` sincronizados —
+**7 agentes ativos / 12 skills** (9 agentes no alvo com `model-review` F3 + `security-perf-review`
+F4). Resta o Tier-map do `CLAUDE.md` (Fase 6).
 
 ---
 
@@ -433,19 +437,19 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
 1. **Esta sessão → `docs/roadmap.md`** (este arquivo). É o artefato-âncora. Os agentes/skills
    de planejamento e auditoria leem **daqui** "o que existe, o que falta, em que fase estamos".
 
-2. **Criar `planejar-projeto` (skill) + `state-audit` (agente read-only)** — o par
-   **fazer→checar** no nível de projeto, espelhando o que `planejar-feature` + reviewers já são
+2. **`plan-project` (skill) + `state-audit` (agente read-only) — ✅ criados em 2026-06-19** — o par
+   **fazer→checar** no nível de projeto, espelhando o que `plan-feature` + reviewers já são
    no nível de feature:
-   - **`planejar-projeto`** (Advise): recebe um objetivo de épico (ex.: "fechar Tier 3"),
+   - **`plan-project`** (Advise): recebe um objetivo de épico (ex.: "fechar Tier 3"),
      decompõe em fatias verticais pela cadeia canônica, marca gates/HITL e **atualiza/consulta o
-     `docs/roadmap.md`**. Irmã macro da `planejar-feature`.
+     `docs/roadmap.md`**. Irmã macro da `plan-feature`.
    - **`state-audit`** (Observe, `Read/Grep/Glob`): re-roda o diagnóstico do §1 sob demanda,
      compara com o roadmap e reporta **drift** (ex.: "Fase 3B começou mas sem teste",
      "doc-drift X") — sem editar nada.
 
    *Por que ambos, não só a sessão:* a definição de pronto (feature-complete dos 5 Tiers + 
    hardening + cutover) é **N ciclos** de planejar→construir→checar. Uma capability recorrente
-   vira **ativo versionado** (princípio do `governanca.md §Atualização controlada`), não trabalho
+   vira **ativo versionado** (princípio do `governance.md §Atualização controlada`), não trabalho
    manual repetido. A sessão isolada resolve uma vez; o par skill+agente resolve sempre.
 
    *Por que agora (não depois):* o `state-audit` é exatamente o que ancora a "sessão de auditoria
@@ -464,3 +468,4 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   (frontend), agentes reviewers (read-only, recomendam — não rodam). Sem e2e/a11y/security-matrix.
 
 > Gerado a partir de leitura read-only do código em 2026-06-18. Não commitado.
+> Atualização 2026-06-19: §1.7/§4/§5 sincronizados com a reorg de tooling do `.claude` (7 agentes / 12 skills; `model-review`/`security-perf-review` planejados). O roadmap de código (Fases 1–6) permanece diagnóstico, não implementado.

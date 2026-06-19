@@ -1,5 +1,5 @@
 ---
-name: auditar-vps
+name: audit-vps
 description: Playbook de auditoria READ-ONLY da VPS de produção (Docker + Caddy + MariaDB). Conecta por SSH, inventaria todas as camadas (SO, SSH, firewall, Docker, proxy/TLS, banco, backup, observabilidade, recursos), e devolve relatório de inventário + tabela de melhorias padrão-indústria priorizada. Use para auditar/diagnosticar a infra de produção. NÃO altera estado — toda correção sai como sugestão + comando para o humano aprovar e rodar.
 ---
 
@@ -13,7 +13,7 @@ Auditoria de infraestrutura da VPS de produção do Student Management System. R
 2. **Nunca** copie segredos, `.env` de produção ou dump de dados reais para a máquina local sem autorização explícita. Para popular o local, use **schema via migrations**, nunca dump de prod.
 3. **Mascare segredos na saída** — mostre a chave, nunca o valor. Para inspecionar o banco, use a senha **de dentro do container** (`$MARIADB_*`), sem ecoá-la.
 4. Toda mudança proposta vai como **sugestão + comando**; o usuário aprova e roda. A skill **não** aplica nem commita.
-5. **Human-in-the-loop** (ver `.claude/context/governanca.md`): parar antes de qualquer ação destrutiva, em schema core, ou que afete auth/dados/firewall.
+5. **Human-in-the-loop** (ver `.claude/context/governance.md`): parar antes de qualquer ação destrutiva, em schema core, ou que afete auth/dados/firewall.
 
 ## Pré-requisito de acesso
 
