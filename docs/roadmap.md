@@ -73,7 +73,7 @@ Status: ✅ sólido · 🔶 parcial/preparado · ⚠️ funcional mas com dívid
 | Modelo de dados | ✅ | 5 Tiers modelados; baseline cria 16 tabelas; 15 models batem 1:1 (sobra `photos` órfã). |
 | Backend / API | ⚠️ | Só Actors expostos; **auth quebrada** (`userLevel` nunca setado, `roleAuth` por flag errada); contrato HTTP divergente; Tiers 3–5 sem HTTP. |
 | Frontend / UI Kit | 🔶 | Actor pages completas; Tiers 3–5 sem UI; demo read-only ok mas botões de escrita não escondidos; 2 violações de UI Kit. |
-| Infra / deploy | 🔶 | Stack Docker+Caddy com rede segmentada pronto; faltam ajustes de cutover (portas, DB user). |
+| Infra / deploy | 🔶 | Stack Docker+Caddy com rede segmentada e hardening (Passo 0) prontos; cutover na VPS pendente. |
 | Testes / CI | ❌ | Infra vitest/supertest instalada, **zero testes, zero CI**. |
 | Segurança | 🔶 | Bons fundamentos (helmet, CORS allowlist, cookies httpOnly, demo trap sólido) com furos (bcrypt cost 8, rate-limit só no login, sem limite de upload, multitenant ausente). |
 | Tooling `.claude` | ✅ | 8 agentes ativos + 12 skills; cobre planejamento, build-out e review. `plan-project`, `create-test`, `state-audit` e `db-schema-review` **criados**; faltam só `model-review` (F3) e `security-perf-review` (F4), planejados. |
@@ -178,24 +178,19 @@ mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
 
 ### 1.4 Infra / deploy — 🔶 preparado, cutover não virou
 
-- `docker-compose.yml`: 3 serviços — `db` (mariadb:10.11), `api` (`backend/Dockerfile.prod`),
-  `caddy` (SPA + reverse proxy, `frontend/Dockerfile.prod`). **Rede segmentada correta:** `db`
-  só na rede `internal` (`internal: true`, `:120-125`); `api` faz ponte; `caddy` só na `edge`,
-  sem rota ao DB. Healthchecks, `restart: unless-stopped`, log rotation e `deploy.resources.limits`
-  presentes. Segredos via `${VAR}`, nada inline; `.env*` não rastreado (history limpo).
-- `backend/Dockerfile.prod` correto (`node:22-slim`, `npm ci`, `USER node`); dev
-  `backend/Dockerfile` roda root, `node:20` não pinado, `npm install`.
-- **Blockers de cutover:**
-  1. **Edge em `127.0.0.1`** (`docker-compose.yml:101-103`) — Caddy não recebe tráfego público
-     nem resolve ACME. Precisa `0.0.0.0`. **Blocker.**
-  2. **`db` publica `ports` na base** (`:14`) — deveria ser só no override local; prod não
-     expõe DB no host. **Blocker de hardening.**
-  3. **DB user `root`** (`backend/.env:4`) vs `app` no `.env.example:3` — confirmar least-privilege.
-  4. **Domínios reais** (`SITE_DOMAIN`/`API_DOMAIN` ainda `localhost`) + **DNS A-records** antes
-     do primeiro boot do Caddy (ACME valida DNS público).
-  5. **Sem backup/restore** do DB documentado.
-  6. `frontend/Caddyfile:38-42` sem CSP / `X-Frame-Options` / `Referrer-Policy` no vhost da API.
-- **Prazo:** TLS atual (HostGator) expira **26/jul** — janela de cutover.
+- `docker-compose.yml` (definição-alvo de prod): 3 serviços — `db` (mariadb:10.11), `api`
+  (`backend/Dockerfile.prod`), `caddy` (SPA + reverse proxy, `frontend/Dockerfile.prod`). **Rede
+  segmentada:** `db` só na `internal` (`internal: true`), `api` faz ponte, `caddy` só na `edge`,
+  sem rota ao DB. Healthchecks, `restart: unless-stopped`, log rotation e `deploy.resources.limits`.
+  Segredos via `${VAR}`, nada inline; `.env*` não rastreado.
+- **Hardening aplicado (Passo 0 do cutover — branch `chore/cutover-r1-prep`):** edge público p/ o
+  ACME, DB sem porta publicada no host, container hardening (CIS Docker: `no-new-privileges`,
+  `cap_drop`, `read_only`+`tmpfs`), pin de imagens base por digest e security headers no vhost da
+  API. Validado com `docker compose up` local.
+- **Pendente p/ o cutover:** domínios reais + DNS A-records, TLS automático pelo Caddy (ACME), DB
+  com usuário de aplicação (least-privilege) e rotina de backup/restore testada.
+- **Auditoria interna read-only concluída** — diagnóstico do ambiente e plano de hardening
+  priorizado em `docs/infra/` (não versionado). Runbook do cutover na **Fase 5**.
 
 ### 1.5 Testes / CI — ❌ ausente
 
@@ -328,21 +323,34 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
 - **Saída:** nenhum vazamento entre unidades; segurança sem os furos do §1.6; logs estruturados;
   cobertura de testes por domínio; sem N+1 óbvio.
 
-### Fase 5 — Release / Cutover de infra (Caddy/VPS) · 🔶 PREP — não virou
-- **Objetivo:** colocar o sistema na VPS atrás do Caddy, com TLS válido, saindo do HostGator.
-- **Entregáveis:**
-  - **R1 — Destravar blockers:** edge `127.0.0.1`→`0.0.0.0` (`docker-compose.yml:101-103`); `db
-    ports` só no override; DB user least-privilege (`root`→`app`); CSP/headers no vhost da API
-    (`Caddyfile:38-42`).
-  - **R2 — Prod env:** domínios reais (`SITE_DOMAIN`/`API_DOMAIN`), DNS A-records (apex + api),
-    ACME/TLS pelo Caddy. Sincronizar `.env` ↔ `docker-compose.yml`.
-  - **R3 — Backup/restore** do DB documentado (runbook).
-  - **R4 — Cutover** HostGator→VPS; validar com a skill `audit-vps` (read-only) pós-virada.
-- **Dependências:** Fases 1–4 (não publicar sistema com auth quebrada / sem testes). Prazo
-  **TLS 26/jul**.
-- **HITL / gates:** **cutover de produção = human-in-the-loop.** Gate: `infra-review` (estático)
-  + `audit-vps` (live) antes e depois.
-- **Saída:** app público na VPS, HTTPS válido, DB isolado e com least-privilege, backup testado.
+### Fase 5 — Release / Cutover de infra (Caddy/VPS) · 🔶 PREP — Passo 0 concluído
+- **Objetivo:** colocar o sistema na VPS atrás do Caddy, com TLS automático (ACME), rede segmentada,
+  DB least-privilege e backup testado — convergindo a prod para a definição-alvo do repo.
+- **Diagnóstico:** auditoria interna read-only concluída; estado do ambiente, gaps e tabela de
+  hardening priorizada em `docs/infra/` (não versionado). O repo é a **definição-alvo**; o cutover
+  faz a realidade convergir.
+- **Runbook (HITL — um passo por vez):**
+  - **Passo 0 — Repo (seguro, reversível) · branch `chore/cutover-r1-prep`:** ✅ edge público p/ o
+    ACME; `db` sem porta no host (publicação local fica no override gitignored); security headers no
+    vhost da API; **hardening de container** (CIS Docker: `no-new-privileges`, `cap_drop` com set
+    mínimo, `read_only`+`tmpfs`) e **pin das imagens por digest**. Validado com `docker compose up`.
+  - **Passo 1 — Backup/restore (prod · HITL):** dump do DB + **restore testado** num container
+    descartável (runbook).
+  - **Passo 2 — DB least-privilege (prod · HITL):** usuário de aplicação com grants mínimos;
+    sincronizar `.env` ↔ `docker-compose.yml`.
+  - **Passo 3 — Convergir o deploy na VPS (prod · HITL):** preservar a config atual como rollback e
+    pousar o deploy no `main` canônico (config de prod versionada).
+  - **Passo 4 — Cutover (prod · HITL):** parametrizar domínios reais + CORS de prod; build das
+    imagens Caddy → subir o stack-alvo → emissão de TLS via ACME → validar HTTPS + smoke test. Stack
+    anterior de pé p/ rollback; validar com `audit-vps` pós-virada.
+  - **Passo 5 — Hardening de host:** firewall (só portas de borda + SSH), fail2ban, SSH key-only,
+    log-rotation do Docker, limpeza de disco e rotina de backup.
+- **Dependências:** Fases 1–4 do roadmap (não publicar sistema com auth quebrada / sem testes).
+  Janela de cutover definida pela expiração do TLS atual (ver auditoria interna).
+- **HITL / gates:** **cutover de produção = human-in-the-loop, passo a passo.** Gate: `infra-review`
+  (estático) + `audit-vps` (live) antes e depois.
+- **Saída:** app público na VPS, HTTPS válido (Caddy/ACME), DB isolado e least-privilege, backup
+  testado.
 
 ### Fase 6 — Manutenção & Evolução · ⬜
 - **Objetivo:** sustentar o sistema e os próprios ativos de IA.

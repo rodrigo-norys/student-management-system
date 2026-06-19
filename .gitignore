@@ -4,3 +4,6 @@
 !.env.example
 
 docker-compose.override.yml
+
+# Auditorias/notas de infra com dados sigilosos (hosts, topologia, achados) — nunca versionar
+docs/infra/
