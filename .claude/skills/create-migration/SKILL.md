@@ -1,19 +1,19 @@
 ---
-name: criar-migration
-description: Cria uma nova migration Sequelize (ESM) seguindo a estrutura canônica de create-staff. Use ao adicionar tabela ou alterar schema do backend. Cobre formato up/down, convenção de colunas (id, FKs, status, timestamps), nome de arquivo por timestamp e compatibilidade MariaDB 10.11.
+name: create-migration
+description: Cria uma nova migration Sequelize (ESM) seguindo o padrão createTable do projeto. Use ao adicionar tabela ou alterar schema do backend. Cobre formato up/down, convenção de colunas (id, FKs, status, timestamps), nome de arquivo por timestamp e compatibilidade MariaDB 10.11.
 ---
 
 # Criar migration
 
-Gera uma migration nova em `backend/src/database/migrations/`. **Base estrutural:** `20260316140508-create-staff.js`.
+Gera uma migration nova em `backend/src/database/migrations/`. O histórico foi **consolidado** em `20260616120000-baseline-schema.js` (DDL raw a partir do estado de produção) e as migrations antigas arquivadas em `_archive/`. O esqueleto abaixo vale para migrations **incrementais novas** a partir do baseline — o baseline em si é DDL raw, um caso à parte, não o modelo de uma migration comum.
 
 **Argumento esperado:** o que a migration faz (ex.: `create-subjects`, `add-phone-to-staff`). Sem argumento, pergunte antes de gerar.
 
 ## 1. Nome do arquivo
-Formato `YYYYMMDDHHmmss-descricao-em-kebab.js`. Gere o timestamp no momento da criação (14 dígitos). O prefixo define a **ordem de execução** — nunca usar timestamp anterior ao da última migration já aplicada.
+Formato `YYYYMMDDHHmmss-descricao-em-kebab.js`. Gere o timestamp no momento da criação (14 dígitos). O prefixo define a **ordem de execução** — nunca usar timestamp anterior ao da última migration já aplicada (hoje, o baseline `20260616120000`).
 
 ## 2. Estrutura canônica (createTable)
-Siga este esqueleto (de `create-staff`):
+Siga este esqueleto (padrão `createTable` do projeto):
 
 ```js
 'use strict';
@@ -57,7 +57,7 @@ export async function down(queryInterface, Sequelize) {
 - **`id` primeiro, timestamps por último** (`created_at`/`updated_at`, snake_case, `DATE`, `allowNull:false`).
 - **Toda FK** declara `references` + `onUpdate`/`onDelete`. Regra de `onDelete`: `RESTRICT` para relação obrigatória, `SET NULL` para opcional (`allowNull:true`) — ver `staff.user_id`. Confira o relacionamento correto no modelo de dados do `CLAUDE.md`.
 - **Texto com tamanho explícito** (`STRING(n)`) — espelhe o length de colunas equivalentes em outras tabelas.
-- **`status`**: o `create-staff` original usou `STRING(20)`, mas a convenção **atual** é ENUM `status` (substituiu `is_active`). Em tabela nova use `Sequelize.ENUM(...)`. Os valores variam por entidade (students/users incluem `transferred`/`graduated`/`suspended`; staff inclui `on_leave`; tabelas simples só `active`/`inactive`).
+- **`status`**: a convenção é ENUM `status` (substituiu o antigo `is_active` booleano). Em tabela nova use `Sequelize.ENUM(...)`. Os valores variam por entidade (students/users incluem `transferred`/`graduated`/`suspended`; staff inclui `on_leave`; tabelas simples só `active`/`inactive`).
 - **`down` reverte de fato**: `createTable`→`dropTable`; em alterações, o caminho inverso exato.
 
 ## 4. Compatibilidade MariaDB 10.11 (não quebrar deploy)
@@ -66,6 +66,6 @@ export async function down(queryInterface, Sequelize) {
 - `RETURNING` diverge — não usar.
 
 ## 5. Aplicar
-De `backend/`: `npx sequelize-cli db:migrate`. Lembre que **não roda em transação por padrão** — em `createTable` simples é ok, mas em migration multi-passo uma falha no meio deixa estado parcial.
+De `backend/`: `npx sequelize-cli db:migrate` (comando muta o banco → pede permissão). Lembre que **não roda em transação por padrão** — em `createTable` simples é ok, mas em migration multi-passo uma falha no meio deixa estado parcial.
 
 > Após gerar, sugira passar no agente `migration-review` antes de aplicar.

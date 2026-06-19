@@ -79,7 +79,7 @@ Aplicação escalável de gestão escolar. Projeto acadêmico e de portfólio (G
 - **Nunca editar migration já aplicada** (registrada na `SequelizeMeta`): não re-executa e cria divergência entre ambientes. Crie uma nova.
 - Migrations **não rodam em transação por padrão** — em falha no meio, os passos anteriores podem já ter sido aplicados.
 
-> Template, formato ESM, reorder com `after` e duplicata em índice único: skill `criar-migration` + agente `migration-review`.
+> Template, formato ESM, reorder com `after` e duplicata em índice único: skill `create-migration` + agente `migration-review`.
 
 ## Convenções de código
 
@@ -98,4 +98,4 @@ Aplicação escalável de gestão escolar. Projeto acadêmico e de portfólio (G
 ## Governança de agentes
 
 - **Human-in-the-loop** — pare e confirme antes de: **migration destrutiva**, **auth/peso hierárquico**, **exclusão de dados** (hard delete/cascade), **schema core** (tabelas/FKs das entidades base).
-- Níveis de autonomia, gates reais, formato do Fechamento e fluxo de auto-update do setup: ver `.claude/context/governanca.md` (não auto-carregado — citado explicitamente por agentes/skills). Permissões de comando em `.claude/settings.json`. Visão geral em `.claude/guia-agentes.md`.
+- Níveis de autonomia, gates reais, formato do Fechamento e fluxo de auto-update do setup: ver `.claude/context/governance.md` (não auto-carregado — citado explicitamente por agentes/skills). Permissões de comando em `.claude/settings.json`. Visão geral em `.claude/agents-guide.md`.

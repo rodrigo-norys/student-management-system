@@ -1,5 +1,5 @@
 ---
-name: sugerir-commits
+name: suggest-commits
 description: Analisa o working tree (git status + diff) e devolve um plano de commits atômicos no padrão Conventional Commits do usuário, cada um com seu `git add` correspondente. Use quando o usuário pedir explicitamente para sugerir/montar commits, agrupar mudanças pendentes ou perguntar "o que eu preciso commitar". NUNCA executa os commits — só apresenta para o usuário rodar.
 ---
 

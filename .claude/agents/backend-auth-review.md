@@ -33,8 +33,9 @@ router.delete('/:id', roleAuth('manage_record'), controller.delete);
 5. **`status` ENUM**: o controller usa `status` (ENUM), nunca o antigo `is_active` booleano.
 6. **Projeção whitelisted**: queries que retornam usuário/ator usam `attributes` explícito, sem vazar `password_hash`, tokens, etc.
 7. **Shape de erro**: respostas de erro seguem `{ errors: [...] }` e status HTTP coerente (401 auth, 403 permissão, 404 ausência).
+8. **`req.*` definido pelo `loginRequired`**: o controller só pode ramificar autorização em campos que o middleware **realmente popula** (`req.userId`/`userEmail`/`userWeight`/`userRole`/`userPermissions`). Uso de campo **não setado** (ex.: `req.userLevel`) compara contra `undefined` → checagem morta que libera ou nega tudo silenciosamente. Sinalize qualquer `req.<campo>` que o `loginRequired` não define.
 
 ## Saída
 Lista enxuta por severidade. Cada item: `arquivo:linha` + o que está fora do padrão + o risco concreto (ex.: "qualquer usuário logado deleta aluno"). Foque em autorização e convenção — não revise estilo/formatação. Não escreva o fix.
 
-**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `revisar-mudancas` — ver `.claude/context/governanca.md`.
+**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `review-changes` — ver `.claude/context/governance.md`.

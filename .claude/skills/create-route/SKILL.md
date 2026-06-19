@@ -1,5 +1,5 @@
 ---
-name: criar-rota
+name: create-route
 description: Cria um novo arquivo de rotas Express seguindo a estrutura de userRoutes. Use ao expor um controller via HTTP. Cobre loginRequired, roleAuth(flag), validateRequest, a ordem de declaração (estáticas antes de /:id) e o registro do router em app.js.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: criar-pagina
+name: create-page
 description: Cria uma nova página/módulo no frontend React. Primeiro DECIDE entre contexto LOCAL (hooks, módulo isolado — padrão User) e GLOBAL (redux-sagas, entidade cross-app — padrão Student) usando o modelo de dados do CLAUDE.md, depois segue a estrutura correspondente. Cobre store, hooks, components e a fachada styled.js.
 ---
 

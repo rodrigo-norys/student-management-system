@@ -1,5 +1,5 @@
 ---
-name: criar-model
+name: create-model
 description: Cria um novo model Sequelize (ESM) seguindo a estrutura de Student.js/Address.js e o registra em database/index.js. Use ao mapear uma tabela para o ORM. Cobre init/super.init, convenção de colunas (snake_case, STRING(n) com validate+msg, status ENUM, FKs INTEGER), associate (belongsTo/hasMany/belongsToMany) e o registro nos dois arrays.
 ---
 
@@ -9,7 +9,7 @@ Gera `backend/src/models/<Entity>.js` e o registra em `backend/src/database/inde
 
 **Argumento esperado:** a entidade no singular PascalCase (ex.: `Subject`, `Unit`). Sem argumento, pergunte.
 
-> O model **mapeia** a tabela; ele **não a cria**. Schema (colunas, índices, FKs no banco) é responsabilidade da **migration** (`criar-migration`). Mantenha os dois alinhados: tipo/tamanho/nullability do model devem casar com a migration.
+> O model **mapeia** a tabela; ele **não a cria**. Schema (colunas, índices, FKs no banco) é responsabilidade da **migration** (`create-migration`). Mantenha os dois alinhados: tipo/tamanho/nullability do model devem casar com a migration.
 
 ## Estrutura canônica
 
@@ -87,4 +87,4 @@ Sem isso o model não inicializa nem associa. **Dois passos:**
 - **`associate`** declara os relacionamentos com `foreignKey` + `as` consistentes com o que os controllers usam no `include` (ex.: `as: 'addresses'`, `as: 'guardians'`). N:N via `through` do model de junção. Confira a direção contra o **Modelo de dados** do `CLAUDE.md`.
 - **Comentários em pt-br**, identificadores e `msg` de validação em inglês.
 
-> Depois de gerar: crie a **migration** correspondente (`criar-migration`) com os mesmos tipos/tamanhos e revise-a no `migration-review`. O model em si é validado de forma transversal quando o controller que o consome passa no `controller-review`.
+> Depois de gerar: crie a **migration** correspondente (`create-migration`) com os mesmos tipos/tamanhos e revise-a no `migration-review`. O model em si é validado de forma transversal quando o controller que o consome passa no `controller-review`.

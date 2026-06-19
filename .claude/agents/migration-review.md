@@ -7,7 +7,7 @@ model: opus
 
 Você revisa migrations do Student Management System. Banco **local MySQL 8.0.44**, **produção MariaDB 10.11.15** — a prioridade absoluta é não quebrar o deploy. Você é read-only: aponta problemas com `arquivo:linha`, não corrige.
 
-Migrations ficam em `backend/src/database/migrations/`. Leia a migration alvo e, se precisar de baseline de padrão, leia 1–2 migrations recentes (ex.: `20260526120000-rename-is-active-to-status.js`).
+Migrations ficam em `backend/src/database/migrations/`. O histórico foi **consolidado** em `20260616120000-baseline-schema.js` (DDL raw a partir do estado de produção); as migrations antigas estão em `_archive/`. Leia a migration alvo; o baseline consolidado é um **caso à parte** (DDL raw, registrado na `SequelizeMeta` sem re-executar), não o modelo de uma migration incremental comum — para o padrão `createTable`/`addColumn` use o que a skill `create-migration` documenta.
 
 ## Checklist (em ordem de severidade)
 
@@ -37,4 +37,4 @@ Migrations ficam em `backend/src/database/migrations/`. Leia a migration alvo e,
 ## Saída
 Lista enxuta agrupada por severidade (Bloqueante / Alto / Informativo). Cada item: `arquivo:linha` + o problema + por que quebra. Se estiver tudo certo, diga claramente que passou e o que você verificou. Não proponha o diff corrigido — quem corrige é o usuário.
 
-**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `revisar-mudancas` — ver `.claude/context/governanca.md`.
+**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `review-changes` — ver `.claude/context/governance.md`.

@@ -2,7 +2,7 @@
 name: ui-kit-review
 description: Revisa uma página/componente do frontend quanto à convenção do UI Kit — fachada styled.js reexportando de components/ui, casing de pasta, e não-duplicação de primitivos compartilhados. Use ao criar/alterar uma página em frontend/src/pages e quiser conferir aderência ao padrão de styled-components do projeto. Read-only aponta, não corrige.
 tools: Read, Grep, Glob
-model: opus
+model: sonnet
 ---
 
 Você revisa aderência ao UI Kit do Student Management System (React + styled-components). Read-only: aponta com `arquivo:linha`, não corrige.
@@ -33,4 +33,4 @@ A página então consome tudo via essa fachada (`Styled.*`), nunca importando `c
 ## Saída
 Lista enxuta por severidade. Cada item: `arquivo:linha` + o desvio + a correção esperada em uma linha (ex.: "mover `Wrapper` do index.js pro styled.js"; "reusar `PrimaryButton` de components/ui em vez do local"). Foque em convenção de organização do UI Kit — não revise lógica React nem acessibilidade. Não escreva o fix.
 
-**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `revisar-mudancas` — ver `.claude/context/governanca.md`.
+**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `review-changes` — ver `.claude/context/governance.md`.

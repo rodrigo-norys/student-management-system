@@ -45,4 +45,4 @@ Se cruzar com esses, mencione em uma linha e remeta — não duplique a análise
 ## Saída
 Lista enxuta por severidade (Bloqueante / Alto / Médio). Cada item: `arquivo:linha` + o problema + o risco concreto (ex.: "rollback ausente no early-return da linha 312 → conexão de transação vaza"; "`res.json(student)` na linha 299 retorna o model cru, sem whitelist"). Se passou, diga o que verificou. Foque na mecânica do controller — não revise rota nem consistência cross-controller. Não escreva o fix.
 
-**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `revisar-mudancas` — ver `.claude/context/governanca.md`.
+**Fechamento (1 linha):** encerre declarando o tipo de mudança revisado e os gaps/riscos não cobertos. O bloco completo (tipo · gates · gaps) fica a cargo da umbrella `review-changes` — ver `.claude/context/governance.md`.

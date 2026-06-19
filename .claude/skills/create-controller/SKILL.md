@@ -1,5 +1,5 @@
 ---
-name: criar-controller
+name: create-controller
 description: Cria um novo controller CRUD do backend seguindo a forma canônica do StudentController/UserController. Use ao expor uma entidade (controller + actions). Cobre as 5 actions, arrow methods (this preso), projeção whitelisted, transação nas mutações, soft delete via status ENUM, peso hierárquico no controller e handleErrors. Decide entre forma mínima e forma completa antes de gerar.
 ---
 
@@ -152,4 +152,4 @@ export default new <Entity>Controller();
 
 Mesma forma, **sem** transação e **sem** hierarquia: `try/catch` fino por action, projeção whitelisted, `handleErrors`. É o baseline de legibilidade da memória `ref-controller-crud-minimo` — use quando a entidade não escreve em múltiplas tabelas nem cruza privilégio.
 
-> Depois de gerar: a entidade ainda precisa do **model** (`criar-model`), da **migration** (`criar-migration`) e da **rota** (`criar-rota`). Para revisar, passe no agente `controller-review` (forma do CRUD) e, se mexeu em rota/autz, no `backend-auth-review`.
+> Depois de gerar: a entidade ainda precisa do **model** (`create-model`), da **migration** (`create-migration`) e da **rota** (`create-route`). Para revisar, passe no agente `controller-review` (forma do CRUD) e, se mexeu em rota/autz, no `backend-auth-review`.

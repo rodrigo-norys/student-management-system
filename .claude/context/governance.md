@@ -6,7 +6,9 @@ este arquivo **explicitamente** quando precisam da regra. O `CLAUDE.md` (sempre 
 mantém só o ponteiro e os gatilhos críticos.
 
 Calibragem: projeto acadêmico/portfólio solo. Governança aqui é sinal útil, não cerimônia
-de time grande — sem deploy-prod, sem multi-tenant, sem audit-log, sem ADR.
+de time grande. **Deploy de produção e multitenant estão no escopo** (roadmap Fases 4–5:
+VPS + Caddy + isolamento por unidade) — o que o setup evita é a cerimônia de time grande
+(sem audit-log, sem ADR, sem aprovação multi-pessoa).
 
 ---
 
@@ -14,14 +16,15 @@ de time grande — sem deploy-prod, sem multi-tenant, sem audit-log, sem ADR.
 
 Quatro níveis, mapeados aos artefatos reais do projeto:
 
-1. **Observe** — só lê e aponta. Os reviewers read-only (`migration-review`,
-   `controller-review`, `backend-auth-review`, `api-contract-review`, `ui-kit-review`):
-   `tools: Read, Grep, Glob`, nunca editam.
-2. **Advise** — recomenda sem agir. `sugerir-commits`, `descrever-pr` e `planejar-feature`:
-   produzem plano/texto pro humano decidir; não tocam no working tree.
+1. **Observe** — só lê e aponta. Os reviewers read-only (`migration-review`, `db-schema-review`,
+   `controller-review`, `backend-auth-review`, `api-contract-review`, `ui-kit-review`,
+   `infra-review`) e o `state-audit` (auditor de estado): `tools: Read, Grep, Glob`, nunca
+   editam. (`model-review`/`security-perf-review`, planejados, entram no mesmo nível.)
+2. **Advise** — recomenda sem agir. `suggest-commits`, `suggest-prs`, `plan-feature`
+   e `plan-project`: produzem plano/texto pro humano decidir; não tocam no working tree.
 3. **Act with approval** — gera código na sessão, sob revisão humana. As skills `criar-*`
-   (`criar-model`, `criar-migration`, `criar-controller`, `criar-rota`, `criar-pagina`):
-   escrevo, você revisa e corrige.
+   (`create-model`, `create-migration`, `create-controller`, `create-route`, `create-page`,
+   `create-test`): escrevo, você revisa e corrige.
 4. **Autonomous bounded** — só tarefa mecânica de baixo risco com gate verde (ex.: ajuste
    de import, rename local). Qualquer toque em item human-in-the-loop **rebaixa** pro nível 3.
 
@@ -40,6 +43,11 @@ Antes de executar, pare e confirme comigo. Lista adaptada à nossa stack:
   que é o caminho normal). Ver `MEMORY.md` → pendência hard delete cascade.
 - **Schema core** — alterar tabelas/colunas/FKs das entidades base (`users`, `access_levels`,
   `staff`, `students`, `guardians`) ou os relacionamentos dos Tiers do `CLAUDE.md`.
+- **Cutover / estado de produção** — mudança em SSH/auth, firewall, banco ou deploy na VPS.
+  Inspeção é read-only (skill `audit-vps`); toda alteração vai como sugestão + comando,
+  aprovada item a item.
+- **Comando que muta** — qualquer `bash` não-read-only (commit, push, `db:migrate`, install)
+  pede permissão; só read-only (git de leitura, `npm test`/`build`) roda sem prompt.
 
 ---
 
@@ -50,24 +58,28 @@ não rodam.
 
 | Tipo de mudança | Gate mínimo | Comando / revisor |
 |---|---|---|
-| Backend (controller, rota, model) | testes de backend + revisor do par | `npm test` (em `backend/`, vitest) → hoje cobre os guards de auth |
-| Migration | revisão antes de aplicar + `down` testado | agente `migration-review`, depois `npx sequelize-cli db:migrate` local |
+| Backend (controller, rota, model) | revisor do par (+ testes quando existirem) | `controller-review`/`backend-auth-review` (e `model-review`, planejado); `npm test` (vitest) — **suíte ainda vazia (gap, roadmap F1)**: hoje passa vacuamente, não cobre nada |
+| Migration | revisão antes de aplicar + `down` testado | agente `migration-review`, depois `npx sequelize-cli db:migrate` local (comando muta → pede permissão) |
 | Frontend (página, componente) | lint gate (warnings = erro) + revisor | `CI=true npm run build` (em `frontend/`) → agente `ui-kit-review` |
 | Contrato HTTP (≥2 controllers, ou `validateRequest`) | coerência entre endpoints | agente `api-contract-review` |
+| Infra / IaC (compose, Dockerfile, Caddyfile, `.env.example`) | revisão antes do cutover | agente `infra-review` (estático) + skill `audit-vps` (live, prod) |
 
-Não há e2e, a11y, visual smoke nem security-matrix — não inventar gate inexistente.
+Não há e2e, a11y, visual smoke nem security-matrix — não inventar gate inexistente. O gate
+`npm test` está **configurado mas vazio** (vitest/supertest instalados, zero testes): a skill
+`create-test` existe para preencher essa lacuna (roadmap Fase 1).
 
 ---
 
 ## Fechamento (closing report)
 
 Formato leve. Cada **reviewer isolado** encerra com 1 linha (tipo de mudança + gaps/riscos).
-A **umbrella `revisar-mudancas`** emite o bloco completo, consolidando os reviewers:
+A **umbrella `review-changes`** emite o bloco completo, consolidando os reviewers:
 
-- **Tipo de mudança:** migration | controller | rota | página | contrato | misto.
+- **Tipo de mudança:** migration | controller | rota | página | contrato | infra | misto.
 - **Gates aplicáveis:** quais valem (tabela acima) e se rodaram ou ficam recomendados
   (reviewer read-only só recomenda).
-- **Gaps / riscos:** o que ficou sem cobertura + aprovações human-in-the-loop pendentes.
+- **Gaps / riscos:** o que ficou sem cobertura + aprovações human-in-the-loop pendentes
+  (migration destrutiva, auth/peso, exclusão de dados, schema core, cutover de produção).
 
 ---
 
