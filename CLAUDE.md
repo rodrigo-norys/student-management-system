@@ -6,10 +6,9 @@ Aplicação escalável de gestão escolar. Projeto acadêmico e de portfólio (G
 
 - **Backend:** Node.js v22.18.0 (LTS), Express, Sequelize (ESM).
 - **Frontend:** React, styled-components, Redux.
-- **Banco local:** MySQL 8.0.44.
-- **Banco produção:** MariaDB 10.11.15.
+- **Banco (local e produção):** MariaDB 10.11.15 — **mesma engine nos dois ambientes**. Local sobe via Docker (imagem `mariadb:10.11`, idêntica à de prod); o MySQL 8 nativo foi abandonado.
 
-> Priorize compatibilidade de queries com **MariaDB 10.11** para não quebrar o deploy. Evite sintaxe exclusiva do MySQL 8 que o MariaDB não suporte.
+> Local e prod rodam a **mesma** MariaDB 10.11, então não há divergência de SQL entre dev e deploy. Mantenha as queries dentro do que o MariaDB 10.11 suporta (sem recursos exclusivos de MySQL 8+).
 
 ## Infra
 
