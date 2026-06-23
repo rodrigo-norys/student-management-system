@@ -1,6 +1,6 @@
 ---
 name: plan-project
-description: Macro-planner de épicos/fases. Recebe um objetivo de épico (ex.: "fechar Tier 3"), decompõe em fatias verticais pela cadeia canônica, sequencia por dependência, marca HITL/gates e consulta/atualiza docs/roadmap.md. Irmã macro da plan-feature (que fica para 1 fatia). Roda na sessão — NÃO implementa nem commita.
+description: Macro-planner de épicos/fases. Recebe um objetivo de épico (ex. "fechar Tier 3"), decompõe em fatias verticais pela cadeia canônica, sequencia por dependência, marca HITL/gates e consulta/atualiza docs/roadmap.md. Irmã macro da plan-feature (que fica para 1 fatia). Roda na sessão — NÃO implementa nem commita.
 ---
 
 # Planejar projeto

@@ -1,6 +1,6 @@
 ---
 name: suggest-prs
-description: Propõe como fatiar o trabalho não-mergeado em 1+ Pull Requests (agrupados por preocupação, ordenados por dependência, com branch sugerida por PR) E escreve título + corpo de cada um no padrão do projeto (header Conventional Commits + bullets técnicos, sem seções). Contraparte reativa do plan-project. Use ao preparar/abrir PR(s). Só produz markdown — NUNCA roda gh pr create nem commita.
+description: Propõe como fatiar o trabalho não-mergeado em 1+ Pull Requests (agrupados por preocupação, ordenados por dependência, com branch sugerida por PR) E escreve título + corpo de cada um no padrão do projeto (header Conventional Commits + corpo estruturado em seções de markdown, escolhidas conforme o conteúdo de cada PR). Contraparte reativa do plan-project. Use ao preparar/abrir PR(s). Só produz markdown — NUNCA roda gh pr create nem commita.
 ---
 
 # Suggest PRs
@@ -31,27 +31,40 @@ Critérios de corte: **preocupação** (uma por PR), **dependência** (base ante
 - **Branch sugerida** — `<tipo>/<escopo>-<descrição-curta>` (ex.: `chore/claude-tooling-reorg`).
 - **Escopo** — quais arquivos/áreas entram (o suficiente pra delimitar; não liste o diff inteiro).
 - **Título** — header Conventional Commits (`<tipo>(<escopo>): <descrição pt-br>`).
-- **Corpo** — lista plana de bullets técnicos, **sem seções**.
+- **Corpo** — estruturado em **seções de markdown (`##`)**, escolhidas conforme o que o PR contém (não um conjunto fixo). Sempre um resumo do que muda; adicione seções de verificação/testes, risco/notas, comentários de review resolvidos, deploy/migração **só quando relevantes** àquele PR. Cada seção é uma lista de bullets.
 
 ```markdown
 <tipo>(<escopo>): <descrição em pt-br>
 
-- <mudança técnica concreta — o quê; cite arquivo/módulo quando ajudar>
-- <prefixe por área quando útil: "Frontend: ...", "Seeder: ...", "Testes: ...">
-- <itens transversais entram como bullet próprio: env var nova, migration, breaking change>
-```
+## Resumo
+- <um bullet por mudança técnica relevante; cite arquivo/módulo quando ajudar>
 
-Exemplo (estilo-alvo de **um** PR):
+## Testes              ← quando houver verificação relevante
+- <comando do projeto> — PASS/FAIL
+
+## Risco / notas       ← quando houver caveat
+- <itens transversais: env var nova, migration a rodar, recreate de container, breaking change>
+```
+> As seções são **ilustrativas** — adapte os títulos e quais entram ao conteúdo do PR (ex.: "Comentários resolvidos" se endereça review automatizado; "Deploy" se exige passo de virada). O essencial é a **estrutura seccionada**, não um template engessado.
+
+Exemplo (estilo-alvo de **um** PR — seções adaptadas ao conteúdo):
 
 ```markdown
 feat(auth): acesso demo read-only one-click para a landing
 
+## Resumo
 - Endpoint POST /tokens/demo: loga o usuário demo (via DEMO_USER_EMAIL) e emite o cookie HttpOnly, sem credenciais no front
-- Guard em loginRequired bloqueia toda mutação (método ≠ GET) do nível demo — trava única, independe do roleAuth por rota
-- Seeder idempotente: nível de acesso Demo (flags manage_* zeradas) + usuário demo read-only
-- Frontend: action/saga demoLogin (POST /tokens/demo → /dashboard), flag isDemo no reducer, CTA "Acessar demo" na landing e banner no Layout
-- Env nova: DEMO_USER_EMAIL, DEMO_USER_PASSWORD, DEMO_LEVEL_ID (refletir no .env e no docker-compose da VPS)
+- Guard em loginRequired bloqueia toda mutação (método ≠ GET) do nível demo
+- Frontend: action/saga demoLogin (POST /tokens/demo → /dashboard), flag isDemo no reducer, CTA "Acessar demo" na landing + banner no Layout
+
+## Testes
+- npm test (backend) — PASS
+- CI=true npm run build (frontend) — PASS
+
+## Risco / notas
+- Env nova: DEMO_USER_EMAIL, DEMO_USER_PASSWORD, DEMO_LEVEL_ID — refletir no .env E no docker-compose da VPS
 ```
+> Sem review automatizado a resolver aqui, então não há seção de "Comentários resolvidos" — só entram as seções que fazem sentido pro PR.
 
 ### 4. Sequência e handoff
 - Se **>1 PR**, dê a **ordem de abertura** (por dependência) e a relação entre eles (ex.: "PR 2 depende do 1").
@@ -63,9 +76,10 @@ gh pr create --base <base> --title "<header>" --body-file <arquivo>
 
 ### 5. Regras de conteúdo
 - **Header** no padrão Conventional Commits do usuário, coerente com os commits da branch.
-- **Corpo = lista de bullets**, em pt-br; identificadores/código em inglês. Sem seções, sem checklist.
-- **Um bullet por mudança técnica relevante.** Agrupe prefixando por área quando ajudar (`Backend:`/`Frontend:`/`Seeder:`/`Testes:`). Não faça dump do diff — só o que importa.
+- **Corpo = seções de markdown adequadas ao PR** (não um template fixo): sempre um resumo; testes, risco/notas, comentários resolvidos, deploy etc. **só quando relevantes**. Bullets em pt-br (identificadores/código em inglês).
+- **Um bullet por mudança técnica relevante** no resumo; prefixe por área quando ajudar (`Backend:`/`Frontend:`/`Seeder:`/`Testes:`). Não faça dump do diff — só o que importa.
+- **Verificação/testes:** liste os comandos do projeto (backend `npm test`; frontend `CI=true npm run build`) com **PASS/FAIL** — preencher após rodar.
 - **Aterre no diff real.** Não invente passo nem placeholder.
-- **Não deixe item transversal sumir:** migration que precisa rodar, env var nova (refletir em `.env` E docker-compose), breaking change de contrato e caveat de deploy entram como **bullets próprios** ao final do PR a que pertencem.
+- **Itens transversais vão numa seção de risco/notas:** migration que precisa rodar, env var nova (refletir em `.env` E docker-compose), recreate de container, breaking change de contrato, caveat de deploy.
 
 > Antes de abrir: rode `review-changes` para o passe de revisão e `suggest-commits` para o plano de commits de cada PR.
