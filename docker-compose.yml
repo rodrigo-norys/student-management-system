@@ -5,6 +5,11 @@ services:
     image: mariadb:10.11@sha256:85c39719200637250bb8abe3ccd239239d6f175156fc1698141409fcf8e01a38
     container_name: sms_db
     restart: unless-stopped
+    command:
+      - "--log-bin=mysql-bin"
+      - "--server-id=1"
+      - "--expire-logs-days=7"
+      - "--max-binlog-size=100M"
     security_opt:
       - no-new-privileges:true
     cap_drop:
