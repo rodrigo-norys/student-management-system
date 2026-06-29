@@ -7,14 +7,14 @@ export default class User extends Model {
       {
         access_level_id: {
           type: Sequelize.INTEGER,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: 'access_levels',
             key: 'id',
           },
         },
         avatar_url: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(255),
           allowNull: true,
           validate: {
             len: {
@@ -24,7 +24,7 @@ export default class User extends Model {
           },
         },
         email: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(150),
           defaultValue: '',
           unique: {
             msg: 'This email already exists',
@@ -40,7 +40,7 @@ export default class User extends Model {
           },
         },
         password_hash: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(100),
           defaultValue: '',
           validate: {
             len: {
@@ -68,7 +68,7 @@ export default class User extends Model {
         },
         is_temporary: {
           type: Sequelize.BOOLEAN,
-          defaultValue: false,
+          defaultValue: true,
         },
         status: {
           type: Sequelize.ENUM(

@@ -12,9 +12,9 @@ Aplicação escalável de gestão escolar. Projeto acadêmico e de portfólio (G
 
 ## Infra
 
-- Produção: Docker 29.1.5 + Docker Compose. Variáveis de ambiente gerenciadas **estritamente** via `docker-compose.yml`.
+- Produção: Docker 29.1.5 + Docker Compose. As variáveis vêm do `.env` e são injetadas pelo `docker-compose.yml` — nunca hardcoded em imagem ou código.
 - Local: Ubuntu (Linux), `.env`.
-- Ao criar/alterar variável de ambiente, reflita a mudança **tanto no `.env` quanto na seção `environment` do `docker-compose.yml`**.
+- O `.env` da raiz é a fonte única das variáveis; o `docker-compose.yml` as referencia via `${VAR}`. Ao **adicionar** uma variável, declare no `.env` **e** referencie sob o `environment:` do serviço que a consome (sem `env_file:`, o Compose só injeta no container o que está listado ali). Não há mais cópia de valor entre arquivos.
 
 ## Modelo de dados (relacionamentos)
 
@@ -46,12 +46,14 @@ Aplicação escalável de gestão escolar. Projeto acadêmico e de portfólio (G
 - `student_classes.student_id` → `students.id` (N:1)
 - `class_allocations.staff_id` → `staff.id` (N:1)
 - `class_allocations.unit_class_id` → `unit_classes.id` (N:1)
-- `class_allocations.subjects_id` → `subjects.id` (N:1)
+- `class_allocations.subject_id` → `subjects.id` (N:1)
 
-### Tier 5 — Results (Grades)
+### Tier 5 — Results (Grades & Attendance)
 
 - `student_grades.class_allocation_id` → `class_allocations.id` (N:1)
 - `student_grades.student_classes_id` → `student_classes.id` (N:1)
+- `attendances.student_id` → `students.id` (N:1)
+- `attendances.class_allocation_id` → `class_allocations.id` (N:1)
 
 ## Comandos (ambiente local Ubuntu/Linux)
 

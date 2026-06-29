@@ -4,6 +4,18 @@ export default class ClassAllocation extends Model {
   static init(sequelize) {
     super.init(
       {
+        staff_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
+        unit_class_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
+        subject_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
         status: {
           type: Sequelize.ENUM('active', 'inactive'),
           allowNull: false,
