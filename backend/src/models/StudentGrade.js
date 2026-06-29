@@ -4,6 +4,14 @@ export default class StudentGrade extends Model {
   static init(sequelize) {
     super.init(
       {
+        class_allocation_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
+        student_classes_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
         grade_1: {
           type: Sequelize.DECIMAL(4, 2),
           defaultValue: 0.0,

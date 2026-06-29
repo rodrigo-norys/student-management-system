@@ -4,6 +4,10 @@ export default class UnitClass extends Model {
   static init(sequelize) {
     super.init(
       {
+        unit_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
         name: {
           type: Sequelize.STRING(20),
           defaultValue: '',

@@ -12,11 +12,11 @@ export default class Staff extends Model {
           },
         },
         avatar_url: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(255),
           allowNull: true,
         },
         full_name: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(150),
           allowNull: false,
           validate: {
             len: {
@@ -26,7 +26,7 @@ export default class Staff extends Model {
           },
         },
         email: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(150),
           allowNull: false,
           unique: {
             msg: 'This institutional email is already in use.',
@@ -42,7 +42,7 @@ export default class Staff extends Model {
           },
         },
         cpf: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(14),
           allowNull: false,
           unique: {
             msg: 'This CPF is already registered.',
@@ -64,17 +64,17 @@ export default class Staff extends Model {
           },
         },
         phone: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(15),
           allowNull: false,
           validate: {
             len: {
-              args: [8, 20],
-              msg: 'Phone number must be between 8 and 20 characters.',
+              args: [8, 15],
+              msg: 'Phone number must be between 8 and 15 characters.',
             },
           },
         },
         personal_email: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(100),
           allowNull: false,
           unique: {
             msg: 'This personal email is already in use.',
@@ -90,7 +90,7 @@ export default class Staff extends Model {
           },
         },
         job_title: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(100),
           allowNull: false,
           validate: {
             len: {
@@ -118,7 +118,7 @@ export default class Staff extends Model {
           },
         },
         medical_notes: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(255),
           allowNull: true,
           validate: {
             len: {

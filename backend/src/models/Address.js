@@ -116,5 +116,10 @@ export default class Address extends Model {
       foreignKey: 'guardian_id',
       as: 'guardian',
     });
+
+    this.belongsTo(models.Unit, {
+      foreignKey: 'unit_id',
+      as: 'unit',
+    });
   }
 }

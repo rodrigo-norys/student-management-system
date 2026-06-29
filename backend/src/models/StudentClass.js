@@ -4,6 +4,14 @@ export default class StudentClass extends Model {
   static init(sequelize) {
     super.init(
       {
+        student_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
+        unit_class_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
         enrollment_date: {
           type: Sequelize.DATEONLY,
           allowNull: false,

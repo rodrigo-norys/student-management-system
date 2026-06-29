@@ -4,6 +4,14 @@ export default class StaffUnit extends Model {
   static init(sequelize) {
     super.init(
       {
+        staff_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
+        unit_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
         status: {
           type: Sequelize.ENUM('active', 'inactive'),
           allowNull: false,
