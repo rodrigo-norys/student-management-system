@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 #
-# PreToolUse guard (matcher: Edit|Write) — classifica o path da edição e força
-# confirmação humana (permissionDecision: "ask") em arquivos sensíveis.
-# Roda fora do allow/deny, então vale mesmo em acceptEdits/auto.
+# Hook de PreToolUse (Edit|Write) que protege arquivos sensíveis.
 #
-# Cobre 3 regras consolidadas:
-#   #1 migration já versionada (proxy de "aplicada na SequelizeMeta")
-#   #2 arquivo de segredo .env (exceto .env.example)
-#   #3 auth (loginRequired/roleAuth) e models de entidade core
+# O que faz: lê do stdin o JSON que o Claude Code envia antes de gravar, extrai o
+# path do arquivo-alvo e o compara com as categorias sensíveis abaixo. Se casar,
+# imprime um JSON de decisão que força confirmação humana ("ask") e encerra; se
+# não casar, sai sem output e a escrita segue. Roda fora do allow/deny, então
+# vale até em modo automático.
 #
-# Contrato: stdin = JSON do hook; stdout = JSON de decisão; exit 0.
-# Qualquer path não-sensível: exit 0 sem output (= allow).
+# Sensível =
+#   - migration já versionada (pode estar aplicada; editar diverge os ambientes)
+#   - segredo .env (menos o .env.example)
+#   - auth (loginRequired/roleAuth) e models de entidade core
 
 set -uo pipefail
 
@@ -27,7 +28,7 @@ emit_ask() {
   exit 0
 }
 
-# #2 — segredo (.env e variantes), liberando o template versionado
+# segredo .env (libera o .env.example)
 case "$base" in
   .env.example) ;;
   .env|.env.*)
@@ -35,7 +36,7 @@ case "$base" in
     ;;
 esac
 
-# #3 — auth e models de entidade core (sinais path-based confiáveis)
+# auth e models de entidade core
 case "$path" in
   */middlewares/loginRequired.js|*/middlewares/roleAuth.js)
     emit_ask "Edição em auth ($base) — human-in-the-loop (governance). Confirme a intenção."
@@ -45,7 +46,7 @@ case "$path" in
     ;;
 esac
 
-# #1 — migration já versionada (tracked no git ⇒ provavelmente aplicada)
+# migration já versionada (tracked no git = provavelmente aplicada)
 case "$path" in
   */backend/src/database/migrations/*.js)
     if git -C "${CLAUDE_PROJECT_DIR:-.}" ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then

@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 #
-# Stop hook — roda `tsc --noEmit` (opt-in // @ts-check) ao fim do turno do Claude.
-# Verde → exit 0 (silencioso). Erro de tipo → decision:block, devolvendo a saída
-# do tsc pro Claude corrigir antes de encerrar.
+# Hook de Stop que checa tipos ao fim do turno do Claude.
 #
-# Fail-open: sem tsc, sem arquivo opt-in, ou fora de contexto → não bloqueia.
-# Loop guard: stop_hook_active → não re-bloqueia (uma tentativa de correção, sem loop).
+# O que faz: lê do stdin o JSON do hook e roda `tsc --noEmit` sobre os arquivos
+# opt-in `// @ts-check` do backend. Se passa, sai sem output (silencioso); se há
+# erro de tipo, imprime um JSON de decisão `block` devolvendo a saída do tsc pro
+# Claude corrigir antes de encerrar o turno.
+#
+# Não bloqueia (fail-open, sai limpo) quando:
+#   - é uma continuação do próprio hook (loop guard: stop_hook_active)
+#   - o tsc não está instalado no backend
+#   - não há nenhum arquivo `// @ts-check` em backend/src
 
 set -uo pipefail
 
