@@ -1,0 +1,4 @@
+{
+  "js/ts.tsserver.automaticTypeAcquisition.enabled": false,
+  "js/ts.suggestionActions.enabled": false
+}
