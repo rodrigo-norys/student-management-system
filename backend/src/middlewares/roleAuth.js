@@ -1,6 +1,10 @@
+// @ts-check
 import User from '../models/User.js';
 import AccessLevel from '../models/AccessLevel.js';
 
+/**
+ * @param {string} permissionFlag
+ */
 export default (permissionFlag) => {
   return (req, res, next) => {
     if (!req.userPermissions || !req.userPermissions[permissionFlag]) {

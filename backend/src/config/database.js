@@ -1,3 +1,4 @@
+// @ts-check
 import 'dotenv/config';
 
 const timezone = process.env.NODE_ENV === 'production'

@@ -1,3 +1,4 @@
+// @ts-check
 import { rateLimit } from 'express-rate-limit';
 
 export const loginLimiter = rateLimit({

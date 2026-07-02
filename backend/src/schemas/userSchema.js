@@ -1,3 +1,4 @@
+// @ts-check
 import * as yup from 'yup';
 
 export const userValidationSchema = yup.object().shape({
