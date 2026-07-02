@@ -1,3 +1,4 @@
+// @ts-check
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import AccessLevel from '../models/AccessLevel.js';
@@ -16,7 +17,7 @@ export default async (req, res, next) => {
 
     const { id, email } = data;
 
-    const user = await User.findByPk(id, {
+    const user = await /** @type {any} */ (User).findByPk(id, {
       include: [
         {
           model: AccessLevel,

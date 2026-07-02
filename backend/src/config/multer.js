@@ -1,3 +1,4 @@
+// @ts-check
 import multer from 'multer';
 import { extname, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';

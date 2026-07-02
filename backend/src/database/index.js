@@ -1,3 +1,4 @@
+// @ts-check
 import Sequelize from 'sequelize';
 import databaseConfig from '../config/database.js';
 
@@ -35,7 +36,7 @@ const models = [
   User,
 ];
 
-const connection = new Sequelize(databaseConfig.development);
+const connection = new (/** @type {any} */ (Sequelize))(databaseConfig.development);
 
 models.map((model) => model.init(connection));
 models.map((model) => model.associate && model.associate(connection.models));
