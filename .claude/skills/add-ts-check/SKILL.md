@@ -34,6 +34,7 @@ Analisa um diretório de `backend/src` e adota o type-check **opt-in** nos melho
 
 - **`backend/src/models/` (os 15 models Sequelize)** — avaliado em 2026-07-02, **custo alto, não anotar**. Os models sobrescrevem `static init(sequelize)` com assinatura incompatível com `Model.init` → cascata de `TS2417` (static side) + `TS2684` (`this` não é `ModelStatic`) em todo `associate`, mais `TS2339` nos atributos de instância (`this.password_hash` etc.) e `TS2322` nas validações `{ msg }` sem `name`. Só fica verde com **supressão em massa** (`@ts-ignore` + casts `any`), o que anula o próprio `@ts-check` (payoff negativo). Tipagem real exigiria o padrão tipado do Sequelize v6 (`InferAttributes` + `declare`), que é **sintaxe só-TS** — em JS nativo o campo declarado sombreia o accessor em runtime. Logo depende de `.ts`/build (o projeto é ESM nativo sem build) ou `.d.ts` companheiros: **épico próprio, fora desta skill**. Não rankear os models de novo até essa decisão de stack mudar.
 - **`backend/src/controllers/` (os 8 controllers)** — avaliado em 2026-07-02, **baixo payoff, não anotar** (retorno decrescente, não impossível). As duas maiores superfícies de um controller são `any` neste projeto: `req`/`res` (não dá pra tipar como `express.Request` sem brigar com `req.userId`/`req.userPermissions` do `loginRequired`) e as instâncias de model (cast `any` pelo override de `static init`). Logo o `@ts-check` vira **"green theater"** — passa, mas quase não checa a lógica de risco (query, projeção, handleErrors operam em `any`); o único ganho é `Sequelize.ValidationError` no `instanceof`, e o custo é **cast por chamada em cada call de model** (ruído que multiplica nos CRUD gordos de 300–550 linhas). O território de alto valor (fronteiras de lib: yup/pino/rate-limit/express nos middlewares+config+schemas) **já está coberto**. Testados e revertidos por decisão: `HomeController` (marker-only) e `AccessLevelController` (1 cast). Reabrir só se `req`/model deixarem de ser `any` (ex.: tipar as extensões de `Request`, ou os models virarem `.ts`).
+- **`backend/src/routes/` — PARCIAL, não é exclusão por payoff.** Avaliado em 2026-07-02: **5 adotados** (`accessLevelRoutes`, `homeRoutes`, `studentRoutes`, `tokenRoutes`, `userRoutes`) com o fix `const router = Router()` (sem `new` — ver "Padrão de anotação"). **3 bloqueados por BUG real** (não por payoff): `avatarRoutes`, `guardianRoutes`, `staffRoutes` chamam `roleAuth` na forma legada numérica (`roleAuth([4])`, `roleAuth(1, 2, 3)`), incompatível com o `roleAuth` flag-based atual → `TS2345`/`TS2554`, e em runtime é **403 sempre** (a "rotas quebradas" da pendência backend). **Não mascarar com cast** — adotam `@ts-check` assim que o `roleAuth` for corrigido pra string flag (`manage_*`), que é decisão de auth/HITL.
 
 ## Padrão de anotação
 
@@ -45,6 +46,13 @@ Analisa um diretório de `backend/src` e adota o type-check **opt-in** nos melho
  */
 export const validateRequest = (schema) => async (req, res, next) => { /* ... */ };
 ```
+
+### Fix recorrente: `new X()` que o type não declara como construtível
+
+Quando o `tsc` acusa `TS2350`/`TS2351` ("not constructable" / "only a void function...") mas o runtime aceita `new` (gap types-vs-runtime):
+
+- **Se existe forma canônica sem `new`, prefira-a** — ex.: Express `const router = Router();` (não `new Router()`). Mantém `router` **tipado** (checa os handlers), sem cast, sem vazar `any`. É mudança de 1 token, comportamento idêntico.
+- **Só casta quando `new` é obrigatório** (classe real que precisa de instância) — ex.: Sequelize `const connection = new (/** @type {any} */ (Sequelize))(config);`. Aqui não há forma sem `new`, então o cast `any` é o fallback (aceitando que a instância vira `any`).
 
 ## Regras obrigatórias
 
