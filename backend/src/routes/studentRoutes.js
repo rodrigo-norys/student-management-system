@@ -1,10 +1,11 @@
+// @ts-check
 import { Router } from 'express';
 
 import studentController from '../controllers/StudentController.js';
 import loginRequired from '../middlewares/loginRequired.js';
 import roleAuth from '../middlewares/roleAuth.js';
 
-const router = new Router();
+const router = Router();
 
 router.use(loginRequired);
 

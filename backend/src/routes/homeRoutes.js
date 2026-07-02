@@ -1,7 +1,8 @@
+// @ts-check
 import { Router } from 'express';
 import homeController from '../controllers/HomeController.js';
 
-const router = new Router();
+const router = Router();
 
 router.get('/', homeController.index);
 
