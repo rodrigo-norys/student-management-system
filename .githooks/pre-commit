@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+#
+# Pre-commit: formata (Prettier) e valida (ESLint) os arquivos staged.
+#
+# Ative uma vez por clone:
+#   git config core.hooksPath .githooks
+#
+# O que faz:
+#   1. Pega os arquivos staged (A/C/M/R) JS/JSX/CSS em backend/src e frontend/src.
+#   2. `prettier --write` neles e re-stage — a formatação entra no commit. O
+#      .prettierignore da raiz vale (git roda o hook com CWD = raiz).
+#   3. `eslint` (SEM --fix) nos staged de backend/src. Erro aborta o commit (exit 1).
+#
+# Fail-open (não bloqueia, só avisa) se faltar o binário de prettier/eslint.
+#
+# Ressalva: o re-stage é do arquivo inteiro — não é seguro pra staging PARCIAL
+# (git add -p no mesmo arquivo puxaria hunks não-staged). OK commitando arquivos inteiros.
+set -uo pipefail
+
+repo=$(git rev-parse --show-toplevel)
+prettier="$repo/backend/node_modules/.bin/prettier"
+eslint="$repo/backend/node_modules/.bin/eslint"
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- backend/src frontend/src | grep -E '\.(js|jsx|css)$' || true)
+[ -z "$staged" ] && exit 0
+
+# 1) Prettier --write + re-stage
+if [ -x "$prettier" ]; then
+  printf '%s\n' "$staged" | xargs -r -d '\n' "$prettier" --write --ignore-unknown
+  printf '%s\n' "$staged" | xargs -r -d '\n' git add
+else
+  echo "aviso: prettier não encontrado em backend/node_modules — pulei a formatação." >&2
+fi
+
+# 2) ESLint (sem --fix) nos staged de backend; erro aborta o commit
+backend_staged=$(printf '%s\n' "$staged" | grep '^backend/src/' | grep -E '\.js$' || true)
+if [ -n "$backend_staged" ] && [ -x "$eslint" ]; then
+  if ! (cd "$repo/backend" && printf '%s\n' "$backend_staged" | sed 's|^backend/||' | xargs -r -d '\n' "$eslint"); then
+    echo "✖ ESLint falhou — commit abortado. Corrija (ou: npm --prefix backend run lint:fix)." >&2
+    exit 1
+  fi
+fi
+
+exit 0
