@@ -11,5 +11,5 @@ export default combineReducers({
   student,
   photo,
   staff,
-  guardian
+  guardian,
 });

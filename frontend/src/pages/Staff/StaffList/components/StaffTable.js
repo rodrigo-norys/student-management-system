@@ -1,4 +1,9 @@
-import { FaUserShield, FaEdit, FaWindowClose, FaExclamation } from 'react-icons/fa';
+import {
+  FaUserShield,
+  FaEdit,
+  FaWindowClose,
+  FaExclamation,
+} from 'react-icons/fa';
 
 import { maskPhone } from 'utils/masks';
 import { getStaffImageUrl } from '../../constants.js';

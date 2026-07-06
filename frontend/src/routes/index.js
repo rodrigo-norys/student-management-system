@@ -31,18 +31,23 @@ export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<LandingPreview />} />
-      <Route element={
-        <MyRoute isClosed>
-          <Layout />
-        </MyRoute>
-      }>
+      <Route
+        element={
+          <MyRoute isClosed>
+            <Layout />
+          </MyRoute>
+        }
+      >
         <Route path="/dashboard" element={<Home />} />
 
-        <Route path="/users" element={
-          <ProtectedRoute allowedRoles={[1, 2]}>
-            <UserManagement />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2]}>
+              <UserManagement />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/students" element={<StudentList />} />
         <Route path="/student/create" element={<StudentForm />} />
@@ -62,16 +67,22 @@ export default function AppRouter() {
         <Route path="/avatar/:userType/:id" element={<Photos />} />
       </Route>
       <Route path="/preview" element={<LandingPreview />} />
-      <Route path="/setup-password" element={
-        <MyRoute isClosed>
-          <SetupPassword />
-        </MyRoute>
-      } />
-      <Route path="/login" element={
-        <MyRoute isClosed={false}>
-          <Login />
-        </MyRoute>
-      } />
+      <Route
+        path="/setup-password"
+        element={
+          <MyRoute isClosed>
+            <SetupPassword />
+          </MyRoute>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <MyRoute isClosed={false}>
+            <Login />
+          </MyRoute>
+        }
+      />
       <Route path="*" element={<Page404 />} />
     </Routes>
   );

@@ -311,7 +311,9 @@ class StaffController {
     }
     if (e instanceof Sequelize.UniqueConstraintError) {
       return res.status(400).json({
-        errors: ['One or more unique fields are already in use (e.g., CPF or Email).'],
+        errors: [
+          'One or more unique fields are already in use (e.g., CPF or Email).',
+        ],
       });
     }
     console.error('StaffController Error:', e);

@@ -12,6 +12,11 @@ const router = new Router();
 
 router.use(loginRequired);
 
-router.patch('/:userType/:id', roleAuth([4]), upload.single('avatar'), avatarController.create);
+router.patch(
+  '/:userType/:id',
+  roleAuth([4]),
+  upload.single('avatar'),
+  avatarController.create,
+);
 
 export default router;

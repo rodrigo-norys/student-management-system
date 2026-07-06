@@ -8,7 +8,6 @@ export const getStaffImageUrl = (avatarUrl) => {
   return `${baseUrl}${avatarUrl}`;
 };
 
-
 export const STAFF_STATUS_OPTIONS = Object.freeze([
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },

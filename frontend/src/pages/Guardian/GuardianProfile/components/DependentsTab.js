@@ -23,9 +23,7 @@ export default function DependentsTab({ guardian }) {
                 {student.name} {student.last_name}
               </h4>
               <span>RN: {student.registration_number}</span>
-              <Link to={`/student/${student.id}`}>
-                View Student Profile
-              </Link>
+              <Link to={`/student/${student.id}`}>View Student Profile</Link>
             </div>
           </Styled.DependentCard>
         ))

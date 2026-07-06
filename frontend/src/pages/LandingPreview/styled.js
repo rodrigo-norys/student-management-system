@@ -26,7 +26,7 @@ export const Navbar = styled.nav`
   box-sizing: border-box;
 
   &::after {
-    content: "";
+    content: '';
   }
 
   @media (max-width: 768px) {

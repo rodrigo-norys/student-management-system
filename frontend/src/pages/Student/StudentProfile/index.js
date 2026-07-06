@@ -51,7 +51,6 @@ export default function StudentProfile() {
       <Styled.FormGrid>
         <Styled.Sidebar>
           <Styled.Section>
-
             <Styled.ProfilePicture>
               {student.avatar_url ? (
                 <img src={mainPhoto} alt={student.name} />
@@ -66,7 +65,6 @@ export default function StudentProfile() {
               </h2>
               <span>RN: {student.registration_number}</span>
             </Styled.IdentityHeader>
-
           </Styled.Section>
         </Styled.Sidebar>
 

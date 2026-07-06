@@ -88,7 +88,10 @@ export default function UsersView({
                 <td>
                   <Styled.SmallProfilePic>
                     {user.avatar_url ? (
-                      <img src={getAvatarUrl(user.avatar_url)} alt={user.email} />
+                      <img
+                        src={getAvatarUrl(user.avatar_url)}
+                        alt={user.email}
+                      />
                     ) : (
                       <FaUserCircle size={28} />
                     )}

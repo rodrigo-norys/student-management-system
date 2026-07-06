@@ -36,7 +36,9 @@ const models = [
   User,
 ];
 
-const connection = new (/** @type {any} */ (Sequelize))(databaseConfig.development);
+const connection = new /** @type {any} */ (Sequelize)(
+  databaseConfig.development,
+);
 
 models.map((model) => model.init(connection));
 models.map((model) => model.associate && model.associate(connection.models));

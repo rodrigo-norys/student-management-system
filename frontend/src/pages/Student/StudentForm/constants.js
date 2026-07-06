@@ -10,5 +10,5 @@ export const INITIAL_STATE = Object.freeze({
   avatar_url: '',
   blood_type: '',
   medical_notes: '',
-  addresses: [{ ...EMPTY_ADDRESS }]
+  addresses: [{ ...EMPTY_ADDRESS }],
 });

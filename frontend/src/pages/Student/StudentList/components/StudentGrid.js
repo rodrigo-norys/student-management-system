@@ -1,4 +1,10 @@
-import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation, FaExternalLinkAlt } from 'react-icons/fa';
+import {
+  FaUserCircle,
+  FaEdit,
+  FaWindowClose,
+  FaExclamation,
+  FaExternalLinkAlt,
+} from 'react-icons/fa';
 import { getStudentAvatarUrl } from 'utils/imageHelpers';
 
 import * as Styled from '../styled';

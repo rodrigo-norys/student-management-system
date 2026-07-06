@@ -8,21 +8,21 @@
 
 export async function up(queryInterface) {
   await queryInterface.sequelize.query(
-    'ALTER TABLE `students` '
-      + 'DROP FOREIGN KEY `students_user_id_foreign_idx`, '
-      + 'DROP INDEX `students_user_id_foreign_idx`, '
-      + 'ADD UNIQUE INDEX `students_user_id_unique` (`user_id`), '
-      + 'ADD CONSTRAINT `students_user_id_fk` FOREIGN KEY (`user_id`) '
-      + 'REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE',
+    'ALTER TABLE `students` ' +
+      'DROP FOREIGN KEY `students_user_id_foreign_idx`, ' +
+      'DROP INDEX `students_user_id_foreign_idx`, ' +
+      'ADD UNIQUE INDEX `students_user_id_unique` (`user_id`), ' +
+      'ADD CONSTRAINT `students_user_id_fk` FOREIGN KEY (`user_id`) ' +
+      'REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE',
   );
 }
 
 export async function down(queryInterface) {
   await queryInterface.sequelize.query(
-    'ALTER TABLE `students` '
-      + 'DROP FOREIGN KEY `students_user_id_fk`, '
-      + 'DROP INDEX `students_user_id_unique`, '
-      + 'ADD CONSTRAINT `students_user_id_foreign_idx` FOREIGN KEY (`user_id`) '
-      + 'REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE',
+    'ALTER TABLE `students` ' +
+      'DROP FOREIGN KEY `students_user_id_fk`, ' +
+      'DROP INDEX `students_user_id_unique`, ' +
+      'ADD CONSTRAINT `students_user_id_foreign_idx` FOREIGN KEY (`user_id`) ' +
+      'REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE',
   );
 }

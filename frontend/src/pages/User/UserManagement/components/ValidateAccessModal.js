@@ -9,7 +9,7 @@ export default function ValidateAccessModal({
   onClose,
   target,
   accessLevels = [],
-  onSave
+  onSave,
 }) {
   const [accessLevelId, setAccessLevelId] = useState('');
   const [email, setEmail] = useState('');
@@ -57,13 +57,12 @@ export default function ValidateAccessModal({
         (!isEmail(email) && 'Please enter a valid email address.') ||
         '',
 
-      access:
-        (!accessLevelId && 'Access level is required.') ||
-        '',
+      access: (!accessLevelId && 'Access level is required.') || '',
 
       password:
-        ((!password || password.length < 6) && 'Password must be at least 6 characters.') ||
-        ''
+        ((!password || password.length < 6) &&
+          'Password must be at least 6 characters.') ||
+        '',
     };
 
     setEmailError(errors.email);
@@ -72,7 +71,8 @@ export default function ValidateAccessModal({
 
     const isValid = !Object.values(errors).some(Boolean);
 
-    isValid && onSave(target, accessLevelId, email, password, handleBackendError);
+    isValid &&
+      onSave(target, accessLevelId, email, password, handleBackendError);
   };
 
   return (
@@ -90,11 +90,13 @@ export default function ValidateAccessModal({
             {target.avatar_url ? (
               <img
                 src={getAvatarUrl(
-                  `${target.type === 'student'
-                    ? 'students'
-                    : target.type === 'staff'
-                      ? 'staff'
-                      : 'guardians'}/${target.avatar_url}`,
+                  `${
+                    target.type === 'student'
+                      ? 'students'
+                      : target.type === 'staff'
+                        ? 'staff'
+                        : 'guardians'
+                  }/${target.avatar_url}`,
                 )}
                 alt={target.displayName}
               />
@@ -110,7 +112,9 @@ export default function ValidateAccessModal({
 
           <Styled.StaticInfo>
             <span>Entity Type</span>
-            <strong style={{ textTransform: 'uppercase' }}>{target.type}</strong>
+            <strong style={{ textTransform: 'uppercase' }}>
+              {target.type}
+            </strong>
           </Styled.StaticInfo>
 
           <Styled.FormGroup>
@@ -126,7 +130,9 @@ export default function ValidateAccessModal({
                 if (emailError) setEmailError('');
               }}
             />
-            {emailError && <Styled.ErrorMessage>{emailError}</Styled.ErrorMessage>}
+            {emailError && (
+              <Styled.ErrorMessage>{emailError}</Styled.ErrorMessage>
+            )}
           </Styled.FormGroup>
 
           <Styled.FormGroup>
@@ -151,7 +157,9 @@ export default function ValidateAccessModal({
                 <FaSyncAlt />
               </Styled.IconButton>
             </Styled.PasswordInputWrapper>
-            {passwordError && <Styled.ErrorMessage>{passwordError}</Styled.ErrorMessage>}
+            {passwordError && (
+              <Styled.ErrorMessage>{passwordError}</Styled.ErrorMessage>
+            )}
           </Styled.FormGroup>
 
           <Styled.FormGroup>
@@ -166,23 +174,25 @@ export default function ValidateAccessModal({
                 if (accessError) setAccessError('');
               }}
             >
-              <option value="" disabled>Select a role...</option>
+              <option value="" disabled>
+                Select a role...
+              </option>
               {accessLevels.map((level) => (
                 <option key={`validate-role-${level.id}`} value={level.id}>
                   {level.name}
                 </option>
               ))}
             </Styled.Select>
-            {accessError && <Styled.ErrorMessage>{accessError}</Styled.ErrorMessage>}
+            {accessError && (
+              <Styled.ErrorMessage>{accessError}</Styled.ErrorMessage>
+            )}
           </Styled.FormGroup>
 
           <Styled.ModalFooter>
             <Styled.CancelButton type="button" onClick={onClose}>
               Cancel
             </Styled.CancelButton>
-            <Styled.SaveButton type="submit">
-              Confirm Access
-            </Styled.SaveButton>
+            <Styled.SaveButton type="submit">Confirm Access</Styled.SaveButton>
           </Styled.ModalFooter>
         </Styled.ModalBody>
       </Styled.ModalCard>

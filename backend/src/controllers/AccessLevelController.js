@@ -1,5 +1,4 @@
 import Sequelize from 'sequelize';
-import database from '../database/index.js';
 
 import AccessLevel from '../models/AccessLevel.js';
 

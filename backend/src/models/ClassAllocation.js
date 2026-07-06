@@ -36,7 +36,7 @@ export default class ClassAllocation extends Model {
             fields: ['staff_id'],
           },
         ],
-      }
+      },
     );
     return this;
   }

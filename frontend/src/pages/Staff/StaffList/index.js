@@ -2,12 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { FaTh, FaList, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import {
+  FaTh,
+  FaList,
+  FaSearch,
+  FaChevronLeft,
+  FaChevronRight,
+} from 'react-icons/fa';
 
 import * as actions from 'store/modules/staff/actions';
 import Loading from 'components/Loading';
 
-import {ITEMS_PER_PAGE, VIEW_MODES, INITIAL_SEARCH_STATE} from './constants.js';
+import {
+  ITEMS_PER_PAGE,
+  VIEW_MODES,
+  INITIAL_SEARCH_STATE,
+} from './constants.js';
 import * as Styled from './styled.js';
 
 import StaffGrid from './components/StaffGrid.js';
@@ -16,7 +26,11 @@ import StaffTable from './components/StaffTable.js';
 export default function Staff() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { staff = [], totalPages = 1, isLoading = false } = useSelector((state) => state.staff || {});
+  const {
+    staff = [],
+    totalPages = 1,
+    isLoading = false,
+  } = useSelector((state) => state.staff || {});
   const { isLoggedIn = false } = useSelector((state) => state.auth || {});
 
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -33,7 +47,7 @@ export default function Staff() {
       dispatch(
         actions.getStaffRequest({
           page: currentPage,
-        })
+        }),
       );
     }
   }, [isLoggedIn, currentPage, navigate, dispatch]);
@@ -110,7 +124,9 @@ export default function Staff() {
         </Styled.ViewToggle>
       </Styled.ControlsArea>
       {filteredStaff.length === 0 ? (
-        <Styled.NoResultsMessage>No staff members found.</Styled.NoResultsMessage>
+        <Styled.NoResultsMessage>
+          No staff members found.
+        </Styled.NoResultsMessage>
       ) : viewMode === VIEW_MODES.GRID ? (
         <StaffGrid
           staff={filteredStaff}
@@ -131,13 +147,19 @@ export default function Staff() {
         />
       )}
       <Styled.PaginationArea>
-        <Styled.PageButton onClick={handlePreviousPage} disabled={currentPage === 1 || isLoading}>
+        <Styled.PageButton
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1 || isLoading}
+        >
           <FaChevronLeft size={14} /> Prev
         </Styled.PageButton>
         <span>
           Page {currentPage} of {totalPages}
         </span>
-        <Styled.PageButton onClick={handleNextPage} disabled={currentPage === totalPages || isLoading}>
+        <Styled.PageButton
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages || isLoading}
+        >
           Next <FaChevronRight size={14} />
         </Styled.PageButton>
       </Styled.PaginationArea>

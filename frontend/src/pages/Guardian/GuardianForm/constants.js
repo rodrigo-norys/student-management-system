@@ -7,5 +7,5 @@ export const INITIAL_STATE = Object.freeze({
   cpf: '',
   phone: '',
   avatar_url: '',
-  addresses: [{ ...EMPTY_ADDRESS }]
+  addresses: [{ ...EMPTY_ADDRESS }],
 });

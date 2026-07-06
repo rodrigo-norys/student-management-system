@@ -1,4 +1,9 @@
-import { FaUserCircle, FaEdit, FaWindowClose, FaExclamation } from 'react-icons/fa';
+import {
+  FaUserCircle,
+  FaEdit,
+  FaWindowClose,
+  FaExclamation,
+} from 'react-icons/fa';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import { maskPhone } from 'utils/masks';

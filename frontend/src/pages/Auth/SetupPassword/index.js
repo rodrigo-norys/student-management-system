@@ -8,7 +8,13 @@ import axios from 'services/axios';
 import Loading from 'components/Loading';
 
 import { Container } from 'styles/GlobalStyles';
-import { SetupWrapper, Form, Title, PasswordRules, InputContainer } from './styled';
+import {
+  SetupWrapper,
+  Form,
+  Title,
+  PasswordRules,
+  InputContainer,
+} from './styled';
 
 export default function SetupPassword() {
   const navigate = useNavigate();
@@ -27,11 +33,14 @@ export default function SetupPassword() {
       toast.error('Password must be between 6 and 50 characters');
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/;
 
     if (!passwordRegex.test(password)) {
       hasErrors = true;
-      toast.error('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+      toast.error(
+        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+      );
     } else if (password !== confirmPassword) {
       hasErrors = true;
       toast.error('Passwords do not match');
@@ -53,7 +62,7 @@ export default function SetupPassword() {
         toast.error('Session expired or unauthorized. Please login again.');
         navigate('/login');
       } else if (errors.length > 0) {
-        errors.forEach(err => toast.error(err));
+        errors.forEach((err) => toast.error(err));
       } else {
         toast.error('Unknown error updating password.');
       }
@@ -69,7 +78,6 @@ export default function SetupPassword() {
         <Title>Setup New Password</Title>
 
         <Form onSubmit={handleSubmit}>
-
           <InputContainer>
             <input
               type={showPassword ? 'text' : 'password'}
@@ -92,7 +100,10 @@ export default function SetupPassword() {
               placeholder="Confirm new password"
             />
             {showConfirmPassword ? (
-              <FaEyeSlash size={18} onClick={() => setShowConfirmPassword(false)} />
+              <FaEyeSlash
+                size={18}
+                onClick={() => setShowConfirmPassword(false)}
+              />
             ) : (
               <FaEye size={18} onClick={() => setShowConfirmPassword(true)} />
             )}

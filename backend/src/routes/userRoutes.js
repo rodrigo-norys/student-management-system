@@ -11,8 +11,16 @@ const router = Router();
 
 router.use(loginRequired);
 
-router.put('/setup-password', validateRequest(userValidationSchema), userController.setupPassword);
-router.get('/search-targets', roleAuth('manage_account'), userController.searchTargets);
+router.put(
+  '/setup-password',
+  validateRequest(userValidationSchema),
+  userController.setupPassword,
+);
+router.get(
+  '/search-targets',
+  roleAuth('manage_account'),
+  userController.searchTargets,
+);
 
 router.post('/', roleAuth('manage_account'), userController.create);
 router.get('/', roleAuth('manage_account'), userController.index);

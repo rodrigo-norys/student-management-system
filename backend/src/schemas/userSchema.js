@@ -8,7 +8,7 @@ export const userValidationSchema = yup.object().shape({
     .max(50, 'Password must be at most 50 characters')
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/,
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
     )
     .required('Password is required'),
 });

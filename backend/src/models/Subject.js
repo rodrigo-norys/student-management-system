@@ -63,7 +63,7 @@ export default class Subject extends Model {
             fields: ['knowledge_area'],
           },
         ],
-      }
+      },
     );
     return this;
   }

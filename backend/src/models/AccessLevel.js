@@ -30,7 +30,7 @@ export default class AccessLevel extends Model {
   static associate(models) {
     this.hasMany(models.User, {
       foreignKey: 'access_level_id',
-      as: 'users'
+      as: 'users',
     });
   }
 }

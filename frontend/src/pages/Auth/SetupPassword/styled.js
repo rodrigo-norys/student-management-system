@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const SetupWrapper = styled.div`
   display: flex;
@@ -62,5 +62,3 @@ export const PasswordRules = styled.ul`
     margin-bottom: 5px;
   }
 `;
-
-

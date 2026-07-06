@@ -7,5 +7,5 @@ import staff from './staff/sagas.js';
 import guardian from './guardian/sagas.js';
 
 export default function* rootSaga() {
-  return yield all ([auth, student, photo, staff, guardian]);
+  return yield all([auth, student, photo, staff, guardian]);
 }
