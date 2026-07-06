@@ -31,4 +31,4 @@ Saída:
 - **HITL / gates** da fase.
 - **Atualização proposta do `docs/roadmap.md`** — o que marcar como em-progresso/feito e o drift que o `state-audit` apontou. É **proposta**: você aceita antes de eu editar o roadmap.
 
-> Não implemente aqui. Com o seu OK, cada fatia roda pela `plan-feature` → skills `criar-*` → revisores, e no fim `review-changes` → `suggest-prs` → `suggest-commits`. O `docs/roadmap.md` só é editado com seu aceite explícito.
+> Não implemente aqui. Com o seu OK, cada fatia roda pela `plan-feature` → skills `create-*` → revisores, e no fim `review-changes` → `suggest-prs` → `suggest-commits`. O `docs/roadmap.md` só é editado com seu aceite explícito.
