@@ -6,7 +6,7 @@ description: Orquestrador de planejamento. Decompõe uma feature/entidade nova n
 # Planejar feature
 
 Orquestrador-como-skill: roda no **contexto da sessão** (não é agente), decompõe a feature e
-roteia para as skills `criar-*` e os reviewers certos. Análogo ao `review-changes`, mas na
+roteia para as skills `create-*` e os reviewers certos. Análogo ao `review-changes`, mas na
 **entrada** do trabalho em vez da saída. **Não escreve código nem commita** — produz o plano e
 para no seu aceite. Subagente Claude é um nível só, então a orquestração mora aqui, na sessão.
 Escopo: esta skill é para **uma fatia/feature**; para um **épico/fase inteira** (multi-entidade),
@@ -60,6 +60,6 @@ Saída:
 - **Gates** — os do passo 5.
 - **Riscos / decisões em aberto** — local vs global, mínima vs completa, FKs ambíguas.
 
-> **Não implemente aqui.** Peça o meu OK. Com o aceite, executo as skills `criar-*` na sessão
+> **Não implemente aqui.** Peça o meu OK. Com o aceite, executo as skills `create-*` na sessão
 > (cada passo aponta seu reviewer), e no fim `review-changes` → `suggest-prs` → `suggest-commits`
 > fecham a entrega.

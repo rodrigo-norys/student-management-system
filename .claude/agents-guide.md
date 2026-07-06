@@ -35,13 +35,14 @@ No projeto eles vêm em pares **fazer → checar**, organizados em camadas:
 
 | Domínio | Skill (fazer) | Agente (checar) |
 |---------|---------------|-----------------|
-| Model | `create-model` | `model-review` *(planejado · Fase 3)* |
+| Model | `create-model` | `model-review` |
 | Migration | `create-migration` | `migration-review` |
 | Controller | `create-controller` | `controller-review` |
 | Rota | `create-route` | `backend-auth-review` |
 | Página | `create-page` | `ui-kit-review` |
 | Teste | `create-test` | — (gate `npm test`; verificado **rodando**, sem agente) |
 | Schema (banco) | (via `create-migration`) | `db-schema-review` |
+| Type-safety | `add-ts-check` | — (hook `typecheck-on-stop`; sem agente) |
 
 **Camada 2 — Governança transversal (não casa 1:1 com um arquivo):**
 
@@ -55,38 +56,40 @@ No projeto eles vêm em pares **fazer → checar**, organizados em camadas:
 
 **Camada 4 — Processo:** `suggest-commits` (plano de commits), `suggest-prs` (fatia a pilha em 1+ PRs + descreve cada). Não revisam código — preparam a entrega.
 
+**Hooks (enforcement determinístico, fora do allow/deny):** `guard-sensitive-writes` (PreToolUse Edit/Write) força confirmação humana em escrita sensível (`.env`, auth, models core, migration versionada); `typecheck-on-stop` (Stop) roda `tsc` nos arquivos `// @ts-check` e segura o encerramento se quebrar. É a terceira forma de "checar" (determinística), além do agente e do gate de comando. Ver Governança.
+
 Fluxo: a skill gera seguindo o padrão; o agente revisa em contexto limpo; a umbrella `review-changes` orquestra os revisores certos sobre o diff antes do PR.
 
 ---
 
 ## Os agentes do projeto
 
-Todos são **read-only** (`tools: Read, Grep, Glob`) e estão em `model: opus`. Um revisor com `Write` viraria editor disfarçado e tiraria o ponto de controle.
+Todos são **read-only** (`tools: Read, Grep, Glob`). Um revisor com `Write` viraria editor disfarçado e tiraria o ponto de controle.
 
-Hoje: **8 ativos** (7 reviewers de par/transversais/dados + o `state-audit` macro) e **2 planejados** (`model-review` na Fase 3, `security-perf-review` na Fase 4) — **10 no alvo**.
+Hoje: **9 ativos** (8 reviewers de par/transversais/dados + o `state-audit` macro) e **1 planejado** (`security-perf-review` na Fase 4) — **10 no alvo**.
 
 | Agente | Arquivo | Função |
 |--------|---------|--------|
 | `migration-review` | [agents/migration-review.md](agents/migration-review.md) | Revisa migration nova antes do `db:migrate`: compat MariaDB 10.11, formato ESM, reversibilidade do `down`, aplicação parcial, duplicata transitória em índice único. |
 | `db-schema-review` | [agents/db-schema-review.md](agents/db-schema-review.md) | **Design de dados (DBA sênior)**: integridade referencial (FK real, não só coluna indexada), normalização, índices, tipos/tamanhos, nullability/defaults, naming, charset/collation uniforme. |
+| `model-review` | [agents/model-review.md](agents/model-review.md) | **Fidelidade ORM↔schema**: cobertura/registro em `database/index.js`, associations refletindo as FKs reais, tipos/tamanhos/defaults/ENUM batendo com o DDL. Par de `create-model`. |
 | `controller-review` | [agents/controller-review.md](agents/controller-review.md) | Revisa a **mecânica** de um controller: integridade transacional + rollback, projeção whitelisted, soft delete via `status`, peso hierárquico, `isValidId`, códigos HTTP, arrow methods. |
 | `backend-auth-review` | [agents/backend-auth-review.md](agents/backend-auth-review.md) | Revisa rota/controller: `loginRequired` → `roleAuth(flag)` → peso hierárquico no controller, `status` ENUM, projeção whitelisted, e uso de `req.*` indefinido. |
 | `api-contract-review` | [agents/api-contract-review.md](agents/api-contract-review.md) | **Transversal**: coerência do contrato entre endpoints — envelope de erro `{errors}` plural, envelope de paginação canônico, status HTTP, shape de resposta. Compara o alvo com os irmãos. |
 | `ui-kit-review` | [agents/ui-kit-review.md](agents/ui-kit-review.md) | Revisa página/componente: fachada `styled.js` reexportando `components/ui`, casing de pasta, sem duplicar primitivo do UI Kit. |
 | `infra-review` | [agents/infra-review.md](agents/infra-review.md) | Revisa IaC do repo (compose, Dockerfile, Caddyfile, `.env.example`): segredo fora do arquivo, porta só na borda, DB least-privilege, container não-root, rede segmentada, TLS/headers. |
 | `state-audit` | [agents/state-audit.md](agents/state-audit.md) | **Macro**: re-roda o diagnóstico por domínio e compara com `docs/roadmap.md` — reporta drift e progresso por fase. Par de checagem da `plan-project`. |
-| `model-review` *(planejado · F3)* | — | Par da `create-model`: `init`/`associate`, colunas/ENUM/FK, registro em `database/index.js`, alinhamento de tipo/tamanho model↔migration. |
 | `security-perf-review` *(planejado · F4)* | — | **Transversal**: segurança/performance app-layer — rate-limit, bcrypt, upload, env guard, N+1, índices, deps (OWASP). |
 
 > **Divisão dos três revisores de backend** (evita sobreposição): `backend-auth-review` = camada de **rota** (login/flag/peso existe?); `controller-review` = **mecânica interna** de um arquivo (transação, projeção, soft delete); `api-contract-review` = **consistência entre** arquivos (todos respondem igual?).
 
-> **Trio de dados** (evita sobreposição): `migration-review` = a migration **vai quebrar ao aplicar**? · `db-schema-review` = o **design do schema** está certo (integridade, índices, tipos, normalização)? · `model-review` *(planejado)* = o **ORM reflete** o schema?
+> **Trio de dados** (evita sobreposição): `migration-review` = a migration **vai quebrar ao aplicar**? · `db-schema-review` = o **design do schema** está certo (integridade, índices, tipos, normalização)? · `model-review` = o **ORM reflete** o schema?
 
 ---
 
 ## As skills do projeto
 
-Skills moram em `.claude/skills/<nome>/SKILL.md` e carregam por **progressive disclosure**: só `name` + `description` ficam no contexto até a skill ser invocada (≠ `CLAUDE.md`, sempre carregado). Cada uma foi aterrada num arquivo-base real e termina apontando pro agente revisor do par. São **12** no total.
+Skills moram em `.claude/skills/<nome>/SKILL.md` e carregam por **progressive disclosure**: só `name` + `description` ficam no contexto até a skill ser invocada (≠ `CLAUDE.md`, sempre carregado). Cada uma foi aterrada num arquivo-base real e termina apontando pro agente revisor do par. São **13** no total.
 
 | Skill | Arquivo | Base | O que gera |
 |-------|---------|------|------------|
@@ -96,15 +99,16 @@ Skills moram em `.claude/skills/<nome>/SKILL.md` e carregam por **progressive di
 | `create-route` | [skills/create-route/SKILL.md](skills/create-route/SKILL.md) | `userRoutes.js` | Arquivo de rotas Express: `loginRequired`, `roleAuth(flag)`, ordem estática-antes-de-`/:id`, registro em `app.js`. |
 | `create-page` | [skills/create-page/SKILL.md](skills/create-page/SKILL.md) | User (local) + store do Student (global) | Página React; **decide local (hooks) vs global (redux-sagas) antes de gerar**. |
 | `create-test` | [skills/create-test/SKILL.md](skills/create-test/SKILL.md) | `vitest.config.js` + app exportado sem `listen` | Testes vitest+supertest: suíte de guards (auth/demo/peso) e integração CRUD contra `school_test`. Fecha no gate `npm test`. |
+| `add-ts-check` | [skills/add-ts-check/SKILL.md](skills/add-ts-check/SKILL.md) | `validateRequest.js` + `jsconfig.json` | Adota `// @ts-check` opt-in + JSDoc mínimo nos melhores candidatos do backend (rankeia por payoff). Verificado pelo hook `typecheck-on-stop`. |
 
 **Skills de processo/governança** (não geram entidade — orquestram e preparam a entrega):
 
 | Skill | Arquivo | O que faz |
 |-------|---------|-----------|
 | `plan-project` | [skills/plan-project/SKILL.md](skills/plan-project/SKILL.md) | Macro-planner de **épico/fase**: decompõe em fatias verticais sobre o `docs/roadmap.md`, sequencia por dependência, marca HITL/gates. Irmã macro da `plan-feature`. |
-| `plan-feature` | [skills/plan-feature/SKILL.md](skills/plan-feature/SKILL.md) | Orquestrador de **entrada** (1 fatia): decompõe uma feature na cadeia `criar-*`, marca passos aplicáveis + pontos human-in-the-loop + gates, e devolve o plano pro seu OK. Roda na sessão, não implementa. |
+| `plan-feature` | [skills/plan-feature/SKILL.md](skills/plan-feature/SKILL.md) | Orquestrador de **entrada** (1 fatia): decompõe uma feature na cadeia `create-*`, marca passos aplicáveis + pontos human-in-the-loop + gates, e devolve o plano pro seu OK. Roda na sessão, não implementa. |
 | `review-changes` | [skills/review-changes/SKILL.md](skills/review-changes/SKILL.md) | Umbrella de **saída**: lê o diff, roteia os arquivos pros revisores certos (fan-out em paralelo), consolida em 1 relatório por severidade + Fechamento. |
-| `suggest-prs` | [skills/suggest-prs/SKILL.md](skills/suggest-prs/SKILL.md) | Fatia o trabalho não-mergeado em 1+ PRs (por preocupação, ordenados por dependência, branch sugerida) e escreve título + corpo de cada (Conventional Commits + bullets). Contraparte reativa do `plan-project`. Só o texto — não abre PR. |
+| `suggest-prs` | [skills/suggest-prs/SKILL.md](skills/suggest-prs/SKILL.md) | Fatia o trabalho não-mergeado em 1+ PRs (por preocupação, ordenados por dependência, branch sugerida) e escreve título + corpo (Conventional Commits + seções de markdown) de cada. Contraparte reativa do `plan-project`. Só o texto — não abre PR. |
 | `suggest-commits` | [skills/suggest-commits/SKILL.md](skills/suggest-commits/SKILL.md) | Plano de commits atômicos (Conventional Commits) com o `git add` de cada um. Nunca commita. |
 | `audit-vps` | [skills/audit-vps/SKILL.md](skills/audit-vps/SKILL.md) | Playbook read-only de auditoria da VPS de produção (SSH; SO/firewall/Docker/TLS/DB/backup). Par de geração do `infra-review`. Não altera estado. |
 
@@ -123,16 +127,21 @@ A skill de entrada (`plan-feature`) e a de saída (`review-changes`) são **orqu
 ## Governança
 
 Camada incorporada do setup opencode de referência, **calibrada pra projeto solo** (sinal útil,
-sem cerimônia de time grande). Vive em dois lugares:
+sem cerimônia de time grande). Vive em três lugares:
 
 - **`.claude/context/governance.md`** — doc de governança. **Não é auto-carregado** (diferente do
   opencode, o Claude não lê a pasta `context/` sozinho): agentes e skills o citam **explicitamente**.
-- **`.claude/settings.json`** — permissões `allow`/`deny`. A permissão do opencode (que lá ficava no
-  frontmatter do agente) aqui se traduz em `tools:` (whitelist por agente) **+** regras de comando no
-  settings: `deny` no destrutivo (`rm -rf`, `git reset --hard`, `git checkout --`, `git clean`,
-  `git push --force`), `allow` no **read-only** (git de leitura: `status`/`diff`/`log`/`show`/`blame`/
-  `ls-files`/…, e `npm test`/`build`). **Tudo que muta o estado** (commit, push, `db:migrate`) cai no
-  `ask` padrão — pede permissão; read-only só notifica.
+- **`.claude/settings.json`** — permissões `allow`/`deny` **+** `hooks`. As permissões: `deny` no
+  destrutivo (`rm -rf`, `git reset --hard`, `git checkout --`, `git clean`, `git push --force`),
+  `allow` no **read-only** (git de leitura: `status`/`diff`/`log`/`show`/`blame`/`ls-files`/…, e
+  `npm test`/`build`). **Tudo que muta o estado** (commit, push, `db:migrate`) cai no `ask` padrão —
+  pede permissão; read-only só notifica.
+- **`.claude/hooks/`** — enforcement **determinístico** (roda fora do allow/deny): `guard-sensitive-writes.sh`
+  (PreToolUse Edit/Write) força `ask` em `.env`/auth/models core/migration versionada; `typecheck-on-stop.sh`
+  (Stop) roda `tsc` nos `// @ts-check` e segura o encerramento se quebrar. É o HITL virando barreira real.
+- **`.claude/settings.local.json`** — override **local** (não versionado) que pode ampliar o `allow`.
+  Mantenha estreito: comando que muta estado de produção (ex.: `ssh` à VPS) é HITL **por política** mesmo
+  se o allow local liberar — não deixe o override furar a inspeção-primeiro do `audit-vps`.
 
 **Níveis de autonomia** (detalhe em `governance.md`), mapeados aos nossos artefatos:
 
@@ -140,12 +149,13 @@ sem cerimônia de time grande). Vive em dois lugares:
 |---|---|
 | Observe (só aponta) | os reviewers read-only + `state-audit` |
 | Advise (recomenda) | `suggest-commits`, `suggest-prs`, `plan-feature`, `plan-project` |
-| Act with approval (gera sob revisão) | as skills `criar-*` (inclui `create-test`) |
+| Act with approval (gera sob revisão) | as skills `create-*` (inclui `create-test`, `add-ts-check`) |
 | Autonomous bounded (mecânico, gate verde) | ajuste trivial sem item human-in-the-loop |
 
 **Human-in-the-loop** — paro e confirmo antes de: migration destrutiva, auth/peso hierárquico,
 exclusão de dados (hard delete/cascade), schema core, cutover de produção. Lista canônica em
-`governance.md`; os gatilhos também estão no `CLAUDE.md` (sempre carregado).
+`governance.md`; os gatilhos também estão no `CLAUDE.md` (sempre carregado) e o `guard-sensitive-writes`
+hook os enforça no nível do harness.
 
 **Fechamento (closing report)** — cada reviewer encerra com 1 linha (tipo + gaps); a umbrella
 `review-changes` consolida o bloco completo (tipo de mudança · gates aplicáveis · gaps/riscos).
@@ -166,7 +176,7 @@ transforme caso pontual em regra global sem o meu ok. Reviewer jamais ganha `Edi
 
 **Skills:**
 - **`/create-migration <entidade>`** (ex.: `/create-route subject`) ou em linguagem natural. O argumento é o nome da entidade; sem ele, a skill pergunta.
-- Skills são descobertas no **start da sessão**. Se não aparecerem como `/criar-...`, um `/clear` ou nova sessão reindexa.
+- Skills são descobertas no **start da sessão**. Se não aparecerem como `/create-...`, um `/clear` ou nova sessão reindexa.
 
 ---
 
@@ -179,6 +189,10 @@ transforme caso pontual em regra global sem o meu ok. Reviewer jamais ganha `Edi
 ### `db-schema-review`
 - ✅ Alterou o schema (nova tabela/coluna/FK, ou auditar a modelagem) — pega FK lógica sem constraint real, índice faltando em FK, tipo/tamanho incoerente, collation mista, tabela órfã.
 - ❌ Revisar a mecânica de aplicar a migration (use `migration-review`); o mapeamento ORM (use `model-review`).
+
+### `model-review`
+- ✅ Criou/alterou um model, ou quer auditar se o ORM reflete o schema — pega tabela sem model, association sem FK real, tipo/tamanho/default divergente do DDL.
+- ❌ Design do schema (use `db-schema-review`); mecânica da migration (use `migration-review`).
 
 ### `controller-review`
 - ✅ Criou/alterou um controller — confere a mecânica: transação + rollback no early-return, projeção whitelisted em todo retorno, soft delete via `status`, peso hierárquico quando cruza ator, `isValidId`, códigos HTTP, arrow methods.
@@ -227,11 +241,11 @@ transforme caso pontual em regra global sem o meu ok. Reviewer jamais ganha `Edi
   | `controller-review` | opus | rollback/atomicidade; raciocínio de control-flow |
   | `migration-review` | opus | quebra de deploy MariaDB (alto risco) |
   | `db-schema-review` | opus | integridade/modelagem de dados; raciocínio de schema |
+  | `model-review` | opus | model↔DDL; miss = drift silencioso ORM/schema |
   | `infra-review` | opus | segurança de prod/cutover |
   | `state-audit` | opus | síntese cross-domínio + drift vs roadmap |
   | `api-contract-review` | sonnet | comparação de consistência entre endpoints (delimitado) |
   | `ui-kit-review` | sonnet | aderência de convenção (mecânico) |
-  | `model-review` *(F3)* | sonnet | checagem de convenção ORM (delimitada) |
   | `security-perf-review` *(F4)* | opus | segurança + varredura ampla |
 - **`tools`** (agentes): manter `Read, Grep, Glob` nos revisores. **Não** adicionar `Edit`/`Write` — perde o ponto de controle.
 - **`description`** (agentes e skills): é o que decide o roteamento automático e, na skill, a invocação por `/nome`. Se o item certo não for escolhido sozinho, refine o `description` (oriente a "quando usar").
@@ -283,5 +297,5 @@ e a lista de convenções obrigatórias do projeto.
 Boas práticas:
 1. **Aterrar num arquivo-base real** — a skill referencia o esqueleto canônico (ex.: `userRoutes.js` p/ rota).
 2. **Aceitar argumento** (nome da entidade) e **perguntar** se não vier.
-3. **Terminar apontando pro agente revisor** do par (fecha o ciclo fazer → checar).
+3. **Terminar apontando pro agente revisor** do par (fecha o ciclo fazer → checar) — ou pro hook, quando o "checar" é determinístico (`add-ts-check` → `typecheck-on-stop`).
 4. **Arquivos de apoio**: a pasta da skill pode conter scripts/referências lidos sob demanda — não precisa caber tudo no `SKILL.md`.
