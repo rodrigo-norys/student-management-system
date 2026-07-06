@@ -6,11 +6,10 @@ const initialState = {
   students: [],
   isLoading: false,
   addressSuggestion: null,
-}
+};
 
 export default function studentReducer(state = initialState, action) {
   switch (action.type) {
-
     // ================= REQUEST ================= //
     case types.GET_STUDENTS_REQUEST:
     case types.CREATE_STUDENT_REQUEST:
@@ -19,7 +18,7 @@ export default function studentReducer(state = initialState, action) {
     case types.GET_CEP_REQUEST:
       return {
         ...state,
-        isLoading: true
+        isLoading: true,
       };
 
     // ================= FAILURE ================= //
@@ -31,7 +30,7 @@ export default function studentReducer(state = initialState, action) {
       return {
         ...state,
         isLoading: false,
-        addressSuggestion: null
+        addressSuggestion: null,
       };
 
     // ================= SUCCESS ================= //
@@ -42,7 +41,7 @@ export default function studentReducer(state = initialState, action) {
           ...state,
           students: payload.data,
           totalPages: payload.totalPages || 1,
-          isLoading: false
+          isLoading: false,
         };
       }
 
@@ -50,36 +49,37 @@ export default function studentReducer(state = initialState, action) {
         return {
           ...state,
           students: payload,
-          isLoading: false
+          isLoading: false,
         };
       }
 
-      const studentIndex = state.students.findIndex(student => student.id === payload.id);
+      const studentIndex = state.students.findIndex(
+        (student) => student.id === payload.id,
+      );
       let newStudents = [...state.students];
 
       studentIndex >= 0
-        ? newStudents[studentIndex] = payload
+        ? (newStudents[studentIndex] = payload)
         : newStudents.push(payload);
 
       return {
         ...state,
         students: newStudents,
-        isLoading: false
+        isLoading: false,
       };
     }
 
     case types.CREATE_STUDENT_SUCCESS:
     case types.UPDATE_STUDENT_SUCCESS: {
       const { id } = action.payload;
-      const exists = state.students.some(student =>
-        String(student.id) === String(id)
+      const exists = state.students.some(
+        (student) => String(student.id) === String(id),
       );
 
       const newStudents = exists
-        ? state.students.map(student =>
-          String(student.id) === String(id)
-            ? action.payload
-            : student)
+        ? state.students.map((student) =>
+            String(student.id) === String(id) ? action.payload : student,
+          )
         : [...state.students, action.payload];
 
       return {
@@ -111,10 +111,10 @@ export default function studentReducer(state = initialState, action) {
       const { avatar_url, studentId } = action.payload;
       return {
         ...state,
-        students: state.students.map(student =>
+        students: state.students.map((student) =>
           String(student.id) === String(studentId)
             ? { ...student, avatar_url }
-            : student
+            : student,
         ),
       };
     }

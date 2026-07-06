@@ -1,4 +1,9 @@
-import { FaUserShield, FaEdit, FaWindowClose, FaExclamation } from 'react-icons/fa';
+import {
+  FaUserShield,
+  FaEdit,
+  FaWindowClose,
+  FaExclamation,
+} from 'react-icons/fa';
 
 import { maskPhone } from 'utils/masks';
 import { getStaffImageUrl } from '../../constants.js';
@@ -20,7 +25,10 @@ export default function StaffGrid({
           </Styled.StaffStatus>
           <Styled.ProfilePicture>
             {member.avatar_url ? (
-              <img src={getStaffImageUrl(member.avatar_url)} alt={member.full_name} />
+              <img
+                src={getStaffImageUrl(member.avatar_url)}
+                alt={member.full_name}
+              />
             ) : (
               <FaUserShield size={100} />
             )}

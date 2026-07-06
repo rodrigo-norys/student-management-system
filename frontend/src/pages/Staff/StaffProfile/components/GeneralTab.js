@@ -1,4 +1,10 @@
-import { FaUser, FaEnvelope, FaIdCard, FaBriefcase, FaPhone } from 'react-icons/fa';
+import {
+  FaUser,
+  FaEnvelope,
+  FaIdCard,
+  FaBriefcase,
+  FaPhone,
+} from 'react-icons/fa';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 import * as Styled from '../styled';
 

@@ -7,7 +7,10 @@ import GlobalStyle from './styles/GlobalStyles';
 import CustomHistoryRouter from './components/CustomHistory';
 import Routes from './routes';
 
-import { validateSessionRequest, loginFailure } from './store/modules/auth/actions';
+import {
+  validateSessionRequest,
+  loginFailure,
+} from './store/modules/auth/actions';
 
 function App() {
   const dispatch = useDispatch();
@@ -15,9 +18,7 @@ function App() {
 
   // Evita o 'GET localhost:3001/tokens/validate 401 (Unauthorized)' para o usuário
   useEffect(() => {
-    isLoginPage
-    ? dispatch(loginFailure())
-    : dispatch(validateSessionRequest());
+    isLoginPage ? dispatch(loginFailure()) : dispatch(validateSessionRequest());
   }, [isLoginPage, dispatch]);
 
   return (

@@ -15,7 +15,6 @@ export default function useUserActions({
   setEditingUser,
   setValidatingTarget,
 }) {
-
   const handleSaveEdit = async (id, updatedData) => {
     try {
       const response = await axios.put(`/users/${id}`, updatedData);

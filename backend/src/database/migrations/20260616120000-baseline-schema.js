@@ -8,7 +8,7 @@
 // este arquivo deve ser registrado na SequelizeMeta para não re-executar.
 
 const createStatements = [
-  "CREATE TABLE `access_levels` (`id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(30) NOT NULL, `description` varchar(150) DEFAULT NULL, `hierarchy_weight` int(11) NOT NULL DEFAULT 0, `is_system_level` tinyint(4) NOT NULL DEFAULT 0, `manage_account` tinyint(1) NOT NULL DEFAULT 0, `manage_record` tinyint(1) NOT NULL DEFAULT 0, `manage_academic` tinyint(1) NOT NULL DEFAULT 0, `manage_finance` tinyint(1) NOT NULL DEFAULT 0, `created_at` datetime NOT NULL DEFAULT current_timestamp(), `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), PRIMARY KEY (`id`), UNIQUE KEY `name` (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+  'CREATE TABLE `access_levels` (`id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(30) NOT NULL, `description` varchar(150) DEFAULT NULL, `hierarchy_weight` int(11) NOT NULL DEFAULT 0, `is_system_level` tinyint(4) NOT NULL DEFAULT 0, `manage_account` tinyint(1) NOT NULL DEFAULT 0, `manage_record` tinyint(1) NOT NULL DEFAULT 0, `manage_academic` tinyint(1) NOT NULL DEFAULT 0, `manage_finance` tinyint(1) NOT NULL DEFAULT 0, `created_at` datetime NOT NULL DEFAULT current_timestamp(), `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), PRIMARY KEY (`id`), UNIQUE KEY `name` (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci',
 
   "CREATE TABLE `units` (`id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, `cnpj` varchar(18) NOT NULL, `email` varchar(150) NOT NULL, `phone` varchar(15) NOT NULL, `status` enum('active','inactive') NOT NULL DEFAULT 'active', `created_at` datetime NOT NULL, `updated_at` datetime NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `units_name_unique` (`name`), UNIQUE KEY `units_cnpj_unique` (`cnpj`), UNIQUE KEY `units_email_unique` (`email`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 
@@ -22,7 +22,7 @@ const createStatements = [
 
   "CREATE TABLE `guardians` (`id` int(11) NOT NULL AUTO_INCREMENT, `user_id` int(11) DEFAULT NULL, `avatar_url` varchar(150) DEFAULT NULL, `name` varchar(50) NOT NULL, `last_name` varchar(50) NOT NULL, `cpf` varchar(14) NOT NULL, `phone` varchar(15) NOT NULL DEFAULT '', `email` varchar(100) NOT NULL, `status` enum('active','inactive') NOT NULL DEFAULT 'active', `created_at` datetime NOT NULL, `updated_at` datetime NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `cpf` (`cpf`), UNIQUE KEY `email` (`email`), UNIQUE KEY `user_id` (`user_id`), CONSTRAINT `guardians_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 
-  "CREATE TABLE `addresses` (`id` int(11) NOT NULL AUTO_INCREMENT, `student_id` int(11) DEFAULT NULL, `guardian_id` int(11) DEFAULT NULL, `staff_id` int(11) DEFAULT NULL, `unit_id` int(11) DEFAULT NULL, `zip_code` varchar(9) NOT NULL, `street` varchar(100) NOT NULL, `number` varchar(10) NOT NULL, `complement` varchar(100) DEFAULT NULL, `neighborhood` varchar(100) NOT NULL, `city` varchar(100) NOT NULL, `state` char(2) NOT NULL, `created_at` datetime NOT NULL DEFAULT current_timestamp(), `updated_at` datetime NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`id`), UNIQUE KEY `unit_id` (`unit_id`), KEY `addresses_index_0` (`zip_code`), KEY `student_id` (`student_id`), CONSTRAINT `addresses_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+  'CREATE TABLE `addresses` (`id` int(11) NOT NULL AUTO_INCREMENT, `student_id` int(11) DEFAULT NULL, `guardian_id` int(11) DEFAULT NULL, `staff_id` int(11) DEFAULT NULL, `unit_id` int(11) DEFAULT NULL, `zip_code` varchar(9) NOT NULL, `street` varchar(100) NOT NULL, `number` varchar(10) NOT NULL, `complement` varchar(100) DEFAULT NULL, `neighborhood` varchar(100) NOT NULL, `city` varchar(100) NOT NULL, `state` char(2) NOT NULL, `created_at` datetime NOT NULL DEFAULT current_timestamp(), `updated_at` datetime NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`id`), UNIQUE KEY `unit_id` (`unit_id`), KEY `addresses_index_0` (`zip_code`), KEY `student_id` (`student_id`), CONSTRAINT `addresses_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci',
 
   "CREATE TABLE `unit_classes` (`id` int(11) NOT NULL AUTO_INCREMENT, `unit_id` int(11) NOT NULL, `name` varchar(20) NOT NULL, `grade_level` varchar(50) NOT NULL, `room_number` varchar(20) NOT NULL, `shift` varchar(15) NOT NULL, `school_year` varchar(45) NOT NULL, `max_students` int(11) NOT NULL, `status` enum('active','inactive') NOT NULL DEFAULT 'active', `created_at` datetime NOT NULL, `updated_at` datetime NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `unit_classes_index_0` (`unit_id`,`room_number`,`shift`,`school_year`), UNIQUE KEY `unit_classes_index_1` (`unit_id`,`name`,`school_year`), KEY `unit_classes_index_2` (`grade_level`), CONSTRAINT `unit_classes_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 
@@ -34,7 +34,7 @@ const createStatements = [
 
   "CREATE TABLE `student_classes` (`id` int(11) NOT NULL AUTO_INCREMENT, `student_id` int(11) NOT NULL, `unit_class_id` int(11) NOT NULL, `enrollment_date` date NOT NULL, `enrollment_status` enum('active','inactive','transferred','dropped_out','graduated') DEFAULT 'active', `created_at` datetime NOT NULL, `status` enum('active','inactive') NOT NULL DEFAULT 'active', `updated_at` datetime NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `student_classes_index_0` (`student_id`,`unit_class_id`), KEY `student_classes_index_1` (`unit_class_id`), CONSTRAINT `student_classes_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT `student_classes_ibfk_2` FOREIGN KEY (`unit_class_id`) REFERENCES `unit_classes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 
-  "CREATE TABLE `photos` (`id` int(11) NOT NULL AUTO_INCREMENT, `originalname` varchar(255) NOT NULL, `filename` varchar(255) NOT NULL, `student_id` int(11) DEFAULT NULL, `created_at` datetime NOT NULL, `updated_at` datetime NOT NULL, PRIMARY KEY (`id`), KEY `student_id` (`student_id`), CONSTRAINT `photos_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE SET NULL ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+  'CREATE TABLE `photos` (`id` int(11) NOT NULL AUTO_INCREMENT, `originalname` varchar(255) NOT NULL, `filename` varchar(255) NOT NULL, `student_id` int(11) DEFAULT NULL, `created_at` datetime NOT NULL, `updated_at` datetime NOT NULL, PRIMARY KEY (`id`), KEY `student_id` (`student_id`), CONSTRAINT `photos_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE SET NULL ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci',
 
   "CREATE TABLE `attendances` (`id` int(11) NOT NULL AUTO_INCREMENT, `student_id` int(11) NOT NULL, `class_allocation_id` int(11) NOT NULL, `date` date NOT NULL, `attendance_status` enum('present','absent','justified') NOT NULL DEFAULT 'present', `notes` varchar(255) DEFAULT NULL, `status` enum('active','inactive') NOT NULL DEFAULT 'active', `created_at` datetime NOT NULL, `updated_at` datetime NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `attendances_index_0` (`student_id`,`class_allocation_id`,`date`), KEY `class_allocation_id` (`class_allocation_id`), KEY `attendances_index_1` (`date`), CONSTRAINT `attendances_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT `attendances_ibfk_2` FOREIGN KEY (`class_allocation_id`) REFERENCES `class_allocations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 
@@ -42,10 +42,22 @@ const createStatements = [
 ];
 
 const dropOrder = [
-  'student_grades', 'attendances', 'photos', 'student_classes',
-  'class_allocations', 'student_guardians', 'staff_units', 'unit_classes',
-  'addresses', 'guardians', 'students', 'staff', 'users', 'subjects',
-  'units', 'access_levels',
+  'student_grades',
+  'attendances',
+  'photos',
+  'student_classes',
+  'class_allocations',
+  'student_guardians',
+  'staff_units',
+  'unit_classes',
+  'addresses',
+  'guardians',
+  'students',
+  'staff',
+  'users',
+  'subjects',
+  'units',
+  'access_levels',
 ];
 
 export async function up(queryInterface) {

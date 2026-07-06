@@ -3,20 +3,41 @@ import { useLocation, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as actions from 'store/modules/auth/actions.js';
 import {
-  FaHome, FaUserGraduate, FaUserTie, FaUsers,
-  FaCog, FaPowerOff, FaBars, FaTimes, FaUserFriends, FaEye
+  FaHome,
+  FaUserGraduate,
+  FaUserTie,
+  FaUsers,
+  FaCog,
+  FaPowerOff,
+  FaBars,
+  FaTimes,
+  FaUserFriends,
+  FaEye,
 } from 'react-icons/fa';
 import {
-  LayoutContainer, Sidebar, SidebarHeader, NavMenu, NavItem, MainArea, Topbar,
-  UserProfile, ContentWrapper, SidebarFooter, SidebarLogoutBtn, Overlay, MenuToggleButton,
-  DemoBanner
+  LayoutContainer,
+  Sidebar,
+  SidebarHeader,
+  NavMenu,
+  NavItem,
+  MainArea,
+  Topbar,
+  UserProfile,
+  ContentWrapper,
+  SidebarFooter,
+  SidebarLogoutBtn,
+  Overlay,
+  MenuToggleButton,
+  DemoBanner,
 } from './styled';
 
 export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const dispatch = useDispatch();
-  const { isLoggedIn = false, user = {} } = useSelector((state) => state.auth || {});
+  const { isLoggedIn = false, user = {} } = useSelector(
+    (state) => state.auth || {},
+  );
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -45,7 +66,11 @@ export default function Layout() {
           </MenuToggleButton>
         </SidebarHeader>
         <NavMenu>
-          <NavItem to="/dashboard" className={isActive('/dashboard')} onClick={() => setIsMenuOpen(false)}>
+          <NavItem
+            to="/dashboard"
+            className={isActive('/dashboard')}
+            onClick={() => setIsMenuOpen(false)}
+          >
             <FaHome /> Dashboard
           </NavItem>
           {

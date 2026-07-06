@@ -71,7 +71,6 @@ export default function GuardianProfile() {
 
         <Styled.MainContent>
           <Styled.Section>
-
             <Styled.TabNav>
               {PROFILE_TABS.map((tab) => (
                 <button
@@ -94,7 +93,6 @@ export default function GuardianProfile() {
             {activeTab === TAB_KEYS.DEPENDENTS && (
               <DependentsTab guardian={guardian} />
             )}
-
           </Styled.Section>
         </Styled.MainContent>
       </Styled.FormGrid>

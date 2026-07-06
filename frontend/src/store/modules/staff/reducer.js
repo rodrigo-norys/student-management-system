@@ -9,7 +9,6 @@ const initialState = {
 
 export default function staffReducer(state = initialState, action) {
   switch (action.type) {
-
     // ================= REQUEST ================= //
     case types.GET_STAFF_REQUEST:
     case types.CREATE_STAFF_REQUEST:
@@ -18,7 +17,7 @@ export default function staffReducer(state = initialState, action) {
     case types.GET_CEP_REQUEST:
       return {
         ...state,
-        isLoading: true
+        isLoading: true,
       };
 
     // ================= FAILURE ================= //
@@ -30,7 +29,7 @@ export default function staffReducer(state = initialState, action) {
       return {
         ...state,
         isLoading: false,
-        addressSuggestion: null
+        addressSuggestion: null,
       };
 
     // ================= SUCCESS ================= //
@@ -41,7 +40,7 @@ export default function staffReducer(state = initialState, action) {
           ...state,
           staff: payload.data,
           totalPages: payload.totalPages || 1,
-          isLoading: false
+          isLoading: false,
         };
       }
 
@@ -49,36 +48,37 @@ export default function staffReducer(state = initialState, action) {
         return {
           ...state,
           staff: payload,
-          isLoading: false
+          isLoading: false,
         };
       }
 
-      const staffIndex = state.staff.findIndex(staff => staff.id === payload.id);
+      const staffIndex = state.staff.findIndex(
+        (staff) => staff.id === payload.id,
+      );
       let newStaff = [...state.staff];
 
       staffIndex >= 0
-        ? newStaff[staffIndex] = payload
+        ? (newStaff[staffIndex] = payload)
         : newStaff.push(payload);
 
       return {
         ...state,
         staff: newStaff,
-        isLoading: false
+        isLoading: false,
       };
     }
 
     case types.CREATE_STAFF_SUCCESS:
     case types.UPDATE_STAFF_SUCCESS: {
       const { id } = action.payload;
-      const exists = state.staff.some(item =>
-        String(item.id) === String(id)
-      );
+      const exists = state.staff.some((item) => String(item.id) === String(id));
 
       const newStaff = exists
-        ? state.staff.map(item =>
-          String(item.id) === String(id)
-            ? { ...item, ...action.payload }
-            : item)
+        ? state.staff.map((item) =>
+            String(item.id) === String(id)
+              ? { ...item, ...action.payload }
+              : item,
+          )
         : [...state.staff, action.payload];
 
       return {
@@ -111,10 +111,8 @@ export default function staffReducer(state = initialState, action) {
       const { avatar_url, staffId } = action.payload;
       return {
         ...state,
-        staff: state.staff.map(item =>
-          String(item.id) === String(staffId)
-            ? { ...item, avatar_url }
-            : item
+        staff: state.staff.map((item) =>
+          String(item.id) === String(staffId) ? { ...item, avatar_url } : item,
         ),
       };
     }

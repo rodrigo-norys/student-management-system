@@ -75,7 +75,7 @@ export default class Unit extends Model {
   static associate(models) {
     this.hasOne(models.Address, {
       foreignKey: 'unit_id',
-      as: 'address'
+      as: 'address',
     });
 
     this.hasMany(models.UnitClass, {

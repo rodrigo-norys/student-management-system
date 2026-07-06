@@ -24,11 +24,13 @@ export default function PendingAccessView({
                 {target.avatar_url ? (
                   <img
                     src={getAvatarUrl(
-                      `${target.type === 'student'
-                        ? 'students'
-                        : target.type === 'staff'
-                          ? 'staff'
-                          : 'guardians'}/${target.avatar_url}`,
+                      `${
+                        target.type === 'student'
+                          ? 'students'
+                          : target.type === 'staff'
+                            ? 'staff'
+                            : 'guardians'
+                      }/${target.avatar_url}`,
                     )}
                     alt={target.displayName}
                   />
@@ -38,12 +40,16 @@ export default function PendingAccessView({
               </Styled.ProfilePicture>
 
               <Styled.UserMainTitle>{target.displayName}</Styled.UserMainTitle>
-              <Styled.UserSubTitle>{target.email || 'No email provided'}</Styled.UserSubTitle>
+              <Styled.UserSubTitle>
+                {target.email || 'No email provided'}
+              </Styled.UserSubTitle>
 
               <Styled.UserDetails>
                 <Styled.DetailRow>
                   <span>Role</span>
-                  <span style={{ textTransform: 'uppercase' }}>{target.type}</span>
+                  <span style={{ textTransform: 'uppercase' }}>
+                    {target.type}
+                  </span>
                 </Styled.DetailRow>
                 <Styled.DetailRow>
                   <span>CPF</span>
@@ -98,11 +104,13 @@ export default function PendingAccessView({
                     {target.avatar_url ? (
                       <img
                         src={getAvatarUrl(
-                          `${target.type === 'student'
-                            ? 'students'
-                            : target.type === 'staff'
-                              ? 'staff'
-                              : 'guardians'}/${target.avatar_url}`,
+                          `${
+                            target.type === 'student'
+                              ? 'students'
+                              : target.type === 'staff'
+                                ? 'staff'
+                                : 'guardians'
+                          }/${target.avatar_url}`,
                         )}
                         alt={target.displayName}
                       />

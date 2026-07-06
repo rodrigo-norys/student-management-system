@@ -37,28 +37,35 @@ class App {
       ? process.env.CORS_ORIGINS.split(',')
       : [];
 
-    this.app.use(cors({
-      origin: function (origin, callback) {
-        if (!origin || whiteList.indexOf(origin) !== -1) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-    }));
+    this.app.use(
+      cors({
+        origin: function (origin, callback) {
+          if (!origin || whiteList.indexOf(origin) !== -1) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      }),
+    );
 
-    this.app.use(helmet({
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
-    }));
+    this.app.use(
+      helmet({
+        crossOriginResourcePolicy: { policy: 'cross-origin' },
+      }),
+    );
 
     this.app.use(cookieParser());
     this.app.use(delay(process.env.NODE_ENV === 'development' ? 500 : 0));
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
-    this.app.use('/images/', express.static(resolve(__dirname, '..', 'uploads', 'images')));
+    this.app.use(
+      '/images/',
+      express.static(resolve(__dirname, '..', 'uploads', 'images')),
+    );
   }
 
   routes() {

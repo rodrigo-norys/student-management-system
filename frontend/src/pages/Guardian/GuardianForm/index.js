@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, Link} from 'react-router-dom';
-import { FaUserCircle, FaEdit, FaPlus} from 'react-icons/fa';
+import { useParams, Link } from 'react-router-dom';
+import { FaUserCircle, FaEdit, FaPlus } from 'react-icons/fa';
 import { isEmail } from 'validator';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
@@ -96,7 +96,7 @@ export default function GuardianForm() {
       const updatedAddresses = [...prev.addresses];
       const currentAddress = updatedAddresses[activeAddressIndex];
       const filteredSuggestion = Object.fromEntries(
-        Object.entries(addressSuggestion).filter(([_, value]) => !!value)
+        Object.entries(addressSuggestion).filter(([_, value]) => !!value),
       );
       updatedAddresses[activeAddressIndex] = {
         ...currentAddress,
@@ -161,11 +161,14 @@ export default function GuardianForm() {
     const newErrors = {};
     const { name, last_name, email, cpf, phone } = form;
 
-    if (name.length < 3 || name.length > 50) newErrors.name = 'Invalid name length';
-    if (last_name.length < 3 || last_name.length > 50) newErrors.last_name = 'Invalid last name length';
+    if (name.length < 3 || name.length > 50)
+      newErrors.name = 'Invalid name length';
+    if (last_name.length < 3 || last_name.length > 50)
+      newErrors.last_name = 'Invalid last name length';
     if (!isEmail(email)) newErrors.email = 'Invalid email';
     if (!cpfValidator.isValid(cpf)) newErrors.cpf = 'Invalid CPF';
-    if (phone.replace(/\D/g, '').length < 10) newErrors.phone = 'Invalid phone number';
+    if (phone.replace(/\D/g, '').length < 10)
+      newErrors.phone = 'Invalid phone number';
 
     form.addresses.forEach((addr, idx) => {
       if (addr.zip_code.replace(/\D/g, '').length !== 8)

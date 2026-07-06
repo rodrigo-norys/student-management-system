@@ -3,11 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-import { FaTh, FaList, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import {
+  FaTh,
+  FaList,
+  FaSearch,
+  FaChevronLeft,
+  FaChevronRight,
+} from 'react-icons/fa';
 
 import * as Styled from './styled.js';
 
-import { ITEMS_PER_PAGE, VIEW_MODES, INITIAL_SEARCH_STATE, } from './constants.js';
+import {
+  ITEMS_PER_PAGE,
+  VIEW_MODES,
+  INITIAL_SEARCH_STATE,
+} from './constants.js';
 
 import * as actions from 'store/modules/student/actions';
 import useDebounce from 'hooks/useDebounce';

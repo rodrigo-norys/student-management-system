@@ -11,7 +11,11 @@ const random = () => Math.floor(Math.random() * 10000 + 10000);
 
 export default {
   fileFilter: (req, file, cb) => {
-    if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/webp') {
+    if (
+      file.mimetype !== 'image/png' &&
+      file.mimetype !== 'image/jpeg' &&
+      file.mimetype !== 'image/webp'
+    ) {
       return cb(new multer.MulterError('FILE_TYPE_NOT_SUPPORTED'));
     }
     return cb(null, true);
@@ -24,7 +28,14 @@ export default {
       const validFolders = ['users', 'students', 'guardians', 'staff'];
       const folderName = validFolders.includes(userType) ? userType : 'others';
 
-      const targetPath = resolve(__dirname, '..', '..', 'uploads', 'images', folderName);
+      const targetPath = resolve(
+        __dirname,
+        '..',
+        '..',
+        'uploads',
+        'images',
+        folderName,
+      );
 
       if (!fs.existsSync(targetPath)) {
         fs.mkdirSync(targetPath, { recursive: true });
@@ -34,6 +45,6 @@ export default {
     },
     filename: (req, file, cb) => {
       cb(null, `${Date.now()}_${random()}${extname(file.originalname)}`);
-    }
-  })
+    },
+  }),
 };

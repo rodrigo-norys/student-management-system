@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { FaShieldAlt, FaThLarge, FaCode, FaLayerGroup, FaDatabase, FaGithub, FaLinkedin } from 'react-icons/fa';
+import {
+  FaShieldAlt,
+  FaThLarge,
+  FaCode,
+  FaLayerGroup,
+  FaDatabase,
+  FaGithub,
+  FaLinkedin,
+} from 'react-icons/fa';
 import * as authActions from 'store/modules/auth/actions';
 import * as Styled from './styled.js';
 
@@ -37,7 +45,9 @@ export default function LandingPreview() {
       <Styled.Navbar>
         <Styled.Logo>Portfólio</Styled.Logo>
         <Styled.NavMenu>
-          <a href="#funcionalidades" className="active">Funcionalidades</a>
+          <a href="#funcionalidades" className="active">
+            Funcionalidades
+          </a>
           <a href="#contact">Contact</a>
         </Styled.NavMenu>
       </Styled.Navbar>
@@ -47,11 +57,13 @@ export default function LandingPreview() {
           Gestão Escolar com <br /> <span>Engenharia de Ponta.</span>
         </Styled.HeroTitle>
         <Styled.HeroDescription>
-          Transformando complexidade em eficiência com arquiteturas fullstack de alta performance,
-          foco total em segurança e usabilidade.
+          Transformando complexidade em eficiência com arquiteturas fullstack de
+          alta performance, foco total em segurança e usabilidade.
         </Styled.HeroDescription>
         <Styled.HeroActions>
-          <Styled.PrimaryButton onClick={() => dispatch(authActions.demoLoginRequest())}>
+          <Styled.PrimaryButton
+            onClick={() => dispatch(authActions.demoLoginRequest())}
+          >
             Acessar demo
           </Styled.PrimaryButton>
           <Styled.SecondaryButton onClick={() => navigate('/login')}>
@@ -73,7 +85,11 @@ export default function LandingPreview() {
           >
             <FaGithub size={20} />
           </Styled.GitHubLink>
-          <FaThLarge size={32} color="#94a3b8" style={{ marginBottom: '20px' }} />
+          <FaThLarge
+            size={32}
+            color="#94a3b8"
+            style={{ marginBottom: '20px' }}
+          />
           <Styled.CardHeader>
             <Styled.CardTitle>Dashboard Dinâmico</Styled.CardTitle>
             <Styled.CardDescription>
@@ -100,7 +116,11 @@ export default function LandingPreview() {
           >
             <FaLinkedin size={20} />
           </Styled.LinkedinLink>
-          <FaShieldAlt size={32} color="#94a3b8" style={{ marginBottom: '20px' }} />
+          <FaShieldAlt
+            size={32}
+            color="#94a3b8"
+            style={{ marginBottom: '20px' }}
+          />
           <Styled.CardHeader>
             <Styled.CardTitle>Segurança de Elite</Styled.CardTitle>
             <Styled.CardDescription>
@@ -115,8 +135,7 @@ export default function LandingPreview() {
               staticSrc={securityStatic}
             />
           </Styled.ImageWrapper>
-          <Styled.TagGroup $bottom>
-          </Styled.TagGroup>
+          <Styled.TagGroup $bottom></Styled.TagGroup>
         </Styled.Card>
 
         {/* Card 3: Formulários */}
@@ -129,12 +148,16 @@ export default function LandingPreview() {
           >
             <FaGithub size={20} />
           </Styled.GitHubLink>
-          <FaLayerGroup size={32} color="#94a3b8" style={{ marginBottom: '11px' }} />
+          <FaLayerGroup
+            size={32}
+            color="#94a3b8"
+            style={{ marginBottom: '11px' }}
+          />
           <Styled.CardHeader>
             <Styled.CardTitle>Formulários Inteligentes</Styled.CardTitle>
             <Styled.CardDescription>
-              Integração avançada com APIs de endereçamento e validações complexas
-              assíncronas para UX impecável.
+              Integração avançada com APIs de endereçamento e validações
+              complexas assíncronas para UX impecável.
             </Styled.CardDescription>
           </Styled.CardHeader>
           <Styled.ImageWrapper>
@@ -183,7 +206,11 @@ export default function LandingPreview() {
           >
             <FaGithub size={20} />
           </Styled.GitHubLink>
-          <FaDatabase size={32} color="#94a3b8" style={{ marginBottom: '20px' }} />
+          <FaDatabase
+            size={32}
+            color="#94a3b8"
+            style={{ marginBottom: '20px' }}
+          />
           <Styled.CardHeader $small>
             <Styled.CardTitle as="h4">Node & MariaDB</Styled.CardTitle>
             <Styled.CardDescription $small>

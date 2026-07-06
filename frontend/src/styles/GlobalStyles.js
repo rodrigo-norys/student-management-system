@@ -60,4 +60,3 @@ export const ErrorMessage = styled.span`
   text-transform: none;
   letter-spacing: normal;
 `;
-

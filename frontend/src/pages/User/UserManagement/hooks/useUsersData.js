@@ -12,7 +12,6 @@ import useDebounce from 'hooks/useDebounce';
  * - A comunicação com a API (GET) para buscar e atualizar a lista de dados exibida na tabela.
  */
 
-
 export default function useUsersData() {
   const [activeTab, setActiveTab] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,7 +29,8 @@ export default function useUsersData() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const endpoint = activeTab === 'pending' ? '/users/search-targets' : '/users';
+        const endpoint =
+          activeTab === 'pending' ? '/users/search-targets' : '/users';
         const response = await axios.get(endpoint, {
           params: {
             searchTerm: debouncedSearchTerm,

@@ -2,7 +2,13 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { FaTh, FaList, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import {
+  FaTh,
+  FaList,
+  FaSearch,
+  FaChevronLeft,
+  FaChevronRight,
+} from 'react-icons/fa';
 
 import Loading from 'components/Loading';
 

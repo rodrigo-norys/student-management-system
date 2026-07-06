@@ -92,7 +92,7 @@ export default class StudentGrade extends Model {
       foreignKey: 'class_allocation_id',
       as: 'allocation',
     });
-    
+
     this.belongsTo(models.StudentClass, {
       foreignKey: 'student_classes_id',
       as: 'enrollment',

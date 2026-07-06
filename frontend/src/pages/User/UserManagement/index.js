@@ -57,8 +57,14 @@ export default function UserManagement() {
   }, []);
 
   const renderContent = () => {
-    if (loading) return <Styled.NoResultsMessage>Loading records...</Styled.NoResultsMessage>;
-    if (dataList.length === 0) return <Styled.NoResultsMessage>No records found.</Styled.NoResultsMessage>;
+    if (loading)
+      return (
+        <Styled.NoResultsMessage>Loading records...</Styled.NoResultsMessage>
+      );
+    if (dataList.length === 0)
+      return (
+        <Styled.NoResultsMessage>No records found.</Styled.NoResultsMessage>
+      );
 
     if (activeTab === 'pending') {
       return (
@@ -103,11 +109,19 @@ export default function UserManagement() {
 
       {dataList.length > 0 && (
         <Styled.PaginationArea>
-          <Styled.PageButton onClick={handlePreviousPage} disabled={currentPage === 1 || loading}>
+          <Styled.PageButton
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1 || loading}
+          >
             <FaChevronLeft size={14} /> Prev
           </Styled.PageButton>
-          <span>Page {currentPage} of {totalPages}</span>
-          <Styled.PageButton onClick={handleNextPage} disabled={currentPage === totalPages || loading}>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <Styled.PageButton
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || loading}
+          >
             Next <FaChevronRight size={14} />
           </Styled.PageButton>
         </Styled.PaginationArea>

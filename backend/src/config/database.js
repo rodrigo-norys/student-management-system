@@ -1,9 +1,8 @@
 // @ts-check
 import 'dotenv/config';
 
-const timezone = process.env.NODE_ENV === 'production'
-  ? 'America/Sao_Paulo'
-  : '-03:00';
+const timezone =
+  process.env.NODE_ENV === 'production' ? 'America/Sao_Paulo' : '-03:00';
 
 const config = {
   username: process.env.DATABASE_USERNAME,

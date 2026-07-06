@@ -11,19 +11,24 @@ function* updatePhotoRequest({ payload }) {
   const { id, userType, formData } = payload;
 
   try {
-    const response = yield call(axios.patch, `/avatar/${userType}/${id}`, formData);
+    const response = yield call(
+      axios.patch,
+      `/avatar/${userType}/${id}`,
+      formData,
+    );
 
-    yield put(actions.updatePhotoSuccess({
-      avatar_url: response.data.avatar_url,
-      studentId: id
-    }));
+    yield put(
+      actions.updatePhotoSuccess({
+        avatar_url: response.data.avatar_url,
+        studentId: id,
+      }),
+    );
 
     toast.success('Photo updated successfully!');
 
     if (userType === 'students') {
       history.push(`/student/${id}/edit`);
     }
-
   } catch (err) {
     const status = err.response?.status || 0;
     const errors = err.response?.data?.errors || [];
@@ -33,7 +38,7 @@ function* updatePhotoRequest({ payload }) {
       yield put(loginActions.loginFailure());
       history.push('/login');
     } else if (errors.length > 0) {
-      errors.forEach(error => toast.error(error));
+      errors.forEach((error) => toast.error(error));
     } else {
       toast.error('An unexpected error occurred while updating the photo.');
     }
