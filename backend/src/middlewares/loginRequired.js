@@ -70,7 +70,7 @@ export default async (req, res, next) => {
     }
 
     return next();
-  } catch (e) {
+  } catch {
     return res.status(401).json({
       errors: ['Token expired or invalid.'],
     });
