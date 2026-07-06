@@ -20,7 +20,7 @@ Cobre **model↔DDL**. Não cobre design do schema (FK certa, normalização, í
 - Sem tabela órfã de model nem model órfão de tabela (conferir `photos`, DDL `baseline:37`).
 
 **2. Associations ↔ FKs (alto)**
-- Cada FK do DDL tem association com `foreignKey` no nome real da coluna (ex.: `subjects_id`, não `subject_id`).
+- Cada FK do DDL tem association com `foreignKey` no **nome real da coluna** (confie na DDL, não no `CLAUDE.md`: o Tier-map lá tem o typo `class_allocations.subjects_id`, mas a coluna real é `subject_id` — `baseline:33`).
 - N:N via `belongsToMany` pela tabela de junção real (`student_guardians`, `staff_units`, `student_classes`). Aponte FK sem association e association sem FK.
 
 **3. Colunas (alto/médio)**
