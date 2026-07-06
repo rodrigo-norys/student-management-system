@@ -1,0 +1,6 @@
+# Revisões que apenas reformatam código (Prettier) — ignoradas pelo git blame.
+# Ative localmente uma vez:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Após commitar o reformat em massa, cole abaixo o hash COMPLETO (40 chars)
+# do commit, um por linha:
