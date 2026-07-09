@@ -68,10 +68,14 @@ feat(auth): acesso demo read-only one-click para a landing
 
 ### 4. Sequência e handoff
 - Se **>1 PR**, dê a **ordem de abertura** (por dependência) e a relação entre eles (ex.: "PR 2 depende do 1").
-- Por PR, sugira o comando (pro usuário rodar, **não** você):
+- **Grave o corpo de cada PR num arquivo `.md`** (um por PR, no scratchpad da sessão) **antes** de sugerir o comando — o `gh ... --body-file` exige que o arquivo **já exista** na hora de rodar. Gravar o markdown num arquivo **não** é rodar `gh`; continua dentro da regra "só produz texto".
+- Por PR, sugira o comando **pro usuário rodar no terminal** (você **não** executa o `gh`), com `--body-file` apontando pro arquivo gravado:
 ```
-gh pr create --base <base> --title "<header>" --body-file <arquivo>
+gh pr create --base main \
+  --title "refactor(frontend): remove lodash em favor de optional chaining nativo" \
+  --body-file "<scratchpad>/pr-frontend-lodash.md"
 ```
+> `<scratchpad>` = o diretório de scratchpad da sessão (caminho **absoluto**). O `--base` segue o argumento da skill (default `main`); o `--title` casa com o header Conventional Commits do PR; e o `.md` do `--body-file` é exatamente o corpo produzido no passo 3.
 - Os **commits** de cada PR são planejados pelo `suggest-commits` — este aqui para no nível do PR.
 
 ### 5. Regras de conteúdo
