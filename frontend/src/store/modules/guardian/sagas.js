@@ -1,6 +1,5 @@
 import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
-import { get } from 'lodash';
 import axiosLib from 'axios';
 import history from '../../../services/history';
 import axios from '../../../services/axios';
@@ -19,7 +18,7 @@ function* createGuardian({ payload }) {
       ? history.push('/guardians')
       : shouldStay && history.push(`/guardian/${response.data.id}/edit`);
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('An error occurred while saving.');
@@ -51,7 +50,7 @@ function* getGuardians({ payload }) {
 
     yield put(actions.getGuardiansSuccess(response.data));
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('Error fetching guardian records.');
@@ -72,7 +71,7 @@ function* updateGuardian({ payload }) {
       history.push('/guardians');
     }
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('An error occurred while saving.');
@@ -90,7 +89,7 @@ function* deleteGuardian({ payload }) {
       toast.success('Guardian status updated to INACTIVE');
     }
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('Error deleting guardian.');
