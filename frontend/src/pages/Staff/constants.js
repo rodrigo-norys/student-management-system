@@ -1,4 +1,4 @@
-export const STAFF_IMAGE_BASE_URL = `${process.env.REACT_APP_API_URL}/images/staff`;
+export const STAFF_IMAGE_BASE_URL = `${import.meta.env.VITE_API_URL}/images/staff`;
 
 export const getStaffImageUrl = (avatarUrl) => {
   if (!avatarUrl) return null;

@@ -35,7 +35,7 @@ export default function StaffProfile() {
   if (!staffMember && !isLoading) return null;
   if (!staffMember) return <Loading isLoading={true} />;
 
-  const mainPhoto = `${process.env.REACT_APP_API_URL}/images/staff/${staffMember.avatar_url}`;
+  const mainPhoto = `${import.meta.env.VITE_API_URL}/images/staff/${staffMember.avatar_url}`;
 
   return (
     <PageContainer>

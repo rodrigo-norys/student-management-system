@@ -1,4 +1,4 @@
-export const GUARDIAN_IMAGE_BASE_URL = `${process.env.REACT_APP_API_URL}/images/guardians`;
+export const GUARDIAN_IMAGE_BASE_URL = `${import.meta.env.VITE_API_URL}/images/guardians`;
 
 export const getGuardianImageUrl = (avatarUrl) => {
   if (!avatarUrl) return null;

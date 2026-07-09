@@ -33,7 +33,7 @@ export default function Photos() {
 
   const currentAvatarUrl = useMemo(() => {
     if (!profileData?.avatar_url) return '';
-    const endpoint = `${process.env.REACT_APP_API_URL}/images/${userType}/`;
+    const endpoint = `${import.meta.env.VITE_API_URL}/images/${userType}/`;
 
     return `${endpoint}${profileData.avatar_url}`;
   }, [profileData, userType]);
