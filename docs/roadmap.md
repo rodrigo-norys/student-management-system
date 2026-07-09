@@ -315,9 +315,17 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
     de contrato (envelopes) contra `school_test`.
   - **H5 — Performance:** revisar índices, N+1 nos includes aninhados (Student com
     addresses/guardians/photos), defaults de paginação, auditoria de payload.
+  - **H6 — Frontend CRA→Vite:** substituir `react-scripts` (descontinuado) por Vite +
+    `@vitejs/plugin-react` (+ Vitest) — elimina ~50 das 56 CVEs transitivas do front, irreparáveis
+    sob o CRA (§Fase 6, auditoria de deps 2026-07-09). Migração **horizontal de build** (não usa a
+    cadeia de entidade), **atômica** (1 PR core: `vite.config`, `index.html` na raiz, env `VITE_*`,
+    alias do `baseUrl:src`, `Dockerfile.prod`). Destrava o CI do front: o gate migra de
+    `CI=true npm run build` para `vite build` + **ESLint standalone** (flat config, como o backend).
 - **Dependências:** H1 depende do `StaffUnit` HTTP (Fase 3A). H4 depende das entidades da Fase 3.
-- **HITL / gates:** **H1 é human-in-the-loop (auth/peso).** H2 (bcrypt/JWT) idem. Gate:
-  `backend-auth-review`, novo `security-perf-review` (§4), `npm test`.
+  **H6 é independente** (só toca frontend/build) — pode rodar a qualquer momento.
+- **HITL / gates:** **H1 é human-in-the-loop (auth/peso).** H2 (bcrypt/JWT) idem. **H6: o cutover
+  da imagem do front (`Dockerfile.prod` muda o build) é HITL — validar `docker build` + smoke antes
+  do deploy.** Gate: `backend-auth-review`, novo `security-perf-review` (§4), `npm test`.
 - **Saída:** nenhum vazamento entre unidades; segurança sem os furos do §1.6; logs estruturados;
   cobertura de testes por domínio; sem N+1 óbvio.
 
@@ -348,6 +356,13 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   corrigir doc-drift remanescente (CLAUDE.md Tier-map: `subject_id`, `attendances`, `photos`);
   resolver dívidas diferidas (hard-delete/cascade module, staff self-action UI, `photos` drop,
   Home dashboard real); hygiene de dependências (`npm audit`).
+- **Hygiene de dependências — 🔶 em andamento (auditoria 2026-07-09):** P1/P2 mergeadas —
+  typosquat `loadash` + phantom `lodash` eliminados (uso trocado por optional chaining nativo);
+  driver `mariadb` ocioso removido (conexão via `mysql2`, decisão deliberada — o connector mariadb
+  já deu problema de tipos); bumps de segurança (`axios`, `react-router-dom`, `styled-components`,
+  `multer`, `sequelize`); Node 22 fixado (`engines` + `.nvmrc`, alinhado à VPS); `@testing-library/*`
+  → devDeps; `express-delay` → devDep via import dinâmico. **Item estrutural restante:** CRA→Vite,
+  escalado para **H6 (Fase 4)** por matar as CVEs transitivas.
 - **HITL / gates:** drop de `photos`/hard-delete = HITL (destrutivo/exclusão de dados).
 - **Saída:** backlog de dívida drenado; docs e setup sincronizados com o código.
 
@@ -468,3 +483,4 @@ Tier-map do `CLAUDE.md` (Fase 6); o `settings.local.json` já teve o `ssh` estre
 
 > Gerado a partir de leitura read-only do código em 2026-06-18. Não commitado.
 > Atualização 2026-07-03: §1/§1.7/§4/§5 acompanham a reorg de tooling do `.claude` (9 agentes ativos / 13 skills + hooks de governança; só `security-perf-review` F4 planejado). O roadmap de código (Fases 1–6) permanece diagnóstico, não implementado.
+> Atualização 2026-07-09: auditoria de dependências (Fase 6 hygiene) — P1/P2 **mergeadas**; migração CRA→Vite registrada como **H6 (Fase 4)**. Ver §Fase 4 e §Fase 6. Diferente do resto do doc (diagnóstico), estas linhas refletem trabalho efetivamente mergeado.

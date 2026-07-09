@@ -12,7 +12,7 @@ export default function DependentsTab({ guardian }) {
           <Styled.DependentCard key={student.id}>
             {student.avatar_url ? (
               <img
-                src={`${process.env.REACT_APP_API_URL}/images/students/${student.avatar_url}`}
+                src={`${import.meta.env.VITE_API_URL}/images/students/${student.avatar_url}`}
                 alt={student.name}
               />
             ) : (
