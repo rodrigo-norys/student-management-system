@@ -46,11 +46,11 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.4.5",
-    "multer": "^2.0.2",
+    "multer": "^2.2.0",
     "mysql2": "^3.17.1",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
-    "sequelize": "^6.37.7",
+    "sequelize": "^6.37.8",
     "yup": "^1.7.1"
   }
 }
