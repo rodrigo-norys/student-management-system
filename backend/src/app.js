@@ -10,7 +10,6 @@ import './database/index.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import delay from 'express-delay';
 import cookieParser from 'cookie-parser';
 
 import homeRoutes from './routes/homeRoutes.js';
@@ -24,6 +23,13 @@ import accessLevelRoutes from './routes/accessLevelRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// express-delay simula latência de rede apenas em desenvolvimento; o import
+// dinâmico mantém a dependência fora do runtime de produção (viabiliza --omit=dev)
+const delay =
+  process.env.NODE_ENV === 'development'
+    ? (await import('express-delay')).default
+    : null;
 
 class App {
   constructor() {
@@ -59,7 +65,9 @@ class App {
     );
 
     this.app.use(cookieParser());
-    this.app.use(delay(process.env.NODE_ENV === 'development' ? 500 : 0));
+    if (delay) {
+      this.app.use(delay(500));
+    }
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
     this.app.use(
