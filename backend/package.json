@@ -45,7 +45,6 @@
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mariadb": "^3.4.5",
     "multer": "^2.2.0",
     "mysql2": "^3.17.1",
     "pino": "^10.3.1",

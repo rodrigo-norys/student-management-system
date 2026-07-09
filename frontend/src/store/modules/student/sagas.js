@@ -1,6 +1,5 @@
 import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
-import { get } from 'lodash';
 import axiosLib from 'axios';
 import history from 'services/history';
 import axios from 'services/axios';
@@ -19,7 +18,7 @@ function* createStudent({ payload }) {
       history.push('/students');
     }
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
 
     if (errors.length > 0) {
       errors.forEach((error) => toast.error(error));
@@ -41,7 +40,7 @@ function* updateStudent({ payload }) {
 
     history.push('/students');
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
 
     if (errors.length > 0) {
       errors.forEach((error) => toast.error(error));
@@ -73,7 +72,7 @@ function* getStudents({ payload }) {
 
     yield put(actions.getStudentsSuccess(response.data));
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
 
     if (errors.length > 0) {
       errors.forEach((error) => toast.error(error));
@@ -94,7 +93,7 @@ function* deleteStudent({ payload }) {
       toast.success('Student record deactivated');
     }
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
 
     if (errors.length > 0) {
       errors.forEach((error) => toast.error(error));

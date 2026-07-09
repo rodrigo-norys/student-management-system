@@ -1,6 +1,5 @@
 import { call, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
-import { get } from 'lodash';
 import axiosLib from 'axios';
 
 import history from 'services/history';
@@ -21,7 +20,7 @@ function* createStaff({ payload }) {
       ? history.push('/dashboard')
       : shouldStay && history.push(`/staff/${response.data.id}/edit`);
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('An error occurred while saving.');
@@ -52,7 +51,7 @@ function* getStaff({ payload }) {
 
     yield put(actions.getStaffSuccess(response.data));
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('Error fetching staff records.');
@@ -70,7 +69,7 @@ function* updateStaff({ payload }) {
 
     history.push('/staff');
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('An error occurred while saving.');
@@ -88,7 +87,7 @@ function* deleteStaff({ payload }) {
       toast.success('Staff status updated to INACTIVE');
     }
   } catch (e) {
-    const errors = get(e, 'response.data.errors', []);
+    const errors = e?.response?.data?.errors ?? [];
     errors.length > 0
       ? errors.forEach((error) => toast.error(error))
       : toast.error('Error deleting staff member.');
