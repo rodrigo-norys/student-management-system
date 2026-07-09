@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { get } from 'lodash';
 import { toast } from 'react-toastify';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -55,8 +54,8 @@ export default function SetupPassword() {
       toast.success('Password updated successfully');
       navigate('/dashboard');
     } catch (error) {
-      const errors = get(error, 'response.data.errors', []);
-      const status = get(error, 'response.status', 0);
+      const errors = error?.response?.data?.errors ?? [];
+      const status = error?.response?.status ?? 0;
 
       if (status === 401) {
         toast.error('Session expired or unauthorized. Please login again.');
