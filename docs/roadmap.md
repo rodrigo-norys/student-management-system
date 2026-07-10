@@ -76,7 +76,7 @@ Status: ✅ sólido · 🔶 parcial/preparado · ⚠️ funcional mas com dívid
 | Infra / deploy | ✅ | Cutover concluído: stack-alvo em prod (Caddy/ACME, rede segmentada, DB least-privilege, hardened), backup automatizado e testado. |
 | Testes / CI | ❌ | Infra vitest/supertest instalada, **zero testes, zero CI**. |
 | Segurança | 🔶 | Bons fundamentos (helmet, CORS allowlist, cookies httpOnly, demo trap sólido) com furos (bcrypt cost 8, rate-limit só no login, sem limite de upload, multitenant ausente). |
-| Tooling `.claude` | ✅ | 9 agentes ativos + 13 skills + hooks de governança; cobre planejamento, build-out e review. `model-review`, `add-ts-check` e os hooks (`guard-sensitive-writes`, `typecheck-on-stop`) já **criados**; falta só `security-perf-review` (F4), planejado. |
+| Tooling `.claude` | ✅ | 9 agentes ativos + 13 skills + 3 hooks de governança; cobre planejamento, build-out e review. `model-review`, `add-ts-check` e os hooks (`guard-sensitive-writes`, `typecheck-on-stop`, `format-on-stop`) já **criados**; falta só `security-perf-review` (F4), planejado. |
 
 ### 1.1 Modelo de dados — ✅ sólido (com dívida cosmética)
 
@@ -228,7 +228,8 @@ mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
   (`create-test`), auditor de estado (`state-audit`); re-grounding da dupla migration no baseline
   consolidado; roteamento de infra na `review-changes`; regra `req.*` indefinido no `backend-auth-review`.
 - **Também nesta camada:** hooks de governança (`guard-sensitive-writes` PreToolUse força HITL em
-  escrita sensível; `typecheck-on-stop` roda `tsc` nos `@ts-check`) + skill `add-ts-check`. E o
+  escrita sensível; `typecheck-on-stop` roda `tsc` nos `@ts-check`; `format-on-stop` roda
+  `prettier --write` + `eslint` bloqueante nos arquivos do turno) + skill `add-ts-check`. E o
   `model-review` já foi **criado** (par de `create-model`).
 - **Gap remanescente (planejado):** `security-perf-review` (Fase 4, app-layer: N+1, índices, OWASP,
   deps). Self-update do setup permanece como **processo** (`governance.md §Atualização controlada`),

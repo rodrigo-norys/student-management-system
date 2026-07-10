@@ -56,7 +56,7 @@ No projeto eles vêm em pares **fazer → checar**, organizados em camadas:
 
 **Camada 4 — Processo:** `suggest-commits` (plano de commits), `suggest-prs` (fatia a pilha em 1+ PRs + descreve cada). Não revisam código — preparam a entrega.
 
-**Hooks (enforcement determinístico, fora do allow/deny):** `guard-sensitive-writes` (PreToolUse Edit/Write) força confirmação humana em escrita sensível (`.env`, auth, models core, migration versionada); `typecheck-on-stop` (Stop) roda `tsc` nos arquivos `// @ts-check` e segura o encerramento se quebrar. É a terceira forma de "checar" (determinística), além do agente e do gate de comando. Ver Governança.
+**Hooks (enforcement determinístico, fora do allow/deny):** `guard-sensitive-writes` (PreToolUse Edit/Write) força confirmação humana em escrita sensível (`.env`, auth, models core, migration versionada); `typecheck-on-stop` (Stop) roda `tsc` nos arquivos `// @ts-check` e segura o encerramento se quebrar; `format-on-stop` (Stop) roda `prettier --write` nos arquivos do turno + `eslint` bloqueante (sem `--fix`) em `backend/src`. São a terceira forma de "checar" (determinística), além do agente e do gate de comando. Ver Governança.
 
 Fluxo: a skill gera seguindo o padrão; o agente revisa em contexto limpo; a umbrella `review-changes` orquestra os revisores certos sobre o diff antes do PR.
 
@@ -138,7 +138,9 @@ sem cerimônia de time grande). Vive em três lugares:
   pede permissão; read-only só notifica.
 - **`.claude/hooks/`** — enforcement **determinístico** (roda fora do allow/deny): `guard-sensitive-writes.sh`
   (PreToolUse Edit/Write) força `ask` em `.env`/auth/models core/migration versionada; `typecheck-on-stop.sh`
-  (Stop) roda `tsc` nos `// @ts-check` e segura o encerramento se quebrar. É o HITL virando barreira real.
+  (Stop) roda `tsc` nos `// @ts-check` e segura o encerramento se quebrar; `format-on-stop.sh` (Stop) formata
+  (`prettier --write`) e checa lint (`eslint` bloqueante, sem `--fix`) nos arquivos JS/JSX/CSS do turno. É o
+  HITL virando barreira real.
 - **`.claude/settings.local.json`** — override **local** (não versionado) que pode ampliar o `allow`.
   Mantenha estreito: comando que muta estado de produção (ex.: `ssh` à VPS) é HITL **por política** mesmo
   se o allow local liberar — não deixe o override furar a inspeção-primeiro do `audit-vps`.
