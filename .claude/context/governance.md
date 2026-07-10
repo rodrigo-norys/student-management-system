@@ -68,6 +68,7 @@ não rodam; hooks **rodam** (determinísticos).
 | Contrato HTTP (≥2 controllers, ou `validateRequest`) | coerência entre endpoints | agente `api-contract-review` |
 | Infra / IaC (compose, Dockerfile, Caddyfile, `.env.example`) | revisão antes do cutover | agente `infra-review` (estático) + skill `audit-vps` (live, prod) |
 | Type-safety (`// @ts-check`) | `tsc` verde no fim do turno | hook `typecheck-on-stop.sh` (Stop) roda `tsc --noEmit`; skill `add-ts-check` adota a marca |
+| Formatação + lint (JS/JSX/CSS alterados no turno) | Prettier aplicado + ESLint sem erro | hook `format-on-stop.sh` (Stop): `prettier --write` + `eslint` bloqueante (sem `--fix`) em `backend/src` |
 
 Não há e2e, a11y, visual smoke nem security-matrix — não inventar gate inexistente. O gate
 `npm test` está **configurado mas vazio** (vitest/supertest instalados, zero testes): a skill
@@ -89,6 +90,12 @@ agentes (julgamento) e o gate de comando (permissão):
   backend; se algum tipo quebra, `block` devolvendo a saída do `tsc` pro Claude corrigir antes
   de encerrar. Fail-open (sem `tsc`, sem arquivo marcado, ou loop-guard → sai limpo). É o
   **verificador** do par `add-ts-check` (fazer → checar via hook, sem agente).
+- **`format-on-stop.sh`** (Stop) — formata e checa lint no fim do turno: `prettier --write`
+  (idempotente, muta em silêncio) nos arquivos JS/JSX/CSS alterados do turno + `eslint` **sem
+  `--fix`** como check-and-block em `backend/src`; se o ESLint acusa erro, `block` devolvendo a
+  saída pro Claude corrigir antes de encerrar (mesmo contrato do `typecheck-on-stop`). Fail-open
+  (sem os binários, sem arquivo alterado, ou loop-guard → sai limpo). Não auto-corrige lint de
+  propósito — evita churn e mudança semântica não revisada (ex.: apagar import que era bug, não lixo).
 
 ---
 
