@@ -13,6 +13,7 @@
     "dev": "nodemon src/server.js",
     "build": "echo 'Build bypass: Executando ESM nativo'",
     "start": "node src/server.js",
+    "db:schema:snapshot": "node src/scripts/schema-snapshot.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.js\" --ignore-path ../.prettierignore",
