@@ -32,7 +32,7 @@ function* demoLogin() {
     yield put(actions.loginSuccess(response.data));
     toast.success('Você entrou no modo demonstração');
     yield call(history.push, '/dashboard');
-  } catch (e) {
+  } catch {
     toast.error('Não foi possível iniciar a demonstração. Tente novamente.');
     yield put(actions.loginFailure());
   }
@@ -98,7 +98,7 @@ function* validateSession() {
   try {
     const response = yield call(axios.get, '/tokens/validate');
     yield put(actions.loginSuccess(response.data));
-  } catch (e) {
+  } catch {
     yield put(actions.loginFailure());
   }
 }
@@ -109,7 +109,7 @@ function* logout() {
     yield put(actions.logoutSuccess());
     toast.info('You have been logged out.');
     yield call(history.push, '/login');
-  } catch (e) {
+  } catch {
     toast.error('Session ended with errors, but you were disconnected.');
     yield put(actions.logoutSuccess());
     yield call(history.push, '/login');

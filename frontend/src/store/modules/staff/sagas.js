@@ -102,7 +102,7 @@ function* getCep({ payload }) {
       `https://brasilapi.com.br/api/cep/v1/${payload}`,
     );
     yield put(actions.getCepSuccess(response.data));
-  } catch (e) {
+  } catch {
     toast.error('CEP not found. Fill in the address manually.');
     yield put(actions.getCepFailure());
   }
