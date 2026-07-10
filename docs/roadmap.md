@@ -485,3 +485,197 @@ Tier-map do `CLAUDE.md` (Fase 6); o `settings.local.json` já teve o `ssh` estre
 > Gerado a partir de leitura read-only do código em 2026-06-18. Não commitado.
 > Atualização 2026-07-03: §1/§1.7/§4/§5 acompanham a reorg de tooling do `.claude` (9 agentes ativos / 13 skills + hooks de governança; só `security-perf-review` F4 planejado). O roadmap de código (Fases 1–6) permanece diagnóstico, não implementado.
 > Atualização 2026-07-09: auditoria de dependências (Fase 6 hygiene) — P1/P2 **mergeadas**; migração CRA→Vite registrada como **H6 (Fase 4)**. Ver §Fase 4 e §Fase 6. Diferente do resto do doc (diagnóstico), estas linhas refletem trabalho efetivamente mergeado.
+> Atualização 2026-07-10: auditoria do setup `.claude` em [`claude-setup-audit.md`](claude-setup-audit.md) (complementar). Sync do §1.7: registrado o 3º hook `format-on-stop` (Prettier + ESLint bloqueante no Stop), antes subdocumentado. Pendências acionáveis abertas por lá: R2 (estreitar `git checkout *` no `settings.local.json`) e R6 (avaliar `.claude/rules/`).
+
+---
+
+## 6. Horizonte de produto — Extensão de domínio (v2.0)
+
+> **Adicionado 2026-07-10.** Esta seção **complementa** o roadmap acima, não o substitui. Enquanto as
+> Fases 0–6 fecham o **v1.0** (o ciclo acadêmico que o schema já promete + fundação + hardening +
+> cutover), o **v2.0** abre os módulos de **produto de mercado** e **conformidade regulatória** que o
+> segmento de gestão escolar particular BR exige e que o schema ainda **não** modela. A justificativa,
+> o benchmark de mercado e as bases legais estão em [`domain-market-review.md`](domain-market-review.md)
+> (auditoria complementar). O v2.0 **começa após o v1.0** — em especial após **F1/F2** (auth) e **H1**
+> (tenancy), que são pré-condição para operar com dado real de menor.
+
+**Decisões de escopo do dono (travadas 2026-07-10):**
+- **Financeiro:** schema modela contrato/mensalidade/inadimplência/bolsa; **cobrança delegada a gateway
+  externo** (Asaas/Pagar.me/isaac). Não virar meio de pagamento.
+- **Multi-tenant:** **multi-unidade da mesma rede** (isolamento por `staff_units`, já é H1). **Não** é
+  SaaS multi-escola.
+- **Portal da família/aluno:** **depois do núcleo** (depende de nota/frequência/financeiro).
+
+**Método de expansão:** cada módulo Mx é uma **fatia vertical** pela cadeia canônica
+(`create-model` → `create-migration` → `create-controller` → `create-route` → `create-page`), revisada
+pelos agentes do par. **HITL** obrigatório onde toca schema core/FK, auth/peso, dado sensível ou
+financeiro. Os checklists `- [ ]` abaixo são o **mecanismo de continuidade entre sessões**.
+
+### VOCÊ ESTÁ AQUI (v2.0)
+
+```
+ v1.0 ───────────────────────────────►  v2.0 (extensão de domínio) ──────────────►
+ Fase 1 → Fase 3 → Fase 4/H1            M9 ∥ M1 → M2 → M3 → M4 → M5 → M6/M7/M8 → M10 → M11
+ (fundação/núcleo/tenancy)              (compliance)(calendário)(avaliação)…      (censo)(portal)
+ ── pré-condição p/ dado real de menor ──┘
+```
+
+### M1 · Calendário acadêmico  ·  ⬜  [funcional · fundacional]
+- **Objetivo:** dar entidade ao tempo letivo (hoje só `unit_classes.school_year` varchar — `UnitClass.js:51`).
+- **Tabelas:** `academic_years` (ano letivo por unidade), `academic_terms` (bimestre/trimestre/semestre).
+  Refatorar `unit_classes.school_year` → FK para `academic_years`.
+- **Dependências:** Fase 3A (Unit/UnitClass com HTTP).
+- **HITL / gates:** **HITL (schema core** — altera `unit_classes`). `migration-review` + `db-schema-review`.
+- **Checklist:**
+  - [ ] models `AcademicYear`, `AcademicTerm` (+ associations) e registro em `database/index.js`
+  - [ ] migration: cria tabelas + adiciona FK em `unit_classes` (backfill do `school_year` livre) — **HITL**
+  - [ ] controller + rota (flags corretas; escopo por unidade quando H1 existir)
+  - [ ] página (LOCAL vs GLOBAL via `create-page`)
+  - [ ] testes de guarda + CRUD; `db-schema-review` + `migration-review` verdes
+
+### M2 · Avaliação estruturada  ·  ⬜  [funcional]
+- **Objetivo:** substituir `student_grades.grade_1..grade_4` fixos (`StudentGrade.js:15-46`) por avaliação
+  configurável por período.
+- **Tabelas:** `grade_configs` (peso, média de aprovação, escala/conceito por unidade/série),
+  `assessments` (prova/trabalho por `class_allocation` + `academic_term`), `assessment_grades` (nota do
+  aluno por avaliação). Migrar dados de `student_grades`.
+- **Dependências:** M1 (períodos) + Fase 3C (StudentGrade/ClassAllocation HTTP).
+- **HITL / gates:** **HITL (schema core** — reescreve o modelo de notas). `db-schema-review` + `migration-review`.
+- **Checklist:**
+  - [ ] models `GradeConfig`, `Assessment`, `AssessmentGrade` + registro
+  - [ ] migration de transição de `grade_1..4` → `assessment_grades` (reversível/backfill) — **HITL**
+  - [ ] controller + rota (lançamento por turma/disciplina/período)
+  - [ ] página de lançamento (diário de notas)
+  - [ ] testes de cálculo de média/aprovação; reviews verdes
+
+### M3 · Boletim & histórico escolar  ·  ⬜  [funcional]
+- **Objetivo:** consolidar nota+frequência em boletim, histórico e documentos oficiais.
+- **Entregáveis:** relatórios derivados (boletim por aluno/turma/período) + `academic_documents`
+  (boletim/declaração/certificado gerados, com versionamento).
+- **Dependências:** M1 + M2 + Fase 3C (Attendance).
+- **HITL / gates:** baixo (derivado). `api-contract-review` + `ui-kit-review`.
+- **Checklist:**
+  - [ ] endpoint de boletim (agregação nota+frequência por período)
+  - [ ] model `AcademicDocument` + geração/armazenamento
+  - [ ] página de visualização/impressão do boletim
+  - [ ] testes de agregação; reviews verdes
+
+### M4 · Financeiro-lite (gateway externo)  ·  ⬜  [funcional]
+- **Objetivo:** mensalidade e inadimplência com cobrança delegada (decisão do dono).
+- **Tabelas:** `enrollment_contracts` (vínculo financeiro do responsável), `tuition_plans` (plano/valor),
+  `discounts_scholarships` (bolsa/desconto), `invoices` (parcela/mensalidade), `payments` (baixa via
+  webhook), `gateway_events` (idempotência de webhook). Integração Asaas/Pagar.me/isaac.
+- **Base legal:** LGPD art. 7º V (execução de contrato) para dados do responsável financeiro — ver
+  `domain-market-review.md` §3.
+- **Dependências:** Fase 1 (auth), `student_guardians.is_financial_resp` já existe.
+- **HITL / gates:** **HITL (dado financeiro + integração externa).** Segredos do gateway via `.env`
+  (nunca hardcoded — CLAUDE.md §Infra). `security-perf-review` (webhook/idempotência).
+- **Checklist:**
+  - [ ] models + migrations (`enrollment_contracts`…`gateway_events`) — **HITL**
+  - [ ] controller + rota de contrato/plano/mensalidade; webhook de baixa (idempotente)
+  - [ ] integração do gateway (credenciais em `.env` + `docker-compose` `environment:`)
+  - [ ] página de financeiro (secretaria) + 2ª via
+  - [ ] testes de idempotência de webhook e de régua de inadimplência; reviews verdes
+
+### M5 · Comunicação com responsáveis  ·  ⬜  [funcional]
+- **Objetivo:** canal oficial escola↔família (benchmark ClassApp/Agenda Edu — `domain-market-review.md` §2).
+- **Tabelas:** `announcements` (comunicados), `messages` (mensagens diretas), `message_receipts`
+  (confirmação de leitura), `authorizations`/`consent_forms` (imagem/saída/passeio, assinatura digital).
+  Alternativa avaliável: integrar ClassApp/Agenda Edu em vez de mensageria nativa.
+- **Dependências:** Fase 1 (auth), M9 (consentimento para autorizações).
+- **HITL / gates:** médio. Autorização de imagem = ECA/ECA Digital (`domain-market-review.md` §3).
+- **Checklist:**
+  - [ ] models + migrations
+  - [ ] controller + rota (envio, leitura, confirmação)
+  - [ ] página de comunicados + coleta de autorização assinada
+  - [ ] testes; reviews verdes
+
+### M6 · Documentos & anexos  ·  ⬜  [funcional · regulatório]
+- **Objetivo:** repositório de documentos (RG, laudo, contrato, foto) — reabre a decisão **R-C** (`photos`).
+- **Tabelas:** `documents` (owner polimórfico + tipo + **finalidade** + vínculo de consentimento + storage).
+- **Dependências:** M9 (finalidade/consentimento).
+- **HITL / gates:** **HITL** se reintroduzir estrutura tipo `photos` (destrutivo prévio). `db-schema-review`.
+  Limite de upload (roadmap H2 / `multer` `limits.fileSize`).
+- **Checklist:**
+  - [ ] model `Document` + storage (fora do FS do container ou volume dedicado)
+  - [ ] migration — **HITL**
+  - [ ] controller + rota (upload com limite + fileFilter) + página
+  - [ ] testes; reviews verdes
+
+### M7 · Ocorrências / disciplina  ·  ⬜  [funcional]
+- **Objetivo:** registro disciplinar/pedagógico (advertência, elogio, ocorrência).
+- **Tabelas:** `occurrences` (student + staff autor + tipo + `academic_term` + descrição).
+- **Dependências:** M1 (período), Fase 3 (Student HTTP já existe).
+- **HITL / gates:** baixo. `controller-review` + `backend-auth-review`.
+- **Checklist:**
+  - [ ] model `Occurrence` + migration
+  - [ ] controller + rota + página (timeline do aluno)
+  - [ ] testes; reviews verdes
+
+### M8 · Saúde estruturada  ·  ⬜  [funcional · regulatório]
+- **Objetivo:** substituir `students.blood_type`/`medical_notes` texto livre (`Student.js:94,104`) por dado
+  estruturado e protegido — **dado sensível LGPD art. 11** (`domain-market-review.md` §3).
+- **Tabelas:** `health_records` (alergias, medicações, condições, contato médico de emergência, plano),
+  migrando `blood_type`/`medical_notes`. **Cifragem de coluna** para os campos sensíveis.
+- **Dependências:** M9 (base legal/consentimento).
+- **HITL / gates:** **HITL (schema core + dado sensível).** `db-schema-review`.
+- **Checklist:**
+  - [ ] model `HealthRecord` + migration de transição — **HITL**
+  - [ ] cifragem de coluna dos campos sensíveis
+  - [ ] controller + rota com autorização restrita (quem lê saúde de menor) + página
+  - [ ] testes de autorização; reviews verdes
+
+### M9 · Conformidade LGPD-menores (transversal)  ·  ⬜  [regulatório]
+- **Objetivo:** cumprir LGPD art. 14/11/18 e ECA para dados de menor — **pré-condição de operação real**.
+- **Tabelas:** `consent_records` (art. 14 — consentimento do responsável, com finalidade/versão),
+  `data_processing_purposes` (finalidades declaradas, art. 14 §2º), `audit_logs` (quem acessou/alterou
+  dado de menor), `data_subject_requests` (direitos do titular, art. 18). RIPD como **artefato de processo**.
+- **Dependências:** F1/F2 (auth) + H1 (tenancy) + H3 (redação em logs).
+- **HITL / gates:** **HITL (privacidade/dados).** Roda **em paralelo** ao M1 (não bloqueia o acadêmico,
+  mas bloqueia a operação com dado real).
+- **Checklist:**
+  - [ ] models + migrations (`consent_records`, `data_processing_purposes`, `audit_logs`, `data_subject_requests`)
+  - [ ] middleware de audit log nos acessos a dado de menor
+  - [ ] fluxo de consentimento na matrícula (art. 14 §1º) + tela de finalidades públicas (§2º)
+  - [ ] fluxo de atendimento a direitos do titular (art. 18)
+  - [ ] RIPD documentado (`docs/`); política de retenção definida
+  - [ ] testes de trilha de auditoria; reviews verdes
+
+### M10 · Censo Escolar / Educacenso (INEP)  ·  ⬜  [regulatório]
+- **Objetivo:** viabilizar a declaração obrigatória ao Censo (Decreto 6.425/2008 — `domain-market-review.md` §3).
+- **Entregáveis:** campos exigidos hoje ausentes — `units.inep_code`, `students.{race_color, disability,
+  nationality}` (e o que o layout Educacenso pedir); **gerador de exportação** (Escola/Turma/Aluno/Profissional).
+- **Dependências:** Fase 3 (turma/matrícula/profissional com dado completo).
+- **HITL / gates:** **HITL (schema core em `students`/`units`).** `migration-review` + `db-schema-review`.
+- **Checklist:**
+  - [ ] migration: `inep_code` em `units`; `race_color`/`disability`/`nationality` em `students` — **HITL**
+  - [ ] validação dos domínios de valor conforme layout INEP
+  - [ ] gerador de exportação Educacenso + conferência de completude
+  - [ ] testes do layout; reviews verdes
+
+### M11 · Portal da família/aluno  ·  ⬜  [funcional]
+- **Objetivo:** área family-facing (boletim, frequência, comunicados, 2ª via de boleto). **Última fase** —
+  depende de M2–M5 e do escopo de posse endurecido.
+- **Entregáveis:** sem tabela nova relevante — camada de **leitura escopada** sobre M2–M5, com auth de
+  papel `Student`/`Guardian` (que já autenticam — `TokenController.js:46`) endurecida por `student_guardians`.
+- **Dependências:** M2, M3, M4, M5 + F1/F2 (fechar IDOR de `GET /users/:id`) + H1.
+- **HITL / gates:** **HITL (auth/posse — família lendo dado de aluno).** `backend-auth-review` + testes de
+  guarda de posse (um responsável **não** pode ler aluno que não é seu).
+- **Checklist:**
+  - [ ] endurecer escopo por `student_guardians` (posse) + fechar `GET /users/:id`
+  - [ ] endpoints de leitura escopada (boletim/frequência/comunicados/2ª via)
+  - [ ] UI do portal (responsável/aluno) separada do shell administrativo
+  - [ ] testes de guarda de posse (negativos); reviews verdes
+
+### Sequenciamento e HITL do v2.0
+
+- **Ordem por dependência:** `M9 ∥ M1 → M2 → M3 → M4 → M5 → (M6/M7/M8) → M10 → M11`. M9 e o fechamento de
+  tenancy (H1) são **pré-condição** de qualquer operação com dado real de menor.
+- **Novos pontos human-in-the-loop** (somam ao Apêndice acima): **M1/M2/M8/M10 (schema core)** ·
+  **M4 (dado financeiro + integração externa)** · **M6 (reintrodução de storage)** · **M9 (privacidade/
+  dados)** · **M11 (auth/posse family-facing)**.
+- **Gates reais:** os mesmos comandos existentes (`npm test`, `CI=true`/`vite build`) + agentes reviewers
+  read-only. Nenhum novo tipo de gate é inventado.
+
+> Gerado a partir da auditoria de domínio/mercado/regulação de 2026-07-10
+> ([`domain-market-review.md`](domain-market-review.md)). Diagnóstico + proposta — nada implementado.
