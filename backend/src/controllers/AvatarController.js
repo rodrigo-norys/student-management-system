@@ -48,14 +48,6 @@ class AvatarController {
         });
       }
 
-      const isAdmin = req.userLevel <= 2;
-
-      if (!isAdmin) {
-        return res.status(403).json({
-          errors: ['You do not have permission to change photos.'],
-        });
-      }
-
       const oldAvatar = entity.avatar_url;
       const { filename } = req.file;
 
