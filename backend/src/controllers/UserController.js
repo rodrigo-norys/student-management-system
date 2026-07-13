@@ -7,6 +7,12 @@ import Student from '../models/Student.js';
 import Guardian from '../models/Guardian.js';
 import Staff from '../models/Staff.js';
 
+import {
+  isProtectedTarget,
+  hasAuthorityOver,
+  PROTECTED_TARGET_ERROR,
+} from '../utils/hierarchy.js';
+
 const { Op: Operators } = Sequelize;
 
 function isValidId(id) {
@@ -299,10 +305,45 @@ class UserController {
         password,
       } = req.body;
 
+      // O update não pode virar rota de fuga da política de delete. O ramo
+      // isEditingSelf acima pula a checagem de peso, e daí saíam caminhos para
+      // o General Director se matar sem volta:
+      //   - status: 'inactive' — loginRequired barra conta não-active;
+      //   - access_level_id menor — rebaixar-se remove a própria proteção (ela
+      //     é chaveada no nível) e entrega a conta à paridade de peso: um par
+      //     de peso 80 então a desativa pelo delete normal;
+      //   - access_level_id: null — a coluna é nullable, e loginRequired lê
+      //     user.access_level.hierarchy_weight sem optional chaining: nível
+      //     nulo estoura e vira 401 em toda rota autenticada.
+      // Todos terminais: repor o nível 1 exige peso > 100, que ninguém tem nem
+      // pode ter. Nível 1 só nasce do seed.
+      //
+      // Daí o `!== undefined` em vez de truthiness nas duas: `null`, `''` e `0`
+      // são falsy e escapariam da guarda justamente para chegar nos estados
+      // piores. Um `status: ''` que passasse batido só seria barrado pelo
+      // sql_mode estrito do MariaDB — invariante de auth não pode depender de
+      // config de banco.
+      const isDeactivating = status !== undefined && status !== 'active';
+      const isChangingLevel =
+        access_level_id !== undefined &&
+        Number(access_level_id) !== Number(userToUpdate.access_level_id);
+
       if (
-        access_level_id &&
-        Number(access_level_id) !== userToUpdate.access_level_id
+        (isDeactivating || isChangingLevel) &&
+        isProtectedTarget(userToUpdate.id, userToUpdate)
       ) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: [PROTECTED_TARGET_ERROR] });
+      }
+
+      if (isDeactivating && isEditingSelf) {
+        await transaction.rollback();
+        return res.status(403).json({
+          errors: ['Forbidden. You cannot deactivate your own account.'],
+        });
+      }
+
+      if (isChangingLevel) {
         const newLevel = await AccessLevel.findByPk(access_level_id, {
           transaction,
         });
@@ -380,11 +421,17 @@ class UserController {
         return res.status(404).json({ errors: ['User not found.'] });
       }
 
-      const isSelf = Number(id) === Number(req.userId);
-      const hasAuthority =
-        req.userWeight > (userToDelete.access_level?.hierarchy_weight || 0);
+      if (isProtectedTarget(userToDelete.id, userToDelete)) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: [PROTECTED_TARGET_ERROR] });
+      }
 
-      if (isSelf || !hasAuthority) {
+      const isSelf = Number(id) === Number(req.userId);
+
+      if (
+        isSelf ||
+        !hasAuthorityOver(req.userWeight, userToDelete.id, userToDelete)
+      ) {
         await transaction.rollback();
         return res.status(403).json({
           errors: [

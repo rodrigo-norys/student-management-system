@@ -5,6 +5,13 @@ import Guardian from '../models/Guardian.js';
 import Student from '../models/Student.js';
 import User from '../models/User.js';
 import Address from '../models/Address.js';
+import AccessLevel from '../models/AccessLevel.js';
+
+import {
+  isProtectedTarget,
+  hasAuthorityOver,
+  PROTECTED_TARGET_ERROR,
+} from '../utils/hierarchy.js';
 
 function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
@@ -272,7 +279,13 @@ class GuardianController {
       }
 
       const guardian = await Guardian.findByPk(id, {
-        include: [{ model: User, as: 'user' }],
+        include: [
+          {
+            model: User,
+            as: 'user',
+            include: [{ model: AccessLevel, as: 'access_level' }],
+          },
+        ],
         transaction,
       });
 
@@ -283,7 +296,17 @@ class GuardianController {
         });
       }
 
-      if (Number(guardian.user_id) === Number(req.userId)) {
+      const { user_id: targetUserId, user: targetUser } = guardian;
+
+      if (isProtectedTarget(targetUserId, targetUser)) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: [PROTECTED_TARGET_ERROR] });
+      }
+
+      if (
+        Number(targetUserId) === Number(req.userId) ||
+        !hasAuthorityOver(req.userWeight, targetUserId, targetUser)
+      ) {
         await transaction.rollback();
         return res.status(403).json({
           errors: ['Forbidden or restricted action.'],

@@ -2,9 +2,16 @@ import Student from '../models/Student.js';
 import Guardian from '../models/Guardian.js';
 import User from '../models/User.js';
 import Address from '../models/Address.js';
+import AccessLevel from '../models/AccessLevel.js';
 
 import Sequelize from 'sequelize';
 import database from '../database/index.js';
+
+import {
+  isProtectedTarget,
+  hasAuthorityOver,
+  PROTECTED_TARGET_ERROR,
+} from '../utils/hierarchy.js';
 
 function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
@@ -447,13 +454,36 @@ class StudentController {
       }
 
       const student = await Student.findByPk(id, {
-        include: [{ model: User, as: 'user' }],
+        include: [
+          {
+            model: User,
+            as: 'user',
+            include: [{ model: AccessLevel, as: 'access_level' }],
+          },
+        ],
         transaction,
       });
 
       if (!student) {
         await transaction.rollback();
         return res.status(404).json({ errors: ['Student not found.'] });
+      }
+
+      const { user_id: targetUserId, user: targetUser } = student;
+
+      if (isProtectedTarget(targetUserId, targetUser)) {
+        await transaction.rollback();
+        return res.status(403).json({ errors: [PROTECTED_TARGET_ERROR] });
+      }
+
+      if (
+        Number(targetUserId) === Number(req.userId) ||
+        !hasAuthorityOver(req.userWeight, targetUserId, targetUser)
+      ) {
+        await transaction.rollback();
+        return res.status(403).json({
+          errors: ['Forbidden or restricted action.'],
+        });
       }
 
       // SOFT DELETE
