@@ -3,6 +3,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
+    // As suítes com banco compartilham as mesmas linhas do school_test; em
+    // paralelo, o setup de uma recria fixtures enquanto a outra as lê.
+    fileParallelism: false,
     env: {
       NODE_ENV: 'test',
       LOG_LEVEL: 'silent',
