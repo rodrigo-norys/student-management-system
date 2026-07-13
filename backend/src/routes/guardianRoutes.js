@@ -9,10 +9,10 @@ const router = new Router();
 
 router.use(loginRequired);
 
-router.post('/', roleAuth([4]), guardianController.create);
-router.get('/:id', roleAuth([2, 3, 4, 5]), guardianController.show);
-router.get('/', roleAuth([2, 3, 4, 5]), guardianController.index);
-router.put('/:id', roleAuth([3, 4]), guardianController.update);
-router.delete('/:id', roleAuth([2, 3]), guardianController.delete);
+router.post('/', roleAuth('manage_record'), guardianController.create);
+router.get('/:id', roleAuth('manage_record'), guardianController.show);
+router.get('/', roleAuth('manage_record'), guardianController.index);
+router.put('/:id', roleAuth('manage_record'), guardianController.update);
+router.delete('/:id', roleAuth('manage_account'), guardianController.delete);
 
 export default router;

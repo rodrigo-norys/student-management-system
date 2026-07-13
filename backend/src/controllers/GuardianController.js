@@ -14,13 +14,6 @@ class GuardianController {
   async create(req, res) {
     const transaction = await database.transaction();
     try {
-      if (req.userLevel > 2) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: ['Access denied. You cannot create guardian records.'],
-        });
-      }
-
       const { addresses, student_ids, ...guardianData } = req.body;
 
       const newGuardian = await Guardian.create(
@@ -82,12 +75,10 @@ class GuardianController {
 
   async index(req, res) {
     try {
-      const whereClause = req.userLevel === 5 ? { user_id: req.userId } : {};
       const { page = 1, limit = 15 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
 
       const guardians = await Guardian.findAndCountAll({
-        where: whereClause,
         limit: Number(limit),
         offset,
         attributes: {
@@ -186,11 +177,6 @@ class GuardianController {
         });
       }
 
-      const isRestrictedRole = [5].includes(req.userLevel);
-      if (isRestrictedRole && Number(guardian.user_id) !== Number(req.userId)) {
-        return res.status(403).json({ errors: ['Forbidden.'] });
-      }
-
       return res.json(guardian);
     } catch (e) {
       return this.handleErrors(e, res);
@@ -214,11 +200,6 @@ class GuardianController {
         return res.status(404).json({
           errors: ['Guardian not found.'],
         });
-      }
-
-      if ([4, 5].includes(req.userLevel)) {
-        await transaction.rollback();
-        return res.status(403).json({ errors: ['Forbidden.'] });
       }
 
       const { addresses, student_ids, ...guardianData } = req.body;
@@ -302,10 +283,7 @@ class GuardianController {
         });
       }
 
-      if (
-        Number(guardian.user_id) === Number(req.userId) ||
-        req.userLevel > 3
-      ) {
+      if (Number(guardian.user_id) === Number(req.userId)) {
         await transaction.rollback();
         return res.status(403).json({
           errors: ['Forbidden or restricted action.'],

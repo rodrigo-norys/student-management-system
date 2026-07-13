@@ -14,7 +14,7 @@ router.use(loginRequired);
 
 router.patch(
   '/:userType/:id',
-  roleAuth([4]),
+  roleAuth('manage_record'),
   upload.single('avatar'),
   avatarController.create,
 );

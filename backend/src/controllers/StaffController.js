@@ -13,13 +13,6 @@ class StaffController {
   async create(req, res) {
     const transaction = await database.transaction();
     try {
-      if (req.userLevel > 3) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: ['You do not have permission to create staff records.'],
-        });
-      }
-
       const { addresses, ...staffData } = req.body;
 
       const newStaff = await Staff.create(
@@ -71,16 +64,10 @@ class StaffController {
 
   async index(req, res) {
     try {
-      const whereClause =
-        req.userLevel === 4 || req.userLevel === 5
-          ? { user_id: req.userId }
-          : {};
-
       const { page = 1, limit = 15 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
 
       const staffMembers = await Staff.findAndCountAll({
-        where: whereClause,
         limit: Number(limit),
         offset,
         attributes: {
@@ -167,13 +154,6 @@ class StaffController {
         });
       }
 
-      const isRestrictedRole = [4, 5].includes(req.userLevel);
-      if (isRestrictedRole && Number(staff.user_id) !== Number(req.userId)) {
-        return res.status(403).json({
-          errors: ['Forbidden. You can only view your own records.'],
-        });
-      }
-
       return res.json(staff);
     } catch (e) {
       return this.handleErrors(e, res);
@@ -196,13 +176,6 @@ class StaffController {
         await transaction.rollback();
         return res.status(404).json({
           errors: ['Staff member not found.'],
-        });
-      }
-
-      if ([4, 5].includes(req.userLevel)) {
-        await transaction.rollback();
-        return res.status(403).json({
-          errors: ["Forbidden. You don't have permission to edit this record."],
         });
       }
 
@@ -277,10 +250,7 @@ class StaffController {
         });
       }
 
-      if (
-        Number(staffMember.user_id) === Number(req.userId) ||
-        req.userLevel > 3
-      ) {
+      if (Number(staffMember.user_id) === Number(req.userId)) {
         await transaction.rollback();
         return res.status(403).json({
           errors: ['Forbidden or restricted action.'],
