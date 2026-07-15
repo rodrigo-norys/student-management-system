@@ -142,6 +142,37 @@ describe('roleAuth manage_record — GET /staff e GET /guardians', () => {
   }
 });
 
+// GET /users/:id lê e-mail, nível e status da conta — é dado de conta e segue a
+// mesma flag do resto do recurso /users. Sem roleAuth, qualquer logado lia
+// qualquer conta.
+describe('roleAuth manage_account — GET /users/:id', () => {
+  const allowed = [LEVELS.GENERAL_DIRECTOR, LEVELS.SCHOOL_OFFICE];
+  const denied = [
+    LEVELS.FINANCE_ADMIN,
+    LEVELS.ACADEMIC_COORDINATOR,
+    LEVELS.TEACHER,
+  ];
+
+  it.each(allowed)(
+    'nível %i passa o guard em GET /users/:id (404, id inexistente)',
+    async (level) => {
+      const res = await request(app)
+        .get('/users/999999')
+        .set('Cookie', cookieFor(testUser(level)));
+      expect(res.status).toBe(404);
+      expect(res.body.errors).toContain('User not found.');
+    },
+  );
+
+  it.each(denied)('nível %i é barrado em GET /users/:id', async (level) => {
+    const res = await request(app)
+      .get('/users/999999')
+      .set('Cookie', cookieFor(testUser(level)));
+    expect(res.status).toBe(403);
+    expect(res.body.errors).toContain(ROLEAUTH_FORBIDDEN);
+  });
+});
+
 // Era manage_account enquanto o delete da ficha cascateava na conta. Com o
 // cascade desacoplado, deletar ficha não toca conta nenhuma — virou operação de
 // cadastro, e o Finance Admin (manage_record, sem manage_account) passa a
