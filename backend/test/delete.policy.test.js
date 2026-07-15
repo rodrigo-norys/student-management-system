@@ -10,6 +10,8 @@ import {
   resetFixtureStatuses,
   statusOf,
   accessLevelOf,
+  setStatus,
+  userIdOf,
   testUser,
   SECOND_DIRECTOR,
   DISPOSABLE_USER,
@@ -19,7 +21,12 @@ import {
   DIRECTOR_STUDENT,
   ORDINARY_STAFF,
   ORDINARY_GUARDIAN,
+  ORDINARY_STUDENT,
   ORPHAN_STAFF,
+  CASCADE_USER,
+  CASCADE_STAFF,
+  CASCADE_GUARDIAN,
+  CASCADE_STUDENT,
 } from './helpers/db.js';
 import { cookieFor, LEVELS } from './helpers/auth.js';
 
@@ -224,6 +231,218 @@ describe('política de delete — update não é rota de fuga', () => {
 
     expect(res.status).toBe(200);
     expect(await statusOf('User', self.id)).toBe('active');
+  });
+});
+
+// Modo 1 — soft delete por entidade. Cada rota mexe só no SEU registro, nos
+// dois sentidos: desativar a ficha não derruba a conta, e desativar a conta não
+// derruba a ficha. Todo cascade nasce no User, e só sob pedido explícito.
+describe('política de delete — cascade desacoplado', () => {
+  const officeCookie = () => cookieFor(testUser(LEVELS.SCHOOL_OFFICE));
+
+  it('DELETE /staff/:id — desativa a ficha, a conta segue ativa', async () => {
+    const res = await request(app)
+      .delete(`/staff/${ORDINARY_STAFF.id}`)
+      .set('Cookie', officeCookie());
+
+    expect(res.status).toBe(200);
+    expect(await statusOf('Staff', ORDINARY_STAFF.id)).toBe('inactive');
+    expect(await statusOf('User', ORDINARY_STAFF.user_id)).toBe('active');
+  });
+
+  it('DELETE /guardians/:id — desativa a ficha, a conta segue ativa', async () => {
+    const res = await request(app)
+      .delete(`/guardians/${ORDINARY_GUARDIAN.id}`)
+      .set('Cookie', officeCookie());
+
+    expect(res.status).toBe(200);
+    expect(await statusOf('Guardian', ORDINARY_GUARDIAN.id)).toBe('inactive');
+    expect(await statusOf('User', ORDINARY_GUARDIAN.user_id)).toBe('active');
+  });
+
+  it('DELETE /students/:id — desativa a ficha, a conta segue ativa', async () => {
+    const res = await request(app)
+      .delete(`/students/${ORDINARY_STUDENT.id}`)
+      .set('Cookie', officeCookie());
+
+    expect(res.status).toBe(200);
+    expect(await statusOf('Student', ORDINARY_STUDENT.id)).toBe('inactive');
+    expect(await statusOf('User', ORDINARY_STUDENT.user_id)).toBe('active');
+  });
+
+  it('DELETE /users/:id — desativa a conta, as fichas seguem ativas', async () => {
+    const res = await request(app)
+      .delete(`/users/${CASCADE_USER.id}`)
+      .set('Cookie', officeCookie());
+
+    expect(res.status).toBe(200);
+    expect(await statusOf('User', CASCADE_USER.id)).toBe('inactive');
+    expect(await statusOf('Staff', CASCADE_STAFF.id)).toBe('active');
+    expect(await statusOf('Guardian', CASCADE_GUARDIAN.id)).toBe('active');
+    expect(await statusOf('Student', CASCADE_STUDENT.id)).toBe('active');
+  });
+});
+
+// Modo 2 — soft delete em cascade. Opt-in explícito, e só a partir do User.
+describe('política de delete — cascade explícito no User', () => {
+  const officeCookie = () => cookieFor(testUser(LEVELS.SCHOOL_OFFICE));
+
+  it('DELETE /users/:id?cascade=true — derruba a conta e as três fichas', async () => {
+    const res = await request(app)
+      .delete(`/users/${CASCADE_USER.id}?cascade=true`)
+      .set('Cookie', officeCookie());
+
+    expect(res.status).toBe(200);
+    expect(res.body.cascade).toBe(true);
+    expect(await statusOf('User', CASCADE_USER.id)).toBe('inactive');
+    expect(await statusOf('Staff', CASCADE_STAFF.id)).toBe('inactive');
+    expect(await statusOf('Guardian', CASCADE_GUARDIAN.id)).toBe('inactive');
+    expect(await statusOf('Student', CASCADE_STUDENT.id)).toBe('inactive');
+  });
+
+  // O default é o modo seguro: só 'true' exato cascateia. Qualquer outra coisa
+  // — inclusive um 'false' textual ou lixo — cai no soft delete da conta.
+  it.each(['false', '1', 'yes', ''])(
+    'DELETE /users/:id?cascade=%s — não cascateia',
+    async (value) => {
+      const res = await request(app)
+        .delete(`/users/${CASCADE_USER.id}?cascade=${value}`)
+        .set('Cookie', officeCookie());
+
+      expect(res.status).toBe(200);
+      expect(res.body.cascade).toBe(false);
+      expect(await statusOf('User', CASCADE_USER.id)).toBe('inactive');
+      expect(await statusOf('Staff', CASCADE_STAFF.id)).toBe('active');
+    },
+  );
+
+  it('a guarda de nível-1 vale também no cascade', async () => {
+    const res = await request(app)
+      .delete(`/users/${SECOND_DIRECTOR.id}?cascade=true`)
+      .set('Cookie', cookieFor(testUser(LEVELS.GENERAL_DIRECTOR)));
+
+    expect(res.status).toBe(403);
+    expect(res.body.errors).toContain(PROTECTED_TARGET);
+    expect(await statusOf('User', SECOND_DIRECTOR.id)).toBe('active');
+    expect(await statusOf('Staff', DIRECTOR_STAFF.id)).toBe('active');
+  });
+
+  // Cascade não achata ciclo de vida: só desativa fichas 'active'. Um aluno
+  // formado vinculado à conta continua graduated.
+  it('cascade preserva status não-ativo (graduated)', async () => {
+    await setStatus('Student', CASCADE_STUDENT.id, 'graduated');
+
+    const res = await request(app)
+      .delete(`/users/${CASCADE_USER.id}?cascade=true`)
+      .set('Cookie', officeCookie());
+
+    expect(res.status).toBe(200);
+    expect(await statusOf('User', CASCADE_USER.id)).toBe('inactive');
+    expect(await statusOf('Staff', CASCADE_STAFF.id)).toBe('inactive');
+    expect(await statusOf('Student', CASCADE_STUDENT.id)).toBe('graduated');
+  });
+});
+
+// O invariante que sustenta a mudança de flag: DELETE de ficha virou
+// manage_record (Finance Admin alcança), mas a CONTA segue exigindo
+// manage_account. Sem estes casos, trocar a flag de /users passaria despercebido.
+describe('política de delete — fronteira da flag (manage_record ≠ conta)', () => {
+  const financeCookie = () => cookieFor(testUser(LEVELS.FINANCE_ADMIN));
+
+  it('DELETE /staff/:id — Finance Admin (manage_record) desativa ficha', async () => {
+    const res = await request(app)
+      .delete(`/staff/${ORDINARY_STAFF.id}`)
+      .set('Cookie', financeCookie());
+
+    expect(res.status).toBe(200);
+    expect(await statusOf('Staff', ORDINARY_STAFF.id)).toBe('inactive');
+  });
+
+  it('DELETE /users/:id — Finance Admin NÃO desativa conta (falta manage_account)', async () => {
+    const res = await request(app)
+      .delete(`/users/${DISPOSABLE_USER.id}`)
+      .set('Cookie', financeCookie());
+
+    expect(res.status).toBe(403);
+    expect(await statusOf('User', DISPOSABLE_USER.id)).toBe('active');
+  });
+
+  it('DELETE /users/:id?cascade=true — Finance Admin barrado antes de cascatear', async () => {
+    const res = await request(app)
+      .delete(`/users/${CASCADE_USER.id}?cascade=true`)
+      .set('Cookie', financeCookie());
+
+    expect(res.status).toBe(403);
+    expect(await statusOf('User', CASCADE_USER.id)).toBe('active');
+    expect(await statusOf('Staff', CASCADE_STAFF.id)).toBe('active');
+  });
+});
+
+// O PUT não pode ser a porta dos fundos da guarda do delete. Mesma classe de
+// bug já fechada no UserController.update, agora nas fichas.
+describe('política de delete — PUT de ficha não contorna a guarda', () => {
+  it('PUT /staff/:id — não desativa a ficha do GD por status direto', async () => {
+    const res = await request(app)
+      .put(`/staff/${DIRECTOR_STAFF.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.SCHOOL_OFFICE)))
+      .send({ status: 'inactive' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.errors).toContain(PROTECTED_TARGET);
+    expect(await statusOf('Staff', DIRECTOR_STAFF.id)).toBe('active');
+  });
+
+  it('PUT /guardians/:id — não desativa a ficha do GD por status direto', async () => {
+    const res = await request(app)
+      .put(`/guardians/${DIRECTOR_GUARDIAN.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.SCHOOL_OFFICE)))
+      .send({ status: 'inactive' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.errors).toContain(PROTECTED_TARGET);
+    expect(await statusOf('Guardian', DIRECTOR_GUARDIAN.id)).toBe('active');
+  });
+
+  // O caminho de 2 passos: orfanar a ficha para a guarda perder a referência.
+  it('PUT /staff/:id — user_id não é editável (mata a rota órfã + delete)', async () => {
+    const before = await userIdOf('Staff', DIRECTOR_STAFF.id);
+
+    const putRes = await request(app)
+      .put(`/staff/${DIRECTOR_STAFF.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.FINANCE_ADMIN)))
+      .send({ user_id: null, full_name: 'Renamed Fixture' });
+
+    expect(putRes.status).toBe(200);
+    expect(await userIdOf('Staff', DIRECTOR_STAFF.id)).toBe(before);
+
+    const delRes = await request(app)
+      .delete(`/staff/${DIRECTOR_STAFF.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.FINANCE_ADMIN)));
+
+    expect(delRes.status).toBe(403);
+    expect(await statusOf('Staff', DIRECTOR_STAFF.id)).toBe('active');
+  });
+
+  it('PUT /staff/:id — subordinado não desativa a ficha de superior', async () => {
+    // Teacher (peso 30) tenta desativar a ficha de outro Teacher via peso? Não —
+    // aqui o alvo é a ficha do GD (peso 100) e o ator é School Office (80).
+    const res = await request(app)
+      .put(`/staff/${DIRECTOR_STAFF.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.SCHOOL_OFFICE)))
+      .send({ status: 'suspended' });
+
+    expect(res.status).toBe(403);
+    expect(await statusOf('Staff', DIRECTOR_STAFF.id)).toBe('active');
+  });
+
+  it('PUT /staff/:id — edição legítima de cadastro segue passando', async () => {
+    const res = await request(app)
+      .put(`/staff/${ORDINARY_STAFF.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.SCHOOL_OFFICE)))
+      .send({ job_title: 'Updated Role' });
+
+    expect(res.status).toBe(200);
+    expect(await statusOf('Staff', ORDINARY_STAFF.id)).toBe('active');
   });
 });
 
