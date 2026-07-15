@@ -34,7 +34,7 @@ router.put(
 router.delete(
   '/:id',
   loginRequired,
-  roleAuth('manage_account'),
+  roleAuth('manage_record'),
   staffController.delete,
 );
 
