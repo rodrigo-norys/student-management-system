@@ -24,7 +24,7 @@ router.get(
 
 router.post('/', roleAuth('manage_account'), userController.create);
 router.get('/', roleAuth('manage_account'), userController.index);
-router.get('/:id', userController.show);
+router.get('/:id', roleAuth('manage_account'), userController.show);
 router.put('/:id', roleAuth('manage_account'), userController.update);
 router.delete('/:id', roleAuth('manage_account'), userController.delete);
 
