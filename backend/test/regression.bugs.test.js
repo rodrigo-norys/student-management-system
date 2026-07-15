@@ -8,9 +8,11 @@ import { dirname, resolve } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const srcDir = resolve(__dirname, '..', 'src');
 
-const routeFiles = ['staffRoutes.js', 'guardianRoutes.js', 'avatarRoutes.js'].map(
-  (f) => resolve(srcDir, 'routes', f),
-);
+const routeFiles = [
+  'staffRoutes.js',
+  'guardianRoutes.js',
+  'avatarRoutes.js',
+].map((f) => resolve(srcDir, 'routes', f));
 const controllerFiles = [
   'StaffController.js',
   'GuardianController.js',
@@ -30,4 +32,24 @@ describe('regressão F1 — req.userLevel morto removido', () => {
     const src = readFileSync(file, 'utf8');
     expect(src).not.toMatch(/req\.userLevel/);
   });
+});
+
+// Convenção: loginRequired é montado uma vez via router.use, não repetido inline
+// por rota. Inline, uma rota futura adicionada sem a linha nasce sem autenticação.
+describe('convenção — loginRequired via router.use', () => {
+  const guardedRouteFiles = [
+    'staffRoutes.js',
+    'guardianRoutes.js',
+    'studentRoutes.js',
+    'avatarRoutes.js',
+    'userRoutes.js',
+  ].map((f) => resolve(srcDir, 'routes', f));
+
+  it.each(guardedRouteFiles)(
+    '%s aplica loginRequired via router.use',
+    (file) => {
+      const src = readFileSync(file, 'utf8');
+      expect(src).toMatch(/router\.use\(loginRequired\)/);
+    },
+  );
 });

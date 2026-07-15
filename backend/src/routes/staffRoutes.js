@@ -7,35 +7,12 @@ import roleAuth from '../middlewares/roleAuth.js';
 
 const router = new Router();
 
-router.post(
-  '/',
-  loginRequired,
-  roleAuth('manage_record'),
-  staffController.create,
-);
-router.get(
-  '/',
-  loginRequired,
-  roleAuth('manage_record'),
-  staffController.index,
-);
-router.get(
-  '/:id',
-  loginRequired,
-  roleAuth('manage_record'),
-  staffController.show,
-);
-router.put(
-  '/:id',
-  loginRequired,
-  roleAuth('manage_record'),
-  staffController.update,
-);
-router.delete(
-  '/:id',
-  loginRequired,
-  roleAuth('manage_record'),
-  staffController.delete,
-);
+router.use(loginRequired);
+
+router.post('/', roleAuth('manage_record'), staffController.create);
+router.get('/', roleAuth('manage_record'), staffController.index);
+router.get('/:id', roleAuth('manage_record'), staffController.show);
+router.put('/:id', roleAuth('manage_record'), staffController.update);
+router.delete('/:id', roleAuth('manage_record'), staffController.delete);
 
 export default router;
