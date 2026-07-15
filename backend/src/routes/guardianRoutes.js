@@ -13,6 +13,6 @@ router.post('/', roleAuth('manage_record'), guardianController.create);
 router.get('/:id', roleAuth('manage_record'), guardianController.show);
 router.get('/', roleAuth('manage_record'), guardianController.index);
 router.put('/:id', roleAuth('manage_record'), guardianController.update);
-router.delete('/:id', roleAuth('manage_account'), guardianController.delete);
+router.delete('/:id', roleAuth('manage_record'), guardianController.delete);
 
 export default router;

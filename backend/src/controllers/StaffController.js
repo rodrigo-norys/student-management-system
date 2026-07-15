@@ -178,7 +178,24 @@ class StaffController {
         });
       }
 
-      const staffToUpdate = await Staff.findByPk(id, { transaction });
+      // Desativar por aqui (status ≠ active) é o mesmo ato hostil do delete e
+      // roda a mesma guarda; só então o vínculo com a conta importa e precisa
+      // ser carregado.
+      const isDeactivating =
+        req.body.status !== undefined && req.body.status !== 'active';
+
+      const staffToUpdate = await Staff.findByPk(id, {
+        include: isDeactivating
+          ? [
+              {
+                model: User,
+                as: 'user',
+                include: [{ model: AccessLevel, as: 'access_level' }],
+              },
+            ]
+          : undefined,
+        transaction,
+      });
       if (!staffToUpdate) {
         await transaction.rollback();
         return res.status(404).json({
@@ -186,7 +203,43 @@ class StaffController {
         });
       }
 
-      const { addresses, ...staffData } = req.body;
+      if (isDeactivating) {
+        const { user_id: targetUserId, user: targetUser } = staffToUpdate;
+
+        if (isProtectedTarget(targetUserId, targetUser)) {
+          await transaction.rollback();
+          return res.status(403).json({ errors: [PROTECTED_TARGET_ERROR] });
+        }
+
+        if (
+          Number(targetUserId) === Number(req.userId) ||
+          !hasAuthorityOver(req.userWeight, targetUserId, targetUser)
+        ) {
+          await transaction.rollback();
+          return res.status(403).json({
+            errors: ['Forbidden or restricted action.'],
+          });
+        }
+      }
+
+      // Whitelist: user_id fica de fora — religar uma ficha a outra conta é
+      // operação de conta, não de cadastro, e mudá-lo aqui driblaria a guarda,
+      // que consulta justamente esse vínculo.
+      const { addresses } = req.body;
+      const staffData = {
+        avatar_url: req.body.avatar_url,
+        full_name: req.body.full_name,
+        email: req.body.email,
+        cpf: req.body.cpf,
+        birth_date: req.body.birth_date,
+        phone: req.body.phone,
+        personal_email: req.body.personal_email,
+        job_title: req.body.job_title,
+        hiring_date: req.body.hiring_date,
+        termination_date: req.body.termination_date,
+        medical_notes: req.body.medical_notes,
+        status: req.body.status,
+      };
       await staffToUpdate.update(staffData, { transaction });
 
       if (addresses) {
@@ -280,11 +333,9 @@ class StaffController {
         });
       }
 
+      // Soft delete só da ficha: a conta vinculada não é tocada. Todo cascade
+      // nasce no UserController, sob ?cascade=true.
       await staffMember.update({ status: 'inactive' }, { transaction });
-
-      if (staffMember.user) {
-        await staffMember.user.update({ status: 'inactive' }, { transaction });
-      }
 
       await transaction.commit();
       return res.json({

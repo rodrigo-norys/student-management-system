@@ -49,19 +49,47 @@ export const DIRECTOR_STUDENT = { id: 9301, user_id: SECOND_DIRECTOR.id };
 // e não quebrou o delete legítimo.
 export const ORDINARY_STAFF = { id: 9102, user_id: TEST_USERS[5].id };
 export const ORDINARY_GUARDIAN = { id: 9202, user_id: TEST_USERS[4].id };
+export const ORDINARY_STUDENT = { id: 9302, user_id: TEST_USERS[3].id };
 
 // Registro sem conta vinculada: cobre o ramo "alvo sem hierarquia" da guarda.
 export const ORPHAN_STAFF = { id: 9103, user_id: null };
+
+// Uma conta ligada aos TRÊS tipos de registro ao mesmo tempo. É o alvo do
+// cascade: sem o ?cascade=true, deletar o user não pode encostar em nenhum
+// deles; com ele, os três caem juntos. Peso 30 (Teacher) para o ator nível 2
+// ter autoridade sobre a conta.
+export const CASCADE_USER = {
+  id: 9013,
+  email: 'cascade-target@test.local',
+  access_level_id: 5,
+};
+export const CASCADE_STAFF = { id: 9104, user_id: CASCADE_USER.id };
+export const CASCADE_GUARDIAN = { id: 9203, user_id: CASCADE_USER.id };
+export const CASCADE_STUDENT = { id: 9303, user_id: CASCADE_USER.id };
 
 const userIds = [
   ...Object.values(TEST_USERS).map((u) => u.id),
   SECOND_DIRECTOR.id,
   DISPOSABLE_USER.id,
   DISPOSABLE_PEER.id,
+  CASCADE_USER.id,
 ];
-const staffIds = [DIRECTOR_STAFF.id, ORDINARY_STAFF.id, ORPHAN_STAFF.id];
-const guardianIds = [DIRECTOR_GUARDIAN.id, ORDINARY_GUARDIAN.id];
-const studentIds = [DIRECTOR_STUDENT.id];
+const staffIds = [
+  DIRECTOR_STAFF.id,
+  ORDINARY_STAFF.id,
+  ORPHAN_STAFF.id,
+  CASCADE_STAFF.id,
+];
+const guardianIds = [
+  DIRECTOR_GUARDIAN.id,
+  ORDINARY_GUARDIAN.id,
+  CASCADE_GUARDIAN.id,
+];
+const studentIds = [
+  DIRECTOR_STUDENT.id,
+  ORDINARY_STUDENT.id,
+  CASCADE_STUDENT.id,
+];
 
 export function testUser(levelId) {
   return TEST_USERS[levelId];
@@ -116,15 +144,19 @@ function userRows() {
     access_level_id: Number(level),
   }));
 
-  return [...leveled, SECOND_DIRECTOR, DISPOSABLE_USER, DISPOSABLE_PEER].map(
-    (u) => ({
-      id: u.id,
-      email: u.email,
-      access_level_id: u.access_level_id,
-      is_temporary: false,
-      status: 'active',
-    }),
-  );
+  return [
+    ...leveled,
+    SECOND_DIRECTOR,
+    DISPOSABLE_USER,
+    DISPOSABLE_PEER,
+    CASCADE_USER,
+  ].map((u) => ({
+    id: u.id,
+    email: u.email,
+    access_level_id: u.access_level_id,
+    is_temporary: false,
+    status: 'active',
+  }));
 }
 
 // staff/guardians/students têm FK para users: os filhos saem antes da conta.
@@ -158,12 +190,14 @@ export async function setupTestData() {
 
   await User.bulkCreate(userRows());
   await Staff.bulkCreate(
-    [DIRECTOR_STAFF, ORDINARY_STAFF, ORPHAN_STAFF].map(staffRow),
+    [DIRECTOR_STAFF, ORDINARY_STAFF, ORPHAN_STAFF, CASCADE_STAFF].map(staffRow),
   );
   await Guardian.bulkCreate(
-    [DIRECTOR_GUARDIAN, ORDINARY_GUARDIAN].map(guardianRow),
+    [DIRECTOR_GUARDIAN, ORDINARY_GUARDIAN, CASCADE_GUARDIAN].map(guardianRow),
   );
-  await Student.bulkCreate([DIRECTOR_STUDENT].map(studentRow));
+  await Student.bulkCreate(
+    [DIRECTOR_STUDENT, ORDINARY_STUDENT, CASCADE_STUDENT].map(studentRow),
+  );
 }
 
 // Os testes de delete mutam status por natureza. Restaurar entre casos mantém
@@ -192,6 +226,15 @@ export async function statusOf(modelName, id) {
 export async function accessLevelOf(userId) {
   const row = await User.findByPk(userId);
   return row?.access_level_id;
+}
+
+export async function setStatus(modelName, id, status) {
+  await connection.models[modelName].update({ status }, { where: { id } });
+}
+
+export async function userIdOf(modelName, id) {
+  const row = await connection.models[modelName].findByPk(id);
+  return row?.user_id;
 }
 
 export async function teardownTestData() {

@@ -201,7 +201,24 @@ class GuardianController {
         });
       }
 
-      const guardian = await Guardian.findByPk(id, { transaction });
+      // Desativar por aqui (status ≠ active) é o mesmo ato hostil do delete e
+      // roda a mesma guarda; só então o vínculo com a conta importa e precisa
+      // ser carregado.
+      const isDeactivating =
+        req.body.status !== undefined && req.body.status !== 'active';
+
+      const guardian = await Guardian.findByPk(id, {
+        include: isDeactivating
+          ? [
+              {
+                model: User,
+                as: 'user',
+                include: [{ model: AccessLevel, as: 'access_level' }],
+              },
+            ]
+          : undefined,
+        transaction,
+      });
       if (!guardian) {
         await transaction.rollback();
         return res.status(404).json({
@@ -209,7 +226,38 @@ class GuardianController {
         });
       }
 
-      const { addresses, student_ids, ...guardianData } = req.body;
+      if (isDeactivating) {
+        const { user_id: targetUserId, user: targetUser } = guardian;
+
+        if (isProtectedTarget(targetUserId, targetUser)) {
+          await transaction.rollback();
+          return res.status(403).json({ errors: [PROTECTED_TARGET_ERROR] });
+        }
+
+        if (
+          Number(targetUserId) === Number(req.userId) ||
+          !hasAuthorityOver(req.userWeight, targetUserId, targetUser)
+        ) {
+          await transaction.rollback();
+          return res.status(403).json({
+            errors: ['Forbidden or restricted action.'],
+          });
+        }
+      }
+
+      // Whitelist: user_id fica de fora — religar uma ficha a outra conta é
+      // operação de conta, não de cadastro, e mudá-lo aqui driblaria a guarda,
+      // que consulta justamente esse vínculo.
+      const { addresses, student_ids } = req.body;
+      const guardianData = {
+        avatar_url: req.body.avatar_url,
+        name: req.body.name,
+        last_name: req.body.last_name,
+        cpf: req.body.cpf,
+        phone: req.body.phone,
+        email: req.body.email,
+        status: req.body.status,
+      };
       await guardian.update(guardianData, { transaction });
 
       if (addresses) {
@@ -313,11 +361,9 @@ class GuardianController {
         });
       }
 
+      // Soft delete só da ficha: a conta vinculada não é tocada. Todo cascade
+      // nasce no UserController, sob ?cascade=true.
       await guardian.update({ status: 'inactive' }, { transaction });
-
-      if (guardian.user) {
-        await guardian.user.update({ status: 'inactive' }, { transaction });
-      }
 
       await transaction.commit();
       return res.json({

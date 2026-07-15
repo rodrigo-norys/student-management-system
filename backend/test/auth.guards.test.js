@@ -142,15 +142,19 @@ describe('roleAuth manage_record — GET /staff e GET /guardians', () => {
   }
 });
 
-describe('roleAuth manage_account — DELETE /staff/:id e DELETE /guardians/:id', () => {
-  const allowed = [LEVELS.GENERAL_DIRECTOR, LEVELS.SCHOOL_OFFICE];
+// Era manage_account enquanto o delete da ficha cascateava na conta. Com o
+// cascade desacoplado, deletar ficha não toca conta nenhuma — virou operação de
+// cadastro, e o Finance Admin (manage_record, sem manage_account) passa a
+// alcançá-la. A conta em si segue exigindo manage_account em DELETE /users/:id.
+describe('roleAuth manage_record — DELETE /staff/:id e DELETE /guardians/:id', () => {
+  const allowed = [
+    LEVELS.GENERAL_DIRECTOR,
+    LEVELS.SCHOOL_OFFICE,
+    LEVELS.FINANCE_ADMIN,
+  ];
   // DEMO fica fora: DELETE é não-GET → cai no trap (mensagem diferente),
   // coberto na suíte do trap.
-  const denied = [
-    LEVELS.FINANCE_ADMIN,
-    LEVELS.ACADEMIC_COORDINATOR,
-    LEVELS.TEACHER,
-  ];
+  const denied = [LEVELS.ACADEMIC_COORDINATOR, LEVELS.TEACHER];
   const cases = [
     { path: '/staff/999999', notFound: 'Staff member not found.' },
     { path: '/guardians/999999', notFound: 'Guardian not found.' },
