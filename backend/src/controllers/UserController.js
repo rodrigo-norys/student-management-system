@@ -443,15 +443,44 @@ class UserController {
       // Soft Delete
       await userToDelete.update({ status: 'inactive' }, { transaction });
 
+      // O cascade é o único caminho para desativar as fichas junto com a conta —
+      // staff/guardian/student não cascateiam pelo próprio delete. Opt-in por
+      // 'true' exato: o default (e qualquer outro valor) é o modo seguro, que
+      // mexe só na conta.
+      const cascade = req.query.cascade === 'true';
+
+      if (cascade) {
+        await this.deactivateLinkedRecords(userToDelete.id, transaction);
+      }
+
       await transaction.commit();
+      // Mensagem estável; o que variou entre os modos vai como dado estruturado
+      // (cascade), não embutido na prosa — o cliente ramifica no campo, não no
+      // texto.
       return res.json({
         message:
           'User successfully deactivated while preserving historical data.',
+        cascade,
       });
     } catch (e) {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
+  };
+
+  deactivateLinkedRecords = async (userId, transaction) => {
+    // Só toca fichas 'active'. Estados de ciclo de vida (graduated/transferred
+    // no aluno, on_leave/suspended no staff) não são desativação — sobrescrevê-
+    // los apagaria informação sem trilha de volta. Paliativo enquanto o ENUM
+    // status não separa "ativo/inativo" de "ciclo de vida".
+    const scope = {
+      where: { user_id: userId, status: 'active' },
+      transaction,
+    };
+
+    await Staff.update({ status: 'inactive' }, scope);
+    await Guardian.update({ status: 'inactive' }, scope);
+    await Student.update({ status: 'inactive' }, scope);
   };
 
   /**
