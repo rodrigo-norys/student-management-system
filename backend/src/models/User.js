@@ -25,11 +25,17 @@ export default class User extends Model {
         },
         email: {
           type: Sequelize.STRING(150),
+          // Sequelize ignora os demais validadores em valor null; allowNull
+          // espelha o NOT NULL do schema.
+          allowNull: false,
           defaultValue: '',
           unique: {
             msg: 'This email already exists',
           },
           validate: {
+            notNull: {
+              msg: 'Email is required',
+            },
             isEmail: {
               msg: 'Enter a valid email',
             },
@@ -41,8 +47,12 @@ export default class User extends Model {
         },
         password_hash: {
           type: Sequelize.STRING(100),
+          allowNull: false,
           defaultValue: '',
           validate: {
+            notNull: {
+              msg: 'Password hash is required',
+            },
             len: {
               args: [0, 100],
               msg: 'Password hash limit exceeded',
@@ -68,7 +78,13 @@ export default class User extends Model {
         },
         is_temporary: {
           type: Sequelize.BOOLEAN,
+          allowNull: false,
           defaultValue: true,
+          validate: {
+            notNull: {
+              msg: 'Temporary flag is required',
+            },
+          },
         },
         status: {
           type: Sequelize.ENUM(

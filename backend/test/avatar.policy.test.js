@@ -13,6 +13,7 @@ import {
   SECURITY_STAFF,
   INACTIVE_STAFF,
   DIRECTOR_STAFF,
+  ORDINARY_GUARDIAN,
   SELF_STUDENT,
   SELF_GUARDIAN,
 } from './helpers/db.js';
@@ -177,6 +178,43 @@ describe('política de avatar — Student/Guardian não trocam nem o próprio', 
 
     expect(res.status).toBe(403);
     expect(res.body.errors).toContain(FORBIDDEN);
+  });
+});
+
+// PUT /staff é manage_record e grava na mesma coluna que o AvatarController.
+// Aceitar avatar_url ali daria ao Finance Admin, por outra porta, o avatar de
+// terceiro que a matriz lhe nega.
+describe('política de avatar — PUT de ficha não escreve avatar', () => {
+  it('PUT /staff/:id ignora avatar_url do body', async () => {
+    const before = await connection.models.Staff.findByPk(ORDINARY_STAFF.id);
+
+    const res = await request(app)
+      .put(`/staff/${ORDINARY_STAFF.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.FINANCE_ADMIN)))
+      .send({ avatar_url: 'injetado.jpg' });
+
+    expect(res.status).toBe(200);
+
+    const after = await connection.models.Staff.findByPk(ORDINARY_STAFF.id);
+    expect(after.avatar_url).toBe(before.avatar_url);
+  });
+
+  it('PUT /guardians/:id ignora avatar_url do body', async () => {
+    const before = await connection.models.Guardian.findByPk(
+      ORDINARY_GUARDIAN.id,
+    );
+
+    const res = await request(app)
+      .put(`/guardians/${ORDINARY_GUARDIAN.id}`)
+      .set('Cookie', cookieFor(testUser(LEVELS.FINANCE_ADMIN)))
+      .send({ avatar_url: 'injetado.jpg' });
+
+    expect(res.status).toBe(200);
+
+    const after = await connection.models.Guardian.findByPk(
+      ORDINARY_GUARDIAN.id,
+    );
+    expect(after.avatar_url).toBe(before.avatar_url);
   });
 });
 
