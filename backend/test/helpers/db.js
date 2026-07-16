@@ -12,6 +12,9 @@ export const TEST_USERS = {
   3: { id: 9003, email: 'lvl3@test.local' },
   4: { id: 9004, email: 'lvl4@test.local' },
   5: { id: 9005, email: 'lvl5@test.local' },
+  6: { id: 9006, email: 'lvl6@test.local' },
+  7: { id: 9007, email: 'lvl7@test.local' },
+  8: { id: 9008, email: 'lvl8@test.local' },
   [DEMO_LEVEL_ID]: { id: 9099, email: 'lvl99@test.local' },
 };
 
@@ -54,6 +57,31 @@ export const ORDINARY_STUDENT = { id: 9302, user_id: TEST_USERS[3].id };
 // Registro sem conta vinculada: cobre o ramo "alvo sem hierarquia" da guarda.
 export const ORPHAN_STAFF = { id: 9103, user_id: null };
 
+// Ficha de staff do Finance Admin (nível 3, sem manage_account): prova que staff
+// troca o PRÓPRIO avatar mesmo sem flag de gestão.
+export const FINANCE_STAFF = { id: 9105, user_id: TEST_USERS[3].id };
+
+// Ficha do Security/Front Desk (nível 6). É a fixture mais importante do avatar:
+// o nível 6 tem as quatro manage_* zeradas, IDÊNTICO a Student(7)/Guardian(8) —
+// a única coisa que o separa deles é existir esta linha em `staff`. É essa
+// premissa que deixa o Security trocar o próprio avatar e o Student não.
+export const SECURITY_STAFF = { id: 9106, user_id: TEST_USERS[6].id };
+
+// Ficha desligada (soft delete) cuja conta segue ativa — combinação que só
+// existe porque o cascade foi desacoplado. Prova que o self do avatar exige
+// ficha ativa, não só login válido. user_id é unique em staff, então usa o
+// nível 4, que não tem outra ficha.
+export const INACTIVE_STAFF = {
+  id: 9107,
+  user_id: TEST_USERS[4].id,
+  status: 'inactive',
+};
+
+// Fichas próprias de um Student (nível 7) e de um Guardian (nível 8): provam que
+// eles não trocam nem o próprio avatar — o único self permitido é o de staff.
+export const SELF_STUDENT = { id: 9304, user_id: TEST_USERS[7].id };
+export const SELF_GUARDIAN = { id: 9204, user_id: TEST_USERS[8].id };
+
 // Uma conta ligada aos TRÊS tipos de registro ao mesmo tempo. É o alvo do
 // cascade: sem o ?cascade=true, deletar o user não pode encostar em nenhum
 // deles; com ele, os três caem juntos. Peso 30 (Teacher) para o ator nível 2
@@ -74,28 +102,37 @@ const userIds = [
   DISPOSABLE_PEER.id,
   CASCADE_USER.id,
 ];
-const staffIds = [
-  DIRECTOR_STAFF.id,
-  ORDINARY_STAFF.id,
-  ORPHAN_STAFF.id,
-  CASCADE_STAFF.id,
+// Lista única das fichas de staff: o setup cria a partir dela e o reset restaura
+// cada uma ao SEU status (não a 'active' cego), senão o reset de uma suíte
+// reativaria a INACTIVE_STAFF e a suíte de avatar passaria a mentir.
+const STAFF_FIXTURES = [
+  DIRECTOR_STAFF,
+  ORDINARY_STAFF,
+  ORPHAN_STAFF,
+  CASCADE_STAFF,
+  FINANCE_STAFF,
+  SECURITY_STAFF,
+  INACTIVE_STAFF,
 ];
+const staffIds = STAFF_FIXTURES.map((s) => s.id);
 const guardianIds = [
   DIRECTOR_GUARDIAN.id,
   ORDINARY_GUARDIAN.id,
   CASCADE_GUARDIAN.id,
+  SELF_GUARDIAN.id,
 ];
 const studentIds = [
   DIRECTOR_STUDENT.id,
   ORDINARY_STUDENT.id,
   CASCADE_STUDENT.id,
+  SELF_STUDENT.id,
 ];
 
 export function testUser(levelId) {
   return TEST_USERS[levelId];
 }
 
-function staffRow({ id, user_id }) {
+function staffRow({ id, user_id, status = 'active' }) {
   return {
     id,
     user_id,
@@ -107,7 +144,7 @@ function staffRow({ id, user_id }) {
     personal_email: `staff${id}.personal@test.local`,
     job_title: 'Fixture Role',
     hiring_date: '2020-01-01',
-    status: 'active',
+    status,
   };
 }
 
@@ -189,14 +226,16 @@ export async function setupTestData() {
   await destroyFixtures();
 
   await User.bulkCreate(userRows());
-  await Staff.bulkCreate(
-    [DIRECTOR_STAFF, ORDINARY_STAFF, ORPHAN_STAFF, CASCADE_STAFF].map(staffRow),
-  );
+  await Staff.bulkCreate(STAFF_FIXTURES.map(staffRow));
   await Guardian.bulkCreate(
-    [DIRECTOR_GUARDIAN, ORDINARY_GUARDIAN, CASCADE_GUARDIAN].map(guardianRow),
+    [DIRECTOR_GUARDIAN, ORDINARY_GUARDIAN, CASCADE_GUARDIAN, SELF_GUARDIAN].map(
+      guardianRow,
+    ),
   );
   await Student.bulkCreate(
-    [DIRECTOR_STUDENT, ORDINARY_STUDENT, CASCADE_STUDENT].map(studentRow),
+    [DIRECTOR_STUDENT, ORDINARY_STUDENT, CASCADE_STUDENT, SELF_STUDENT].map(
+      studentRow,
+    ),
   );
 }
 
@@ -213,7 +252,13 @@ export async function resetFixtureStatuses() {
       ),
     ),
   );
-  await Staff.update({ status: 'active' }, { where: { id: staffIds } });
+  // Cada ficha volta ao SEU status: a INACTIVE_STAFF nasce inativa de propósito
+  // e um reset cego a reativaria, quebrando a suíte de avatar em silêncio.
+  await Promise.all(
+    STAFF_FIXTURES.map((s) =>
+      Staff.update({ status: s.status ?? 'active' }, { where: { id: s.id } }),
+    ),
+  );
   await Guardian.update({ status: 'active' }, { where: { id: guardianIds } });
   await Student.update({ status: 'active' }, { where: { id: studentIds } });
 }
