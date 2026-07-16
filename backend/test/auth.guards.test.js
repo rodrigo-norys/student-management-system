@@ -213,33 +213,9 @@ describe('roleAuth manage_record — DELETE /staff/:id e DELETE /guardians/:id',
   }
 });
 
-describe('roleAuth manage_record — PATCH /avatar/:userType/:id', () => {
-  const allowed = [
-    LEVELS.GENERAL_DIRECTOR,
-    LEVELS.SCHOOL_OFFICE,
-    LEVELS.FINANCE_ADMIN,
-  ];
-  const denied = [LEVELS.ACADEMIC_COORDINATOR, LEVELS.TEACHER];
-
-  it.each(allowed)(
-    'nível %i passa o guard (400 File is required)',
-    async (level) => {
-      const res = await request(app)
-        .patch('/avatar/staff/999999')
-        .set('Cookie', cookieFor(testUser(level)));
-      expect(res.status).toBe(400);
-      expect(res.body.errors).toContain('File is required.');
-    },
-  );
-
-  it.each(denied)('nível %i é barrado', async (level) => {
-    const res = await request(app)
-      .patch('/avatar/staff/999999')
-      .set('Cookie', cookieFor(testUser(level)));
-    expect(res.status).toBe(403);
-    expect(res.body.errors).toContain(ROLEAUTH_FORBIDDEN);
-  });
-});
+// A autorização do PATCH /avatar deixou de ser roleAuth('manage_record') chapado
+// e virou política por userType + self (staff no próprio). Cobertura em
+// avatar.policy.test.js.
 
 describe('demo read-only trap — ordem no app real', () => {
   it('POST /staff no nível demo → trap dispara antes do roleAuth', async () => {

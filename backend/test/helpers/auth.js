@@ -7,6 +7,9 @@ export const LEVELS = {
   FINANCE_ADMIN: 3,
   ACADEMIC_COORDINATOR: 4,
   TEACHER: 5,
+  SECURITY: 6,
+  STUDENT: 7,
+  GUARDIAN: 8,
   DEMO: 99,
 };
 
