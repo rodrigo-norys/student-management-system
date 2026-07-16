@@ -17,26 +17,42 @@ function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
 }
 
+function addressRow(address, guardianId) {
+  return {
+    zip_code: address.zip_code,
+    street: address.street,
+    number: address.number,
+    complement: address.complement,
+    neighborhood: address.neighborhood,
+    city: address.city,
+    state: address.state,
+    guardian_id: guardianId,
+  };
+}
+
 class GuardianController {
-  async create(req, res) {
+  create = async (req, res) => {
     const transaction = await database.transaction();
     try {
-      const { addresses, student_ids, ...guardianData } = req.body;
+      // O vínculo com a conta é criado pelo UserController.
+      const { addresses, student_ids } = req.body;
+      const guardianData = {
+        name: req.body.name,
+        last_name: req.body.last_name,
+        cpf: req.body.cpf,
+        phone: req.body.phone,
+        email: req.body.email,
+        avatar_url: null,
+        user_id: null,
+      };
 
-      const newGuardian = await Guardian.create(
-        {
-          ...guardianData,
-          user_id: null,
-        },
-        { transaction },
-      );
+      const newGuardian = await Guardian.create(guardianData, { transaction });
 
       if (addresses && Array.isArray(addresses) && addresses.length > 0) {
-        const addressesToSave = addresses.map((address) => ({
-          ...address,
-          guardian_id: newGuardian.id,
-        }));
-        await Address.bulkCreate(addressesToSave, { transaction });
+        await Address.bulkCreate(
+          addresses.map((address) => addressRow(address, newGuardian.id)),
+          { transaction },
+        );
       }
 
       if (student_ids && Array.isArray(student_ids) && student_ids.length > 0) {
@@ -78,9 +94,9 @@ class GuardianController {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async index(req, res) {
+  index = async (req, res) => {
     try {
       const { page = 1, limit = 15 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -133,9 +149,9 @@ class GuardianController {
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async show(req, res) {
+  show = async (req, res) => {
     try {
       const { id } = req.params;
       if (!isValidId(id)) {
@@ -188,9 +204,9 @@ class GuardianController {
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async update(req, res) {
+  update = async (req, res) => {
     const transaction = await database.transaction();
     try {
       const { id } = req.params;
@@ -245,12 +261,10 @@ class GuardianController {
         }
       }
 
-      // Whitelist: user_id fica de fora — religar uma ficha a outra conta é
-      // operação de conta, não de cadastro, e mudá-lo aqui driblaria a guarda,
-      // que consulta justamente esse vínculo.
+      // user_id e avatar_url ficam de fora: o vínculo com a conta é operação de
+      // conta, e o avatar tem rota própria, guardada por avatarAuth.
       const { addresses, student_ids } = req.body;
       const guardianData = {
-        avatar_url: req.body.avatar_url,
         name: req.body.name,
         last_name: req.body.last_name,
         cpf: req.body.cpf,
@@ -266,11 +280,10 @@ class GuardianController {
           transaction,
         });
         if (Array.isArray(addresses) && addresses.length > 0) {
-          const addressesToSave = addresses.map((addr) => ({
-            ...addr,
-            guardian_id: id,
-          }));
-          await Address.bulkCreate(addressesToSave, { transaction });
+          await Address.bulkCreate(
+            addresses.map((address) => addressRow(address, id)),
+            { transaction },
+          );
         }
       }
 
@@ -313,9 +326,9 @@ class GuardianController {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async delete(req, res) {
+  delete = async (req, res) => {
     const transaction = await database.transaction();
     try {
       const { id } = req.params;
@@ -373,7 +386,7 @@ class GuardianController {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
   handleErrors(e, res) {
     if (e instanceof Sequelize.ValidationError) {

@@ -16,26 +16,47 @@ function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
 }
 
+function addressRow(address, staffId) {
+  return {
+    zip_code: address.zip_code,
+    street: address.street,
+    number: address.number,
+    complement: address.complement,
+    neighborhood: address.neighborhood,
+    city: address.city,
+    state: address.state,
+    staff_id: staffId,
+  };
+}
+
 class StaffController {
-  async create(req, res) {
+  create = async (req, res) => {
     const transaction = await database.transaction();
     try {
-      const { addresses, ...staffData } = req.body;
+      // O vínculo com a conta é criado pelo UserController.
+      const { addresses } = req.body;
+      const staffData = {
+        full_name: req.body.full_name,
+        email: req.body.email,
+        cpf: req.body.cpf,
+        birth_date: req.body.birth_date,
+        phone: req.body.phone,
+        personal_email: req.body.personal_email,
+        job_title: req.body.job_title,
+        hiring_date: req.body.hiring_date,
+        termination_date: req.body.termination_date,
+        medical_notes: req.body.medical_notes,
+        avatar_url: null,
+        user_id: null,
+      };
 
-      const newStaff = await Staff.create(
-        {
-          ...staffData,
-          user_id: null,
-        },
-        { transaction },
-      );
+      const newStaff = await Staff.create(staffData, { transaction });
 
       if (addresses && Array.isArray(addresses) && addresses.length > 0) {
-        const addressesToSave = addresses.map((address) => ({
-          ...address,
-          staff_id: newStaff.id,
-        }));
-        await Address.bulkCreate(addressesToSave, { transaction });
+        await Address.bulkCreate(
+          addresses.map((address) => addressRow(address, newStaff.id)),
+          { transaction },
+        );
       }
 
       const fullStaff = await Staff.findByPk(newStaff.id, {
@@ -67,9 +88,9 @@ class StaffController {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async index(req, res) {
+  index = async (req, res) => {
     try {
       const { page = 1, limit = 15 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -116,9 +137,9 @@ class StaffController {
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async show(req, res) {
+  show = async (req, res) => {
     try {
       const { id } = req.params;
       if (!isValidId(id)) {
@@ -165,9 +186,9 @@ class StaffController {
     } catch (e) {
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async update(req, res) {
+  update = async (req, res) => {
     const transaction = await database.transaction();
     try {
       const { id } = req.params;
@@ -222,12 +243,10 @@ class StaffController {
         }
       }
 
-      // Whitelist: user_id fica de fora — religar uma ficha a outra conta é
-      // operação de conta, não de cadastro, e mudá-lo aqui driblaria a guarda,
-      // que consulta justamente esse vínculo.
+      // user_id e avatar_url ficam de fora: o vínculo com a conta é operação de
+      // conta, e o avatar tem rota própria, guardada por avatarAuth.
       const { addresses } = req.body;
       const staffData = {
-        avatar_url: req.body.avatar_url,
         full_name: req.body.full_name,
         email: req.body.email,
         cpf: req.body.cpf,
@@ -248,11 +267,10 @@ class StaffController {
           transaction,
         });
         if (Array.isArray(addresses) && addresses.length > 0) {
-          const addressesToSave = addresses.map((address) => ({
-            ...address,
-            staff_id: id,
-          }));
-          await Address.bulkCreate(addressesToSave, { transaction });
+          await Address.bulkCreate(
+            addresses.map((address) => addressRow(address, id)),
+            { transaction },
+          );
         }
       }
 
@@ -285,9 +303,9 @@ class StaffController {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
-  async delete(req, res) {
+  delete = async (req, res) => {
     const transaction = await database.transaction();
     try {
       const { id } = req.params;
@@ -345,7 +363,7 @@ class StaffController {
       if (transaction) await transaction.rollback();
       return this.handleErrors(e, res);
     }
-  }
+  };
 
   handleErrors(e, res) {
     if (e instanceof Sequelize.ValidationError) {
