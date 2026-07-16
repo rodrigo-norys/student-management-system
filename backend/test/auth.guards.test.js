@@ -142,9 +142,7 @@ describe('roleAuth manage_record — GET /staff e GET /guardians', () => {
   }
 });
 
-// GET /users/:id lê e-mail, nível e status da conta — é dado de conta e segue a
-// mesma flag do resto do recurso /users. Sem roleAuth, qualquer logado lia
-// qualquer conta.
+// GET /users/:id devolve dado de conta e segue a flag do resto do recurso.
 describe('roleAuth manage_account — GET /users/:id', () => {
   const allowed = [LEVELS.GENERAL_DIRECTOR, LEVELS.SCHOOL_OFFICE];
   const denied = [
@@ -173,10 +171,8 @@ describe('roleAuth manage_account — GET /users/:id', () => {
   });
 });
 
-// Era manage_account enquanto o delete da ficha cascateava na conta. Com o
-// cascade desacoplado, deletar ficha não toca conta nenhuma — virou operação de
-// cadastro, e o Finance Admin (manage_record, sem manage_account) passa a
-// alcançá-la. A conta em si segue exigindo manage_account em DELETE /users/:id.
+// O delete da ficha não toca a conta, então é operação de cadastro. A conta
+// segue exigindo manage_account em DELETE /users/:id.
 describe('roleAuth manage_record — DELETE /staff/:id e DELETE /guardians/:id', () => {
   const allowed = [
     LEVELS.GENERAL_DIRECTOR,
@@ -212,10 +208,6 @@ describe('roleAuth manage_record — DELETE /staff/:id e DELETE /guardians/:id',
     });
   }
 });
-
-// A autorização do PATCH /avatar deixou de ser roleAuth('manage_record') chapado
-// e virou política por userType + self (staff no próprio). Cobertura em
-// avatar.policy.test.js.
 
 describe('demo read-only trap — ordem no app real', () => {
   it('POST /staff no nível demo → trap dispara antes do roleAuth', async () => {

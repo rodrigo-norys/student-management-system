@@ -18,17 +18,16 @@ export const TEST_USERS = {
   [DEMO_LEVEL_ID]: { id: 9099, email: 'lvl99@test.local' },
 };
 
-// Segundo General Director: alvo da guarda de nível-1. O 9001 não serve como
-// alvo porque ele é o ator, e o self-guard dispararia antes da guarda.
+// Alvo da guarda de nível-1. O 9001 é o ator dos testes; usá-lo como alvo
+// dispararia o self-guard antes.
 export const SECOND_DIRECTOR = {
   id: 9011,
   email: 'lvl1-b@test.local',
   access_level_id: 1,
 };
 
-// Alvos descartáveis do caminho feliz: são eles que levam o soft delete,
-// deixando os TEST_USERS intactos para as outras suítes. O nível 3 cobre a
-// paridade 2→3; o segundo nível 2 cobre a paridade entre pares (2→2).
+// Alvos descartáveis do caminho feliz: absorvem o soft delete e mantêm os
+// TEST_USERS intactos para as outras suítes.
 export const DISPOSABLE_USER = {
   id: 9010,
   email: 'lvl3-disposable@test.local',
@@ -41,15 +40,13 @@ export const DISPOSABLE_PEER = {
   access_level_id: 2,
 };
 
-// Registros vinculados à conta de um General Director. Apontam para o SEGUNDO
-// diretor de propósito: se apontassem para o 9001 — o ator dos testes — o
-// self-guard dispararia antes e a guarda de nível nunca seria exercitada.
+// Fichas de um General Director. Apontam para o segundo diretor: ligadas ao
+// 9001, ator dos testes, o self-guard dispararia antes da guarda de nível.
 export const DIRECTOR_STAFF = { id: 9101, user_id: SECOND_DIRECTOR.id };
 export const DIRECTOR_GUARDIAN = { id: 9201, user_id: SECOND_DIRECTOR.id };
 export const DIRECTOR_STUDENT = { id: 9301, user_id: SECOND_DIRECTOR.id };
 
-// Registros vinculados a contas comuns: provam que a guarda barra só o nível 1
-// e não quebrou o delete legítimo.
+// Fichas de contas comuns: delimitam a guarda ao nível 1.
 export const ORDINARY_STAFF = { id: 9102, user_id: TEST_USERS[5].id };
 export const ORDINARY_GUARDIAN = { id: 9202, user_id: TEST_USERS[4].id };
 export const ORDINARY_STUDENT = { id: 9302, user_id: TEST_USERS[3].id };
@@ -57,35 +54,27 @@ export const ORDINARY_STUDENT = { id: 9302, user_id: TEST_USERS[3].id };
 // Registro sem conta vinculada: cobre o ramo "alvo sem hierarquia" da guarda.
 export const ORPHAN_STAFF = { id: 9103, user_id: null };
 
-// Ficha de staff do Finance Admin (nível 3, sem manage_account): prova que staff
-// troca o PRÓPRIO avatar mesmo sem flag de gestão.
+// Staff sem manage_account, para o self-service de avatar.
 export const FINANCE_STAFF = { id: 9105, user_id: TEST_USERS[3].id };
 
-// Ficha do Security/Front Desk (nível 6). É a fixture mais importante do avatar:
-// o nível 6 tem as quatro manage_* zeradas, IDÊNTICO a Student(7)/Guardian(8) —
-// a única coisa que o separa deles é existir esta linha em `staff`. É essa
-// premissa que deixa o Security trocar o próprio avatar e o Student não.
+// Nível 6 tem as quatro manage_* zeradas, idêntico a Student(7)/Guardian(8);
+// só esta linha em `staff` o distingue deles.
 export const SECURITY_STAFF = { id: 9106, user_id: TEST_USERS[6].id };
 
-// Ficha desligada (soft delete) cuja conta segue ativa — combinação que só
-// existe porque o cascade foi desacoplado. Prova que o self do avatar exige
-// ficha ativa, não só login válido. user_id é unique em staff, então usa o
-// nível 4, que não tem outra ficha.
+// Ficha desligada com conta ativa. user_id é unique em staff, daí o nível 4,
+// que não tem outra ficha.
 export const INACTIVE_STAFF = {
   id: 9107,
   user_id: TEST_USERS[4].id,
   status: 'inactive',
 };
 
-// Fichas próprias de um Student (nível 7) e de um Guardian (nível 8): provam que
-// eles não trocam nem o próprio avatar — o único self permitido é o de staff.
+// Fichas próprias de um Student e de um Guardian.
 export const SELF_STUDENT = { id: 9304, user_id: TEST_USERS[7].id };
 export const SELF_GUARDIAN = { id: 9204, user_id: TEST_USERS[8].id };
 
-// Uma conta ligada aos TRÊS tipos de registro ao mesmo tempo. É o alvo do
-// cascade: sem o ?cascade=true, deletar o user não pode encostar em nenhum
-// deles; com ele, os três caem juntos. Peso 30 (Teacher) para o ator nível 2
-// ter autoridade sobre a conta.
+// Conta ligada aos três tipos de ficha ao mesmo tempo, alvo do cascade. Peso 30
+// para o ator nível 2 ter autoridade sobre ela.
 export const CASCADE_USER = {
   id: 9013,
   email: 'cascade-target@test.local',
@@ -103,8 +92,7 @@ const userIds = [
   CASCADE_USER.id,
 ];
 // Lista única das fichas de staff: o setup cria a partir dela e o reset restaura
-// cada uma ao SEU status (não a 'active' cego), senão o reset de uma suíte
-// reativaria a INACTIVE_STAFF e a suíte de avatar passaria a mentir.
+// cada uma ao seu próprio status.
 const STAFF_FIXTURES = [
   DIRECTOR_STAFF,
   ORDINARY_STAFF,
@@ -239,10 +227,9 @@ export async function setupTestData() {
   );
 }
 
-// Os testes de delete mutam status por natureza. Restaurar entre casos mantém
-// o resultado independente da ordem de execução. O access_level_id também
-// entra: se a guarda de rebaixamento regredir, o GD fixture viraria nível 3 e
-// os casos seguintes passariam a testar outra coisa em silêncio.
+// Os testes de delete mutam status por natureza; restaurar entre casos mantém o
+// resultado independente da ordem. O access_level_id entra junto: um GD fixture
+// rebaixado faria os casos seguintes testarem outra coisa.
 export async function resetFixtureStatuses() {
   await Promise.all(
     userRows().map((u) =>
@@ -252,8 +239,8 @@ export async function resetFixtureStatuses() {
       ),
     ),
   );
-  // Cada ficha volta ao SEU status: a INACTIVE_STAFF nasce inativa de propósito
-  // e um reset cego a reativaria, quebrando a suíte de avatar em silêncio.
+  // Cada ficha volta ao seu próprio status: a INACTIVE_STAFF nasce inativa e um
+  // reset cego a reativaria.
   await Promise.all(
     STAFF_FIXTURES.map((s) =>
       Staff.update({ status: s.status ?? 'active' }, { where: { id: s.id } }),

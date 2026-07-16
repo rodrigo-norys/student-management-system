@@ -10,17 +10,15 @@ jobs:
     name: testes + gates estáticos
     runs-on: ubuntu-latest
 
-    # A suíte roda contra MariaDB REAL (nunca SQLite) — mesma versão do local e da
-    # VPS. O GitHub sobe este container ao lado do runner e só libera os steps
-    # depois que o healthcheck passa, então não há corrida com o banco subindo.
+    # A suíte roda contra MariaDB real, na mesma versão do local e da VPS. O
+    # healthcheck segura os steps até o banco aceitar conexão.
     services:
       db:
         image: mariadb:10.11
         env:
           MARIADB_ROOT_PASSWORD: ci_root_pw
-          # Cria o school_test já em utf8mb4/utf8mb4_general_ci — o default da
-          # 10.11 é exatamente o charset do bootstrap local, então não precisa de
-          # CREATE DATABASE manual.
+          # O default da 10.11 é utf8mb4/utf8mb4_general_ci, o mesmo charset do
+          # bootstrap local.
           MARIADB_DATABASE: school_test
         ports:
           - 3306:3306
@@ -30,12 +28,8 @@ jobs:
           --health-timeout=5s
           --health-retries=10
 
-    # O .env é gitignored e NÃO existe aqui: o dotenv não acha nada e são estas
-    # vars que valem (ele usa override:false, então nem competiria). Só o mínimo
-    # da suíte: a conexão + o secret que o helper de teste usa para forjar os
-    # cookies. CORS_ORIGINS não entra — supertest não manda header Origin e o app
-    # libera quando não há origin. DEMO_USER_* também não: os testes forjam o
-    # cookie do nível demo, não passam pelo endpoint de login.
+    # O .env é gitignored e não existe no runner. Só o mínimo da suíte: conexão e
+    # o secret com que o helper forja os cookies.
     env:
       DATABASE: school_test
       DATABASE_HOST: 127.0.0.1
@@ -70,10 +64,9 @@ jobs:
       - name: typecheck (arquivos // @ts-check)
         run: npx tsc -p jsconfig.json
 
-      # Espelha o bootstrap documentado do school_test local. db:seed:all NÃO:
-      # traria o students-addition (27 alunos que a suíte não usa) e o demo-seed
-      # (que depende de env vars). Os níveis 1-8 são o único seed necessário — o
-      # nível 99 e os usuários de teste nascem no setupTestData() do helper.
+      # Os níveis 1-8 são o único seed necessário: o nível demo e os usuários de
+      # teste nascem no setupTestData(). db:seed:all traria o students-addition e
+      # o demo-seed, que depende de env vars.
       - name: bootstrap do school_test
         run: |
           npx sequelize-cli db:migrate

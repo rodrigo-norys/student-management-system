@@ -30,8 +30,8 @@ import {
 } from './helpers/db.js';
 import { cookieFor, LEVELS } from './helpers/auth.js';
 
-// Literal de propósito: se viesse do módulo sob teste, o assert viraria
-// tautologia e um 403 vindo do peso passaria por 403 vindo da guarda.
+// Literais, não importados do módulo sob teste: o assert precisa distinguir um
+// 403 vindo da guarda de nível de um 403 vindo do peso.
 const PROTECTED_TARGET =
   'Forbidden. The General Director cannot be deactivated.';
 const SELF_DEACTIVATION = 'Forbidden. You cannot deactivate your own account.';
@@ -60,9 +60,8 @@ describe('política de delete — alvo nível 1 (General Director) é intocável
     expect(await statusOf('User', SECOND_DIRECTOR.id)).toBe('active');
   });
 
-  // O ator aqui é outro General Director de propósito. Um nível 2 já seria
-  // barrado pelo peso (80 < 100), e o teste passaria sem a guarda existir; só
-  // o peso-100 atravessa a paridade e deixa a guarda ser a única coisa de pé.
+  // O ator precisa ser outro General Director: um nível inferior seria barrado
+  // pelo peso antes de a guarda de nível ser exercitada.
   it('DELETE /staff/:id — nem um GD derruba o registro (e a conta) de outro GD', async () => {
     const res = await request(app)
       .delete(`/staff/${DIRECTOR_STAFF.id}`)
@@ -97,8 +96,6 @@ describe('política de delete — alvo nível 1 (General Director) é intocável
   });
 });
 
-// A vulnerabilidade literal que abriu esta fatia: antes da guarda, estes três
-// respondiam 200 e cascateavam, desativando a conta do General Director.
 describe('política de delete — regressão: ator subordinado não alcança o GD', () => {
   const cases = [
     { path: () => `/staff/${DIRECTOR_STAFF.id}`, actor: LEVELS.SCHOOL_OFFICE },
@@ -150,9 +147,8 @@ describe('política de delete — update não é rota de fuga', () => {
     expect(await statusOf('User', self.id)).toBe('active');
   });
 
-  // O rebaixamento era o irmão gêmeo do auto-brick: sem status nenhum, o GD se
-  // move para o nível 3, perde a proteção (que é chaveada no nível) e cai na
-  // paridade de peso — um par 80 então o desativa pelo delete normal.
+  // A proteção é chaveada no nível: rebaixar-se a removeria e entregaria a conta
+  // à paridade de peso.
   it('PUT /users/:id — o General Director não se auto-rebaixa', async () => {
     const gd = testUser(LEVELS.GENERAL_DIRECTOR);
     const res = await request(app)
@@ -165,9 +161,8 @@ describe('política de delete — update não é rota de fuga', () => {
     expect(await accessLevelOf(gd.id)).toBe(LEVELS.GENERAL_DIRECTOR);
   });
 
-  // Mesma classe do null abaixo, no outro campo: '' é falsy e escapava das três
-  // guardas. Sem isto, quem barraria seria só o sql_mode estrito do MariaDB —
-  // um invariante de auth apoiado em config de banco.
+  // '' é falsy: escaparia de uma guarda escrita com truthiness, e só o sql_mode
+  // estrito do MariaDB o barraria.
   it('PUT /users/:id — status falsy não escapa da guarda', async () => {
     const gd = testUser(LEVELS.GENERAL_DIRECTOR);
     const res = await request(app)
@@ -180,9 +175,8 @@ describe('política de delete — update não é rota de fuga', () => {
     expect(await statusOf('User', gd.id)).toBe('active');
   });
 
-  // null é falsy: escapava da guarda por truthiness e levava o nível a NULL em
-  // vez de rebaixá-lo. Pior que rebaixar — loginRequired lê o peso sem optional
-  // chaining, então a conta passa a tomar 401 em toda rota autenticada.
+  // null é falsy e levaria o nível a NULL: loginRequired lê o peso sem optional
+  // chaining, então a conta passaria a tomar 401 em toda rota autenticada.
   it('PUT /users/:id — o General Director não anula o próprio nível', async () => {
     const gd = testUser(LEVELS.GENERAL_DIRECTOR);
     const res = await request(app)
@@ -206,10 +200,9 @@ describe('política de delete — update não é rota de fuga', () => {
     expect(await accessLevelOf(self.id)).toBe(LEVELS.SCHOOL_OFFICE);
   });
 
-  // Sem assert de mensagem: aqui quem barra é o check de autoridade de edição
-  // (peso estrito, 100 <= 100), que já existia e dispara antes da guarda. O que
-  // importa travar é a propriedade — o nível do GD não se move —, não qual das
-  // duas defesas em profundidade respondeu.
+  // Sem assert de mensagem: o check de autoridade de edição dispara antes da
+  // guarda de nível. A propriedade a travar é o nível não se mover, não qual das
+  // duas defesas respondeu.
   it('PUT /users/:id — nem outro GD rebaixa o General Director', async () => {
     const res = await request(app)
       .put(`/users/${SECOND_DIRECTOR.id}`)
