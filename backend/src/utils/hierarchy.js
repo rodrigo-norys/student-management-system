@@ -1,21 +1,15 @@
 // @ts-check
 
 /**
- * Guarda de alvo da política de delete (user/staff/guardian/student).
+ * Guardas de alvo da política de delete (user/staff/guardian/student).
  *
- * As duas regras são acopladas e precisam viver juntas: a paridade (`>=`)
- * permite que pesos iguais se desativem — níveis 2 e 3 têm peso 80 —, mas
- * sozinha ela também liberaria um nível-1 desativar outro nível-1, já que
- * 100 >= 100. É `isProtectedTarget` que fecha esse buraco.
+ * As duas regras são acopladas: a paridade (`>=`) sozinha liberaria um nível-1
+ * desativar outro nível-1, já que 100 >= 100; é `isProtectedTarget` que fecha
+ * essa brecha.
  *
- * Ambas recebem o `user_id` CRU da linha e o user CARREGADO, e não só o user.
- * O par é o que permite distinguir "o alvo não tem conta" (user_id null —
- * liberado, não há hierarquia a violar) de "o include do user/access_level não
- * veio" (user_id presente, dado ausente — barrado). Sem essa distinção a guarda
- * falharia ABERTA: a convenção do projeto é projetar o include com `attributes`
- * whitelisted (ver GuardianController.show e loginRequired), e uma projeção que
- * derrubasse `access_level_id` desligaria a proteção do General Director em
- * silêncio. Aqui, projeção incompleta trava o delete em vez de liberá-lo.
+ * Ambas recebem o `user_id` cru da linha além do user carregado. O par distingue
+ * "alvo sem conta" (liberado) de "projeção não trouxe o nível" (barrado), de
+ * modo que um include incompleto trava a operação em vez de liberá-la.
  */
 
 export const PROTECTED_ACCESS_LEVEL_ID = 1;

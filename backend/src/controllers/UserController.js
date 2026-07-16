@@ -305,24 +305,13 @@ class UserController {
         password,
       } = req.body;
 
-      // O update não pode virar rota de fuga da política de delete. O ramo
-      // isEditingSelf acima pula a checagem de peso, e daí saíam caminhos para
-      // o General Director se matar sem volta:
-      //   - status: 'inactive' — loginRequired barra conta não-active;
-      //   - access_level_id menor — rebaixar-se remove a própria proteção (ela
-      //     é chaveada no nível) e entrega a conta à paridade de peso: um par
-      //     de peso 80 então a desativa pelo delete normal;
-      //   - access_level_id: null — a coluna é nullable, e loginRequired lê
-      //     user.access_level.hierarchy_weight sem optional chaining: nível
-      //     nulo estoura e vira 401 em toda rota autenticada.
-      // Todos terminais: repor o nível 1 exige peso > 100, que ninguém tem nem
-      // pode ter. Nível 1 só nasce do seed.
+      // O ramo isEditingSelf acima dispensa a checagem de peso, então
+      // desativação e troca de nível precisam de guarda própria. Ambas são
+      // terminais no nível 1: repô-lo exigiria peso maior que 100, e ele só
+      // nasce do seed.
       //
-      // Daí o `!== undefined` em vez de truthiness nas duas: `null`, `''` e `0`
-      // são falsy e escapariam da guarda justamente para chegar nos estados
-      // piores. Um `status: ''` que passasse batido só seria barrado pelo
-      // sql_mode estrito do MariaDB — invariante de auth não pode depender de
-      // config de banco.
+      // `!== undefined` em vez de truthiness: null, '' e 0 são falsy e
+      // escapariam da guarda.
       const isDeactivating = status !== undefined && status !== 'active';
       const isChangingLevel =
         access_level_id !== undefined &&
@@ -443,10 +432,8 @@ class UserController {
       // Soft Delete
       await userToDelete.update({ status: 'inactive' }, { transaction });
 
-      // O cascade é o único caminho para desativar as fichas junto com a conta —
-      // staff/guardian/student não cascateiam pelo próprio delete. Opt-in por
-      // 'true' exato: o default (e qualquer outro valor) é o modo seguro, que
-      // mexe só na conta.
+      // Único caminho que desativa as fichas junto com a conta: o delete de
+      // staff/guardian/student toca apenas a própria ficha.
       const cascade = req.query.cascade === 'true';
 
       if (cascade) {
@@ -454,9 +441,6 @@ class UserController {
       }
 
       await transaction.commit();
-      // Mensagem estável; o que variou entre os modos vai como dado estruturado
-      // (cascade), não embutido na prosa — o cliente ramifica no campo, não no
-      // texto.
       return res.json({
         message:
           'User successfully deactivated while preserving historical data.',
@@ -469,10 +453,9 @@ class UserController {
   };
 
   deactivateLinkedRecords = async (userId, transaction) => {
-    // Só toca fichas 'active'. Estados de ciclo de vida (graduated/transferred
-    // no aluno, on_leave/suspended no staff) não são desativação — sobrescrevê-
-    // los apagaria informação sem trilha de volta. Paliativo enquanto o ENUM
-    // status não separa "ativo/inativo" de "ciclo de vida".
+    // O ENUM status mistura ativo/inativo com ciclo de vida
+    // (graduated/transferred, on_leave/suspended); desativar sem filtrar
+    // apagaria esses estados.
     const scope = {
       where: { user_id: userId, status: 'active' },
       transaction,

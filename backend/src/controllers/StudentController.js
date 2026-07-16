@@ -486,8 +486,7 @@ class StudentController {
         });
       }
 
-      // Soft delete só da ficha: a conta vinculada não é tocada. Todo cascade
-      // nasce no UserController, sob ?cascade=true.
+      // A conta vinculada não é tocada: o cascade parte do UserController.
       await student.update({ status: 'inactive' }, { transaction });
 
       await transaction.commit();

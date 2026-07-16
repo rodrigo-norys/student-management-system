@@ -19,12 +19,11 @@ import {
 } from './helpers/db.js';
 import { cookieFor, LEVELS } from './helpers/auth.js';
 
-// Literais de propósito: assert em cima da mensagem do módulo sob teste viraria
-// tautologia.
+// Literais, não importados do módulo sob teste.
 const FORBIDDEN =
   'Forbidden. You do not have permission to access this resource.';
-// Passar o guard sem mandar arquivo para no 400 do controller — é o sinal de que
-// a AUTORIZAÇÃO liberou, sem precisar subir upload de verdade em teste.
+// Sem arquivo no corpo, quem passa a autorização para no 400 do controller —
+// o que dispensa upload real para exercitar a matriz.
 const PASSED_GUARD = 'File is required.';
 
 beforeAll(async () => {
@@ -36,12 +35,8 @@ afterAll(async () => {
   await connection.close();
 });
 
-// Matriz travada pelo dono: terceiro exige manage_account (= só GD e School
-// Office); o próprio avatar é livre para QUALQUER staff. Student/Guardian não
-// trocam nem o próprio — o único self permitido é o de staff, e ter linha em
-// `staff` é justamente a prova de que o ator é staff (não existe flag que
-// distinga staff de student/guardian: Security(6), Student(7) e Guardian(8) têm
-// as quatro manage_* zeradas).
+// Matriz: avatar de terceiro exige manage_account; o próprio é livre para
+// qualquer staff; Student e Guardian não trocam nem o próprio.
 describe('política de avatar — staff troca o PRÓPRIO (sem precisar de flag)', () => {
   it('Teacher (nível 5, sem flags) troca o próprio avatar', async () => {
     const res = await request(app)
@@ -61,9 +56,8 @@ describe('política de avatar — staff troca o PRÓPRIO (sem precisar de flag)'
     expect(res.body.errors).toContain(PASSED_GUARD);
   });
 
-  // A premissa load-bearing do módulo, em um par: Security(6) e Student(7) têm
-  // as quatro manage_* zeradas — flags IDÊNTICAS. O que separa um do outro é só
-  // a linha em `staff`. Se essa premissa cair, os dois casos divergem aqui.
+  // Security(6) e Student(7) têm flags idênticas; só a linha em `staff` os
+  // separa. Este caso e o do Student formam o par que trava essa premissa.
   it('Security/Front Desk (nível 6, flags idênticas às do Student) troca o próprio', async () => {
     const res = await request(app)
       .patch(`/avatar/staff/${SECURITY_STAFF.id}`)
@@ -82,9 +76,8 @@ describe('política de avatar — staff troca o PRÓPRIO (sem precisar de flag)'
     expect(res.body.errors).toContain(FORBIDDEN);
   });
 
-  // Combinação que só existe porque o cascade foi desacoplado: a ficha caiu no
-  // soft delete mas a conta segue ativa, então o desligado ainda loga. O self
-  // exige ficha ATIVA, não só login válido.
+  // Ficha desativada convive com login válido: o self exige ficha ativa, não só
+  // sessão.
   it('staff com ficha desligada (inactive) não troca o próprio avatar', async () => {
     const res = await request(app)
       .patch(`/avatar/staff/${INACTIVE_STAFF.id}`)
@@ -103,7 +96,7 @@ describe('política de avatar — terceiro exige manage_account', () => {
     LEVELS.TEACHER,
   ];
 
-  // O alvo é a ficha do SEGUNDO diretor — de terceiro para todos os atores.
+  // A ficha do segundo diretor é de terceiro para todos os atores.
   it.each(withAccount)(
     'nível %i troca avatar de staff de terceiro',
     async (level) => {
@@ -128,8 +121,7 @@ describe('política de avatar — terceiro exige manage_account', () => {
     },
   );
 
-  // Finance Admin PERDE o avatar de terceiro nesta fatia (antes a rota era
-  // manage_record, que ele tem). É a consequência assumida da matriz.
+  // Finance Admin tem manage_record mas não manage_account.
   it('Finance Admin é barrado em avatar de student e de guardian', async () => {
     for (const path of [
       `/avatar/students/${SELF_STUDENT.id}`,
@@ -181,9 +173,8 @@ describe('política de avatar — Student/Guardian não trocam nem o próprio', 
   });
 });
 
-// PUT /staff é manage_record e grava na mesma coluna que o AvatarController.
-// Aceitar avatar_url ali daria ao Finance Admin, por outra porta, o avatar de
-// terceiro que a matriz lhe nega.
+// PUT /staff é manage_record e grava na mesma coluna que o AvatarController;
+// aceitar avatar_url ali contornaria a matriz.
 describe('política de avatar — PUT de ficha não escreve avatar', () => {
   it('PUT /staff/:id ignora avatar_url do body', async () => {
     const before = await connection.models.Staff.findByPk(ORDINARY_STAFF.id);
@@ -229,8 +220,7 @@ describe('política de avatar — userType=users é só manage_account', () => {
     expect(res.body.errors).toContain(PASSED_GUARD);
   });
 
-  // Sem self em `users`: senão um Student trocaria o avatar da própria conta,
-  // furando a regra pela porta lateral.
+  // Sem self em `users`: um Student trocaria o avatar da própria conta.
   it('Teacher é barrado no avatar da PRÓPRIA conta', async () => {
     const teacher = testUser(LEVELS.TEACHER);
     const res = await request(app)

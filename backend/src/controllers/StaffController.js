@@ -199,9 +199,8 @@ class StaffController {
         });
       }
 
-      // Desativar por aqui (status ≠ active) é o mesmo ato hostil do delete e
-      // roda a mesma guarda; só então o vínculo com a conta importa e precisa
-      // ser carregado.
+      // O include do user só é necessário quando há desativação, que roda a
+      // mesma guarda do delete.
       const isDeactivating =
         req.body.status !== undefined && req.body.status !== 'active';
 
@@ -243,8 +242,8 @@ class StaffController {
         }
       }
 
-      // user_id e avatar_url ficam de fora: o vínculo com a conta é operação de
-      // conta, e o avatar tem rota própria, guardada por avatarAuth.
+      // user_id e avatar_url ficam de fora: o vínculo é operação de conta e o
+      // avatar tem rota própria, guardada por avatarAuth.
       const { addresses } = req.body;
       const staffData = {
         full_name: req.body.full_name,
@@ -351,8 +350,7 @@ class StaffController {
         });
       }
 
-      // Soft delete só da ficha: a conta vinculada não é tocada. Todo cascade
-      // nasce no UserController, sob ?cascade=true.
+      // A conta vinculada não é tocada: o cascade parte do UserController.
       await staffMember.update({ status: 'inactive' }, { transaction });
 
       await transaction.commit();

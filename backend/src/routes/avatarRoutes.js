@@ -12,8 +12,8 @@ const router = new Router();
 
 router.use(loginRequired);
 
-// avatarAuth antes do upload: autorizar depois gravaria em disco o arquivo de
-// quem vai levar 403.
+// avatarAuth precede o upload: autorizar depois do multer gravaria em disco o
+// arquivo de quem leva 403.
 router.patch(
   '/:userType/:id',
   avatarAuth,
