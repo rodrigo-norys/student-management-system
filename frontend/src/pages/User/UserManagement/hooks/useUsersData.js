@@ -40,9 +40,10 @@ export default function useUsersData() {
           },
         });
 
-        if (response.data && response.data.data) {
-          setDataList(response.data.data);
-          setTotalPages(response.data.totalPages || 1);
+        const { data: items, totalPages: pages } = response.data ?? {};
+        if (items) {
+          setDataList(items);
+          setTotalPages(pages || 1);
         } else {
           setDataList([]);
           setTotalPages(1);
