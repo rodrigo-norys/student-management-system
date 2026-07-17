@@ -1,0 +1,50 @@
+name: frontend
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: lint + build
+    runs-on: ubuntu-latest
+
+    # O frontend não tem suíte de testes nem banco: o gate é lint (ESLint flat
+    # config standalone) + Prettier + o build de produção do Vite.
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: instala dependências
+        run: npm ci
+
+      - name: lint
+        run: npm run lint
+
+      - name: formatação
+        run: npm run format:check
+
+      # A mídia (src/assets/) é gitignored de propósito e não existe no checkout
+      # limpo do runner. Sem os arquivos, o vite build falha ao resolver os
+      # imports. Este passo cria placeholder vazio só para os assets importados
+      # que faltam — o build valida o resto do bundle (JS/JSX, imports de código)
+      # sem versionar mídia. Auto-descobre os imports, sem lista manual.
+      - name: placeholders para a mídia gitignored
+        run: |
+          grep -rhoE "assets/images/[A-Za-z0-9_.-]+" src | sort -u | while read -r p; do
+            mkdir -p "src/$(dirname "$p")"
+            [ -f "src/$p" ] || : > "src/$p"
+          done
+
+      - name: build
+        run: npm run build
