@@ -12,7 +12,6 @@
 
 ### 🔗 Acesso Rápido
 - **Live Demo (read-only):** [sisbodeveloper.com.br](https://sisbodeveloper.com.br)
-- **Schema Completo (DrawDB):** [Visualizar no navegador](https://drawdb.vercel.app/editor?shareId=a7577e72fc3ab1a93bfe9f09ab3c4b5c)
 
 ---
 
@@ -22,7 +21,7 @@ O **Student Management System** é uma aplicação Full Stack em desenvolvimento
 
 A estratégia foi **fechar a fundação antes de escalar a superfície**: primeiro os atores do domínio (alunos, responsáveis, staff e usuários) com CRUD ponta a ponta, autenticação robusta e um schema que já modela todo o ciclo escolar; e só então o build-out do núcleo acadêmico (turmas → alocação → notas → frequência).
 
-O diferencial técnico está na **modelagem de dados** (link acima): 16 tabelas em 5 camadas (Tiers), com `units` + `staff_units` declarando um sistema **multi-unidade** desde o schema — pronto para isolamento multi-tenant e histórico escolar evolutivo.
+O diferencial técnico está na **modelagem de dados**: 16 tabelas em 5 camadas (Tiers), com `units` + `staff_units` declarando um sistema **multi-unidade** desde o schema — pronto para isolamento multi-tenant e histórico escolar evolutivo.
 
 ### ✨ Status das Funcionalidades
 
