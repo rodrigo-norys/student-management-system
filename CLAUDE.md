@@ -61,6 +61,7 @@ Aplicação escalável de gestão escolar. Projeto acadêmico e de portfólio (G
 
 - `npm run dev` — sobe a API com nodemon (`src/server.js`).
 - `npm start` — sobe a API sem watch.
+- `npm test --prefix backend` — suíte vitest contra o `school_test` real. O `--prefix` roda da raiz do repo, que **não** tem `package.json`.
 - Não há etapa de build local (ESM nativo).
 
 ### Frontend (`frontend/`)

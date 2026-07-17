@@ -40,10 +40,13 @@ Regras de roteamento:
 
 ### 3. Disparar em paralelo
 Use a ferramenta Agent para cada revisor selecionado, **em um único bloco de chamadas** (paralelo), passando no prompt:
-- a lista de arquivos do domínio dele;
+- a lista de arquivos do domínio dele **e os hunks do diff (passo 1) desses arquivos** — os revisores são `Read, Grep, Glob` e não enxergam git: o que não for colado no prompt não existe para eles;
 - a instrução de focar **apenas** nas mudanças do diff (não auditar o repo inteiro).
 
 ### 4. Consolidar
+
+**Achado de agente é alegação, não fato.** Antes de consolidar, abra o `arquivo:linha` citado e confirme na fonte. O que a fonte contradisser, descarte; o que ela não sustentar, rebaixe. O revisor roda isolado e erra tipicamente ao chamar de "novo nesta fatia" o que é pré-existente, e ao apontar o que o código já trata.
+
 Junte os retornos em **um** relatório, agrupado por severidade (Bloqueante / Alto / Médio / Informativo), **não** por agente. Cada item mantém `arquivo:linha` + problema + risco, com a tag do revisor de origem. No fim:
 - **Veredito**: pode commitar/abrir PR, ou há bloqueante a resolver antes.
 - Se algum domínio ficou sem revisor, registre o que você checou manualmente.

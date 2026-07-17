@@ -38,8 +38,10 @@ Antes de executar, pare e confirme comigo. Lista adaptada à nossa stack (o hook
 - **Migration destrutiva** — `dropColumn`/`dropTable`, mudança de tipo com perda, rename sem
   backfill, qualquer `down` que não reverte limpo. Confirmar **antes** de `db:migrate`.
 - **Auth / peso hierárquico** — trocar a flag de `roleAuth`, mexer na regra de
-  `req.userWeight` vs `hierarchy_weight` no controller, em `loginRequired`, ou em projeção
-  que possa expor campo sensível (`password_hash`, token).
+  `req.userWeight` vs `hierarchy_weight`, na guarda de nível-1 (`utils/hierarchy.js`:
+  `isProtectedTarget`/`hasAuthorityOver`), na autorização por recurso
+  (`middlewares/avatarAuth.js`), em `loginRequired`, ou em projeção que possa expor
+  campo sensível (`password_hash`, token).
 - **Exclusão de dados** — hard delete / cascade real (≠ soft delete via `status: 'inactive'`,
   que é o caminho normal). Ver `MEMORY.md` → pendência hard delete cascade.
 - **Schema core** — alterar tabelas/colunas/FKs das entidades base (`users`, `access_levels`,
@@ -62,7 +64,8 @@ não rodam; hooks **rodam** (determinísticos).
 
 | Tipo de mudança | Gate mínimo | Comando / revisor |
 |---|---|---|
-| Backend (controller, rota, model) | revisor do par (+ testes quando existirem) | `controller-review`/`backend-auth-review`/`model-review`; `npm test` (vitest) — **suíte ainda vazia (gap, roadmap F1)**: hoje passa vacuamente, não cobre nada |
+| Backend (controller, rota, model) | revisor do par + `npm test` verde | `controller-review` **+** `backend-auth-review` (sempre que tocar auth: `loginRequired`/`roleAuth`/`avatarAuth`, `utils/hierarchy.js`, flag de rota, projeção sensível) **+** `model-review`; `npm test` (vitest+supertest, rodar de `backend/`) — cobre guards (auth, avatar, delete, peso), contrato e robustez; CRUD/DB ainda não |
+| PR para `main` | CI verde (bloqueante) | `.github/workflows/backend-tests.yml`: lint → format:check → tsc → bootstrap → `npm test` contra service `mariadb:10.11` |
 | Migration | revisão antes de aplicar + `down` testado | agente `migration-review`, depois `npx sequelize-cli db:migrate` local (comando muta → pede permissão) |
 | Frontend (página, componente) | lint gate (warnings = erro) + revisor | `CI=true npm run build` (em `frontend/`) → agente `ui-kit-review` |
 | Contrato HTTP (≥2 controllers, ou `validateRequest`) | coerência entre endpoints | agente `api-contract-review` |
@@ -70,9 +73,9 @@ não rodam; hooks **rodam** (determinísticos).
 | Type-safety (`// @ts-check`) | `tsc` verde no fim do turno | hook `typecheck-on-stop.sh` (Stop) roda `tsc --noEmit`; skill `add-ts-check` adota a marca |
 | Formatação + lint (JS/JSX/CSS alterados no turno) | Prettier aplicado + ESLint sem erro | hook `format-on-stop.sh` (Stop): `prettier --write` + `eslint` bloqueante (sem `--fix`) em `backend/src` |
 
-Não há e2e, a11y, visual smoke nem security-matrix — não inventar gate inexistente. O gate
-`npm test` está **configurado mas vazio** (vitest/supertest instalados, zero testes): a skill
-`create-test` existe para preencher essa lacuna (roadmap Fase 1).
+Não há e2e, a11y, visual smoke nem security-matrix — não inventar gate inexistente. A suíte
+cobre guards e robustez; integração CRUD/DB (fluxo de escrita) ainda é lacuna — a skill
+`create-test` orienta ambos.
 
 ---
 

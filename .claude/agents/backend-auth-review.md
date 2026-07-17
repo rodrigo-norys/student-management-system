@@ -27,7 +27,7 @@ router.delete('/:id', roleAuth('manage_record'), controller.delete);
 
 ## Checklist
 1. **`router.use(loginRequired)` presente?** Toda rota autenticada depende dele.
-2. **Rotas mutantes (`post`/`put`/`delete`) com `roleAuth('flag')`?** E a flag é a correta pro domínio (`manage_record` p/ cadastro, `manage_academic` p/ acadêmico, etc.)?
+2. **Rotas mutantes (`post`/`put`/`delete`) com `roleAuth('flag')`?** E a flag é a correta pro domínio (`manage_record` p/ cadastro, `manage_academic` p/ acadêmico, etc.)? A autorização pode vir de um middleware próprio da rota em vez de `roleAuth` (ex.: `avatarAuth` em `avatarRoutes.js`) — aí a ausência de `roleAuth` não é achado; leia o middleware antes de sinalizar.
 3. **Rotas de leitura (`index`/`show`)**: estão abertas de propósito ou deveriam ser gated? Sinalize se inconsistente com rotas irmãs.
 4. **Peso hierárquico**: se a ação permite mexer em outro ator, o controller valida `req.userWeight` contra o alvo? `roleAuth` sozinho **não** cobre isso — é uma falha comum.
 5. **`status` ENUM**: o controller usa `status` (ENUM), nunca o antigo `is_active` booleano.
