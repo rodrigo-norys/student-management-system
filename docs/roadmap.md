@@ -373,6 +373,13 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   `multer`, `sequelize`); Node 22 fixado (`engines` + `.nvmrc`, alinhado à VPS); `@testing-library/*`
   → devDeps; `express-delay` → devDep via import dinâmico. **Item estrutural restante:** CRA→Vite,
   escalado para **H6 (Fase 4)** por matar as CVEs transitivas.
+- **Mídia do front fora do bundler — 🔶 dívida registrada (2026-07-17):** `frontend/src/assets/`
+  é gitignored (mídia grande, não versionada). O `LandingPreview` importa 9 assets pelo bundler,
+  então o `vite build` falha em checkout limpo — o CI de front (`frontend-ci.yml`) contorna com um
+  passo de **placeholder** antes do build. O mesmo afeta o build de **produção**
+  (`Dockerfile.prod` `COPY . .` + `npm run build`): funciona da máquina com os assets no disco,
+  mas quebraria de um checkout limpo. **Correção definitiva:** tirar a mídia do bundler — servir
+  de `public/`/CDN por URL — o que destrava o build de prod e dispensa o placeholder do CI.
 - **HITL / gates:** drop de `photos`/hard-delete = HITL (destrutivo/exclusão de dados).
 - **Saída:** backlog de dívida drenado; docs e setup sincronizados com o código.
 
