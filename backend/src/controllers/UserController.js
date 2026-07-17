@@ -442,8 +442,7 @@ class UserController {
 
       await transaction.commit();
       return res.json({
-        message:
-          'User successfully deactivated while preserving historical data.',
+        message: 'User deactivated successfully.',
         cascade,
       });
     } catch (e) {

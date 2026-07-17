@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 
 import { isProtectedTarget, hasAuthorityOver } from '../src/utils/hierarchy.js';
 
-// Não sobe app nem banco. Trava o contrato de FALHA FECHADA das duas helpers:
-// o risco real não é o alvo sem conta, é o include projetado sem access_level.
-// Os dois chegam como "dado ausente" — e só o user_id cru os distingue.
+// Trava o contrato de falha fechada das duas helpers. "Alvo sem conta" e
+// "include projetado sem access_level" chegam ambos como dado ausente; só o
+// user_id cru os distingue.
 
 const GENERAL_DIRECTOR = {
   access_level_id: 1,
