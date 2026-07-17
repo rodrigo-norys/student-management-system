@@ -79,7 +79,7 @@ Status: ✅ sólido · 🔶 parcial/preparado · ⚠️ funcional mas com dívid
 | Backend / API | 🔶 | Actors expostos; **auth selada** (bugs de `userLevel`/`roleAuth` corrigidos, com teste de regressão); **contrato de paginação unificado** (F2 fechado, §1.2); Tiers 3–5 sem HTTP (Fase 3). |
 | Frontend / UI Kit | 🔶 | Actor pages completas; Tiers 3–5 sem UI; demo read-only ok mas botões de escrita não escondidos; 2 violações de UI Kit. |
 | Infra / deploy | ✅ | Cutover concluído: stack-alvo em prod (Caddy/ACME, rede segmentada, DB least-privilege, hardened), backup automatizado e testado. |
-| Testes / CI | 🔶 | Suíte de guards com **134 testes verdes** (vitest+supertest contra `school_test` real); **CI backend** em PR para `main` (`.github/workflows/backend-tests.yml`, 5 runs verdes). Falta **CI de frontend**. |
+| Testes / CI | 🔶 | Suíte de guards com **134 testes verdes** (vitest+supertest contra `school_test` real); **CI backend + frontend** em PR para `main` (`backend-tests.yml` + `frontend-ci.yml`). Falta suíte de testes de **frontend** (H4). |
 | Segurança | 🔶 | Bons fundamentos (helmet, CORS allowlist, cookies httpOnly, demo trap sólido) com furos (bcrypt cost 8, rate-limit só no login, sem limite de upload, multitenant ausente). |
 | Tooling `.claude` | ✅ | 9 agentes ativos + 13 skills + 3 hooks de governança; cobre planejamento, build-out e review. `model-review`, `add-ts-check` e os hooks (`guard-sensitive-writes`, `typecheck-on-stop`, `format-on-stop`) já **criados**; falta só `security-perf-review` (F4), planejado. |
 
@@ -112,7 +112,7 @@ Status: ✅ sólido · 🔶 parcial/preparado · ⚠️ funcional mas com dívid
 - **Seeds** (`database/seeds/`): `default-access-levels` (8 níveis, weight 100→10 + flags) é
   fundacional; `demo-seed` alimenta o modo demo; `students-addition` é fixture.
 
-### 1.2 Backend / API — ⚠️ funcional com dívida crítica
+### 1.2 Backend / API — 🔶 auth selada e contrato unificado; Tiers 3–5 sem HTTP
 
 **Cobertura HTTP:** existem controller + rota só para **User, Token, Student, Staff,
 Guardian, AccessLevel, Avatar, Home**. Todos os 8 routers registrados em `app.js:64-71`.
@@ -195,7 +195,7 @@ mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
   **regressão estrutural** dos 2 bugs de F1.
 - **CI backend no ar:** `.github/workflows/backend-tests.yml` roda em PR para `main`
   (`npm ci` → `lint` → `format:check` → `tsc` → `db:migrate` + seed → `npm test`) contra
-  service `mariadb:10.11`. 5 runs no repo, **todos verdes**.
+  service `mariadb:10.11`. Runs **verdes**.
 - **CI frontend no ar:** `.github/workflows/frontend-ci.yml` roda em PR para `main`
   (`npm ci` → `lint` → `format:check` → `vite build`) — sem banco e sem testes. A mídia de
   `src/assets/` é gitignored (não versionada), então um passo cria placeholders vazios para os
