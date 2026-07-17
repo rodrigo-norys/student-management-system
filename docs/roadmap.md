@@ -1,9 +1,11 @@
 # Roadmap — Student Management System
 
-> Artefato de planejamento de projeto (do início ao fim), ancorado no **estado real do
-> código** lido em 2026-06-18. Read-only: tudo aqui é **diagnóstico + proposta**, nada foi
-> implementado nem commitado. Reestruturações saem como proposta para OK humano e respeitam
-> os gates human-in-the-loop do `CLAUDE.md` / `.claude/context/governance.md`.
+> Artefato de planejamento de projeto (do início ao fim). Diagnóstico original lido em
+> 2026-06-18; **reancorado ao estado real em 2026-07-17** (ver nota de rodapé). A **Fase 1** já
+> teve parte implementada e mergeada desde o diagnóstico (auth, suíte de testes, CI backend —
+> marcados ✅ no corpo); o restante (Fases 3–4, v2.0) segue **diagnóstico + proposta**.
+> Reestruturações saem como proposta para OK humano e respeitam os gates human-in-the-loop do
+> `CLAUDE.md` / `.claude/context/governance.md`.
 >
 > **Como ler:** §1 é o diagnóstico por domínio (com `arquivo:linha`); §2 é o roadmap por
 > fases com o **VOCÊ ESTÁ AQUI** marcado; §3 quick wins vs reestruturações; §4 a matriz
@@ -43,24 +45,26 @@ e o sistema rodando na VPS atrás do Caddy com TLS válido.
                  contrato,         demo)          (academico)   multitenant, (cutover    self-update
                  testes)                                        testes, obs) Caddy/VPS)  do setup)
  ───────────────────────────────────────────────────────────────────────────────────────────────
-   ✅ FEITO       ⚠️ RACHADA        ✅ FEITO        ⬜ NÃO          ⬜            🔶 PREP     ⬜
- (com dívida)   (incompleta)     (com dívida)     INICIADO                    (não virou)
-                     ▲                  ▲
-                     │                  └── o produto entregou as fatias verticais de Actors…
-                     └── …mas a FUNDAÇÃO embaixo está rachada: auth quebrada, zero testes/CI.
+   ✅ FEITO       ✅ VERDE          ✅ FEITO        ⬜ NÃO          ⬜            ✅ FEITO    ⬜
+ (com dívida)  (resíduo F2)     (com dívida)     INICIADO                    (cutover)
+                     ▲
+                     └── auth selada, 134 testes verdes e CI backend ativo; resta só o F2 (contrato de paginação).
 ```
 
 **Leitura de Tech Lead:** o projeto fez a jogada pragmática certa de um solo — entregou
 **fatias verticais completas dos Actors** (Student/Staff/Guardian/User, do model à página) e
-um fluxo de **demo read-only** para portfólio. Mas essas fatias foram construídas **por cima
-de uma fundação incompleta**: a camada de autorização tem **bugs que a desligam na prática**
-(§1.2), não há **um único teste** rodando (§1.5) e o **contrato HTTP divergiu** entre
-controllers (§1.2). 
+um fluxo de **demo read-only** para portfólio. A fundação que versões anteriores deste doc
+descreviam como "rachada" **já foi selada**: a autorização foi corrigida (os dois bugs
+críticos do §1.2 estão fechados, com **teste de regressão** que trava a volta deles), a suíte
+de guards existe e roda — **134 testes verdes** contra o `school_test` real (medido em
+2026-07-17) — e o **CI backend** roda em cada PR para `main` (§1.5).
 
-A decisão de engenharia mais importante do roadmap é esta: **não construir os Tiers 3–5 por
-cima da fundação rachada.** Antes de escalar a superfície (Fase 3), é preciso voltar e
-**fechar a Fase 1** (selar auth, canonizar contrato, subir CI + primeiros testes). Escalar
-sobre auth quebrada multiplica o custo de cada bug por toda a superfície nova.
+Resta da Fase 1 **um único resíduo, e não é HITL:** canonizar o contrato HTTP de paginação
+(**F2 / R-A** + o quick-win **QW2**) — dois controllers ainda divergem do envelope
+`{ totalItems, totalPages, currentPage, data }` que os Actors já emitem. Fechado isso, a Fase 1
+sai limpa e o próximo horizonte é a **Fase 3A** (build-out do núcleo acadêmico, StaffUnit
+primeiro). (Resíduo de F3 fora deste contrato: o **CI de frontend** ainda não existe como
+workflow — só o backend tem `.github/workflows`.)
 
 ---
 
@@ -71,10 +75,10 @@ Status: ✅ sólido · 🔶 parcial/preparado · ⚠️ funcional mas com dívid
 | Domínio | Status | Resumo |
 |---|---|---|
 | Modelo de dados | ✅ | 5 Tiers modelados; baseline cria 16 tabelas; 15 models batem 1:1 (sobra `photos` órfã). |
-| Backend / API | ⚠️ | Só Actors expostos; **auth quebrada** (`userLevel` nunca setado, `roleAuth` por flag errada); contrato HTTP divergente; Tiers 3–5 sem HTTP. |
+| Backend / API | 🔶 | Actors expostos; **auth selada** (bugs de `userLevel`/`roleAuth` corrigidos, com teste de regressão); resta só a divergência de **envelope de paginação** (F2, §1.2); Tiers 3–5 sem HTTP. |
 | Frontend / UI Kit | 🔶 | Actor pages completas; Tiers 3–5 sem UI; demo read-only ok mas botões de escrita não escondidos; 2 violações de UI Kit. |
 | Infra / deploy | ✅ | Cutover concluído: stack-alvo em prod (Caddy/ACME, rede segmentada, DB least-privilege, hardened), backup automatizado e testado. |
-| Testes / CI | ❌ | Infra vitest/supertest instalada, **zero testes, zero CI**. |
+| Testes / CI | 🔶 | Suíte de guards com **134 testes verdes** (vitest+supertest contra `school_test` real); **CI backend** em PR para `main` (`.github/workflows/backend-tests.yml`, 5 runs verdes). Falta **CI de frontend**. |
 | Segurança | 🔶 | Bons fundamentos (helmet, CORS allowlist, cookies httpOnly, demo trap sólido) com furos (bcrypt cost 8, rate-limit só no login, sem limite de upload, multitenant ausente). |
 | Tooling `.claude` | ✅ | 9 agentes ativos + 13 skills + 3 hooks de governança; cobre planejamento, build-out e review. `model-review`, `add-ts-check` e os hooks (`guard-sensitive-writes`, `typecheck-on-stop`, `format-on-stop`) já **criados**; falta só `security-perf-review` (F4), planejado. |
 
@@ -112,35 +116,29 @@ Status: ✅ sólido · 🔶 parcial/preparado · ⚠️ funcional mas com dívid
 **Cobertura HTTP:** existem controller + rota só para **User, Token, Student, Staff,
 Guardian, AccessLevel, Avatar, Home**. Todos os 8 routers registrados em `app.js:64-71`.
 
-**🔴 Bug crítico 1 — `req.userLevel` nunca é setado.** `loginRequired.js:45-46` popula
-`req.userWeight` e `req.userRole`, mas **nunca** `req.userLevel`. E três controllers ramificam
-decisões de escopo/peso justamente em `req.userLevel`:
-`GuardianController.js:85`, `StaffController.js:75`, `AvatarController.js:51`. Todas essas
-checagens comparam contra `undefined` → **lógica de autorização morta**. Ex.:
-`AvatarController.js:51` faz `isAdmin = req.userLevel <= 2` → `undefined <= 2` é `false` → todo
-upload de avatar é negado.
+**✅ Bug crítico 1 — RESOLVIDO (`req.userLevel`).** As três ramificações que comparavam
+contra `req.userLevel` (nunca setado) foram migradas para a fonte canônica de peso/flag.
+`grep -rn req.userLevel backend/src` = **zero ocorrências**. `regression.bugs.test.js` trava
+a volta do bug.
 
-**🔴 Bug crítico 2 — `roleAuth` chamado com formato antigo (IDs numéricos).**
-`roleAuth.js:6` indexa `req.userPermissions[flag]` (string). Mas três route files passam
-arrays/números: `avatarRoutes.js:15` `roleAuth([4])`, `guardianRoutes.js:12-16` `roleAuth([4])`
-etc., `staffRoutes.js:10-14` `roleAuth(1,2,3)`. `req.userPermissions[[4]]` → `undefined` →
-**403 para todos**. `userRoutes`/`studentRoutes` já usam flags corretas (`manage_account`,
-`manage_record`). → **guardian, avatar e staff estão com escrita e leitura quebradas.**
+**✅ Bug crítico 2 — RESOLVIDO (`roleAuth` por flag).** `guardianRoutes`/`avatarRoutes`
+(via `avatarAuth`)/`staffRoutes` passaram a usar flags string (`manage_account`,
+`manage_record`), alinhados ao `userRoutes`/`studentRoutes`. `roleAuth.js` indexa
+`req.userPermissions[flag]` corretamente. Teste de regressão cobre.
 
-**🟠 Contrato HTTP divergente (3 formas):**
-- Erro: `validateRequest.js:10` devolve `{ error }` (singular); todo o resto da API usa
-  `{ errors }` (plural).
-- Paginação: Student/Staff/Guardian devolvem `{ totalItems, totalPages, currentPage, data }`;
-  `UserController.js:202,488` devolve `{ rows, totalPages, totalCount }`; `AccessLevelController.js:14`
-  devolve **array cru**.
+**🟠 Contrato HTTP — resíduo de paginação (F2 / R-A):**
+- Erro: `{ errors }` plural em toda a API — `validateRequest.js:11` já devolve `{ errors }`
+  (**QW1 resolvido**).
+- Paginação: **divergência remanescente.** Student/Staff/Guardian emitem o envelope canônico
+  `{ totalItems, totalPages, currentPage, data }`; `UserController.js:208-212` (`index`) e
+  `:546-550` (`searchTargets`) ainda devolvem `{ rows, totalPages, totalCount }`;
+  `AccessLevelController.js:13` devolve **array cru**. → é o F2 desta fatia.
 
 **🟠 Outros:**
-- `userRoutes.js:18` (`User.show`) tem `loginRequired` mas **sem `roleAuth` nem peso** —
-  qualquer autenticado lê qualquer usuário por id (projeção limita, mas flags de `access_level`
-  vazam).
+- `userRoutes.js:27` (`User.show`) já fechado com `roleAuth('manage_account')` (**F2 resolvido**).
 - **Sem isolamento multitenant:** nenhum controller filtra `index`/`update`/`delete` por
   `staff_units` do autor. Papéis sem tratamento específico enxergam dados de todas as unidades.
-- `AccessLevelController.js:29` loga `'UserController Error:'` (copy-paste).
+- `AccessLevelController.js:28` loga `'UserController Error:'` (copy-paste) — **QW2 pendente**.
 - **`schemas/`:** só `userSchema.js` (yup, só senha), ligado a uma única rota
   (`userRoutes.js:13`). Nenhum schema de body para os demais endpoints mutadores — validação
   recai no model Sequelize.
@@ -187,16 +185,21 @@ mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
   segmentada, DB com usuário de aplicação **least-privilege**, **backup automatizado e testado**, e host
   hardened. Runbook operacional e auditorias em `docs/infra/` (não versionado).
 
-### 1.5 Testes / CI — ❌ ausente
+### 1.5 Testes / CI — 🔶 backend coberto, frontend pendente
 
-- **Zero testes no repo.** `backend/package.json:8` define `"test": "vitest run"`, `vitest@4.1.8`
-  + `supertest@7.2.2` instalados, `vitest.config.js` existe — mas **nenhum** `*.test.js`/`*.spec.js`/
-  `__tests__` em todo o repo. `npm test` passa vacuamente (0 testes coletados). A "primeira suíte
-  de guards" citada na memória **não está na árvore**.
-- Frontend: `react-scripts test` sem nenhum arquivo de teste.
-- **CI: nenhuma.** Sem `.github/workflows`, sem nada. Nada roda teste/lint/build automaticamente.
-- **Impacto:** a espinha de segurança (loginRequired, roleAuth, demo trap, peso) está
-  **inteiramente não verificada** — e é justamente a área com os dois bugs críticos do §1.2.
+- **Suíte de guards no ar:** 7 arquivos em `backend/test/` (+ helpers `auth.js`/`db.js`),
+  **134 testes passando** (medido em 2026-07-17, `npm test` → `Test Files 7 passed · Tests 134
+  passed`), vitest+supertest contra o `school_test` **real** (MariaDB 10.11, nunca SQLite).
+  Cobre `loginRequired`, `roleAuth` por flag, demo read-only trap, peso hierárquico/política de
+  delete e cascade, política de avatar, robustez de input, envelope de erro `{ errors }` e
+  **regressão estrutural** dos 2 bugs de F1.
+- **CI backend no ar:** `.github/workflows/backend-tests.yml` roda em PR para `main`
+  (`npm ci` → `lint` → `format:check` → `tsc` → `db:migrate` + seed → `npm test`) contra
+  service `mariadb:10.11`. 5 runs no repo, **todos verdes**.
+- **Frontend: sem testes e sem CI.** `react-scripts test` sem arquivo de teste; nenhum workflow
+  de frontend (o gate `CI=true npm run build` roda só localmente). É o resíduo de F3.
+- **Impacto:** a espinha de segurança (loginRequired, roleAuth, demo trap, peso) está agora
+  **verificada e travada** por teste de regressão — inverte o furo que este parágrafo descrevia.
 
 ### 1.6 Segurança — 🔶
 
@@ -249,28 +252,35 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   `Address.belongsTo(Unit)`, default `is_temporary`.
 - **Saída:** ✅ atingida — schema reflete o domínio.
 
-### Fase 1 — Fundações (auth · contrato · CI · testes) · ⚠️ RACHADA — **PRIORIDADE IMEDIATA**
-- **Objetivo:** tornar a fundação confiável **antes** de escalar superfície. É a fase que o
-  projeto pulou parcialmente e precisa fechar agora.
+### Fase 1 — Fundações (auth · contrato · CI · testes) · ✅ ESSENCIALMENTE VERDE — resíduo F2
+- **Objetivo:** tornar a fundação confiável **antes** de escalar superfície. Essencialmente
+  fechada: auth selada, suíte de guards no ar e CI backend ativo — resta só canonizar o
+  envelope de paginação (F2).
 - **Entregáveis:**
-  - **F1 — Selar autorização (os 2 bugs críticos):** setar `req.userLevel` (ou migrar as 3
-    ramificações para `req.userWeight`, decidindo a fonte canônica de peso); corrigir
-    `roleAuth` em `guardianRoutes`/`avatarRoutes`/`staffRoutes` para flags. → **resolve o 403
-    geral e as checagens de peso mortas.**
-  - **F2 — Canonizar contrato HTTP:** `{error}`→`{errors}` (`validateRequest.js:10`); unificar
-    envelope de paginação (proposta: `{ data, totalItems, totalPages, currentPage }`, migrando
-    `UserController`); `AccessLevel.index` devolver envelope, não array; fechar `User.show`
-    (`userRoutes.js:18`) com `roleAuth`/peso.
-  - **F3 — CI:** GitHub Actions — backend `vitest run` + frontend `CI=true npm run build`
-    (warnings=erro) em PR. Hoje inexistente (§1.5).
-  - **F4 — Primeiros testes (a espinha):** suíte de guards com supertest contra DB de teste
-    (`school_test`, não SQLite) — `loginRequired`, `roleAuth` por flag, demo read-only trap,
-    peso hierárquico. Cobre exatamente o que F1 corrige.
-- **Dependências:** nenhuma (é a base). F4 depende de F1 (testar auth correta).
-- **HITL / gates:** **F1 é human-in-the-loop (auth/peso)** — parar e confirmar antes. Gate:
-  `backend-auth-review` + `api-contract-review` + `npm test` verde.
-- **Saída:** guardian/avatar/staff respondem com a autorização correta; um único envelope de
-  erro e de paginação em toda a API; CI verde em PR; suíte de guards passando.
+  - **F1 — Selar autorização (os 2 bugs críticos): ✅ FEITO.** As 3 ramificações de
+    `req.userLevel` migradas para a fonte canônica de peso/flag (grep = zero); `roleAuth` em
+    `guardianRoutes`/`avatarRoutes`/`staffRoutes` por flags string. Regressão travada em
+    `regression.bugs.test.js`.
+  - **F2 — Canonizar contrato HTTP: 🔶 PARCIAL — é o resíduo desta sessão.** `{error}`→`{errors}`
+    (**QW1 ✅**); `User.show` fechado com `roleAuth('manage_account')` (**✅**). **Pendente:**
+    unificar envelope de paginação no `{ totalItems, totalPages, currentPage, data }` que os
+    Actors já emitem — migrar `UserController` (`index` `:208-212` + `searchTargets` `:546-550`)
+    e `AccessLevelController.index` (array cru `:13`), com o consumidor frontend (`useUsersData`,
+    `UserManagement/index.js`) no mesmo passo. + **QW2** (rótulo de log, §3).
+  - **F3 — CI: 🔶 backend FEITO, frontend pendente.** `.github/workflows/backend-tests.yml`
+    (lint → format:check → tsc → migrate/seed → `npm test`) em PR para `main`, contra
+    `mariadb:10.11`, 5 runs verdes. Falta o gate de frontend (`CI=true npm run build`) como
+    workflow.
+  - **F4 — Primeiros testes (a espinha): ✅ FEITO.** 7 suítes / **134 testes** contra
+    `school_test` real (supertest) — `loginRequired`, `roleAuth` por flag, demo trap, peso
+    hierárquico, política de delete/cascade, avatar, robustez de input, envelope de erro e
+    regressão dos 2 bugs de F1.
+- **Dependências:** nenhuma (é a base). F4 depende de F1 (testar auth correta) — satisfeito.
+- **HITL / gates:** F1 era human-in-the-loop (auth/peso) — **concluído**. F2 (contrato) **não é
+  HITL**. Gate do resíduo: `api-contract-review` + `npm test` verde + `CI=true npm run build`.
+- **Saída (quase atingida):** guardian/avatar/staff com autorização correta ✅; envelope de
+  **erro** único ✅; suíte de guards + CI backend verdes ✅. **Falta:** envelope de **paginação**
+  único (F2) e o CI de frontend.
 
 ### Fase 2 — MVP / Fatias verticais (Actors) · ✅ FEITO (com dívida)
 - **Objetivo:** CRUD ponta a ponta das entidades-ator + vitrine.
@@ -374,8 +384,8 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
 ### Quick wins (baixo risco, alto valor — Fase 1 majoritariamente)
 | # | Item | Arquivo | Risco | Gate |
 |---|---|---|---|---|
-| QW1 | `{error}`→`{errors}` | `validateRequest.js:10` | trivial | api-contract-review |
-| QW2 | Log mislabel | `AccessLevelController.js:29` | trivial | — |
+| QW1 | ✅ `{error}`→`{errors}` **feito** | `validateRequest.js:11` | trivial | api-contract-review |
+| QW2 | Log mislabel (pendente — F2) | `AccessLevelController.js:28` | trivial | — |
 | QW3 | `Address.belongsTo(Unit)` | `Address.js` | baixo | controller-review |
 | QW4 | Sincronizar CLAUDE.md Tier-map (`subject_id`, `attendances`, `photos`) | `CLAUDE.md` | nenhum (doc) | — |
 | QW5 | Esconder botões de escrita no modo demo | front (Layout/listas) | baixo | ui-kit-review |
@@ -388,10 +398,12 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
 > 1–2 linhas por arquivo **mas é auth** → human-in-the-loop, não autônomo.
 
 ### Reestruturações (com justificativa + plano de migração)
-1. **R-A · Unificar envelope de paginação.** *Ganho:* contrato previsível, frontend único.
-   *Sai:* `UserController` `{rows,totalCount}` (`:202,488`); `AccessLevel` array cru. *Entra:*
-   `{ data, totalItems, totalPages, currentPage }`. *Risco:* a página User (hooks
-   `useUsersData`) lê `rows`/`totalCount` → migrar junto. *Reversível:* sim (mudança de shape).
+1. **R-A · Unificar envelope de paginação — resíduo aberto da Fase 1 (F2).** *Ganho:* contrato
+   previsível, frontend único. *Sai:* `UserController` `{rows,totalCount}` (`index` `:208-212` +
+   `searchTargets` `:546-550`); `AccessLevel.index` array cru (`:13`). *Entra:* o envelope
+   canônico que os Actors já emitem — `{ totalItems, totalPages, currentPage, data }`. *Risco:*
+   a página User (`useUsersData:43` lê `rows`; `UserManagement/index.js:51` lê o array cru de
+   access-levels) → migrar junto. *Reversível:* sim (mudança de shape).
 2. **R-B · Centralizar peso/escopo de autorização.** *Ganho:* mata a causa-raiz do bug
    `userLevel` (cada controller hand-rola a checagem). *Sai:* ramificações ad-hoc em
    Guardian/Staff/Avatar. *Entra:* helper único baseado em `req.userWeight` + flags. *Risco:*
@@ -486,6 +498,7 @@ Tier-map do `CLAUDE.md` (Fase 6); o `settings.local.json` já teve o `ssh` estre
 > Atualização 2026-07-03: §1/§1.7/§4/§5 acompanham a reorg de tooling do `.claude` (9 agentes ativos / 13 skills + hooks de governança; só `security-perf-review` F4 planejado). O roadmap de código (Fases 1–6) permanece diagnóstico, não implementado.
 > Atualização 2026-07-09: auditoria de dependências (Fase 6 hygiene) — P1/P2 **mergeadas**; migração CRA→Vite registrada como **H6 (Fase 4)**. Ver §Fase 4 e §Fase 6. Diferente do resto do doc (diagnóstico), estas linhas refletem trabalho efetivamente mergeado.
 > Atualização 2026-07-10: auditoria do setup `.claude` em [`claude-setup-audit.md`](claude-setup-audit.md) (complementar). Sync do §1.7: registrado o 3º hook `format-on-stop` (Prettier + ESLint bloqueante no Stop), antes subdocumentado. Pendências acionáveis abertas por lá: R2 (estreitar `git checkout *` no `settings.local.json`) e R6 (avaliar `.claude/rules/`).
+> **Atualização 2026-07-17 — reancoragem da Fase 1 (medida nesta sessão):** o "VOCÊ ESTÁ AQUI" saiu de *Fase 1 RACHADA* para **essencialmente verde**. Estado medido: `npm test` = **134 testes passando** (7 suítes, `school_test` real); CI backend (`.github/workflows/backend-tests.yml`) com **5 runs verdes** (`gh run list`). Fechados: **F1** (auth — grep de `req.userLevel` = 0, regressão travada), **QW1** (`{errors}` plural), **User.show** (`roleAuth`), **F4** (suíte de guards). Resíduo real e único da Fase 1 = **F2** (envelope de paginação: `UserController.index`+`searchTargets` e `AccessLevelController.index`; + **QW2** log mislabel) — endereçado no passo seguinte. Fora do F2: **CI de frontend** ainda ausente. §1/§1.2/§1.5/§2/§3 sincronizados com esse estado. Fase 3 permanece **NÃO INICIADA**.
 
 ---
 
