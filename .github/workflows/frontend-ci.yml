@@ -1,0 +1,38 @@
+name: frontend
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: lint + build
+    runs-on: ubuntu-latest
+
+    # O frontend não tem suíte de testes nem banco: o gate é lint (ESLint flat
+    # config standalone) + Prettier + o build de produção do Vite.
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: instala dependências
+        run: npm ci
+
+      - name: lint
+        run: npm run lint
+
+      - name: formatação
+        run: npm run format:check
+
+      - name: build
+        run: npm run build
