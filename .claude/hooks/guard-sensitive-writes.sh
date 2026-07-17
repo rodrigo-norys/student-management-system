@@ -11,7 +11,8 @@
 # Sensível =
 #   - migration já versionada (pode estar aplicada; editar diverge os ambientes)
 #   - segredo .env (menos o .env.example)
-#   - auth (loginRequired/roleAuth) e models de entidade core
+#   - auth (middlewares *Auth.js e as guardas de peso em utils/hierarchy.js) e
+#     models de entidade core
 
 set -uo pipefail
 
@@ -38,7 +39,7 @@ esac
 
 # auth e models de entidade core
 case "$path" in
-  */middlewares/loginRequired.js|*/middlewares/roleAuth.js)
+  */middlewares/loginRequired.js|*/middlewares/*Auth.js|*/utils/hierarchy.js)
     emit_ask "Edição em auth ($base) — human-in-the-loop (governance). Confirme a intenção."
     ;;
   */models/User.js|*/models/AccessLevel.js|*/models/Staff.js|*/models/Student.js|*/models/Guardian.js)
