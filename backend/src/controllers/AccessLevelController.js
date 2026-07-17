@@ -10,7 +10,12 @@ class AccessLevelController {
         order: [['hierarchy_weight', 'ASC']],
       });
 
-      return res.json(accessLevels);
+      return res.json({
+        totalItems: accessLevels.length,
+        totalPages: 1,
+        currentPage: 1,
+        data: accessLevels,
+      });
     } catch (e) {
       return this.handleErrors(e, res);
     }
@@ -25,7 +30,7 @@ class AccessLevelController {
     if (error instanceof Sequelize.UniqueConstraintError) {
       return res.status(400).json({ errors: ['Email is already in use.'] });
     }
-    console.error('UserController Error:', error);
+    console.error('AccessLevelController Error:', error);
     return res.status(500).json({ errors: ['Internal server error.'] });
   }
 }

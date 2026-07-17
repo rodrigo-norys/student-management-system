@@ -40,8 +40,8 @@ export default function useUsersData() {
           },
         });
 
-        if (response.data && response.data.rows) {
-          setDataList(response.data.rows);
+        if (response.data && response.data.data) {
+          setDataList(response.data.data);
           setTotalPages(response.data.totalPages || 1);
         } else {
           setDataList([]);

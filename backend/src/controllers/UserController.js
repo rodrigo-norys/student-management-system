@@ -206,9 +206,10 @@ class UserController {
       const totalPages = Math.ceil(count / limitNum);
 
       return res.json({
-        rows,
+        totalItems: count,
         totalPages,
-        totalCount: count,
+        currentPage: pageNum,
+        data: rows,
       });
     } catch (e) {
       return this.handleErrors(e, res);
@@ -544,9 +545,10 @@ class UserController {
       const paginatedResults = results.slice(offset, offset + limitNum);
 
       return res.json({
-        rows: paginatedResults,
+        totalItems: totalCount,
         totalPages,
-        totalCount,
+        currentPage: pageNum,
+        data: paginatedResults,
       });
     } catch (e) {
       return this.handleErrors(e, res);

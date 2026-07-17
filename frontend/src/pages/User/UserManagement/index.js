@@ -48,7 +48,7 @@ export default function UserManagement() {
     const fetchAccessLevels = async () => {
       try {
         const response = await axios.get('/access-levels');
-        setAccessLevels(response.data);
+        setAccessLevels(response.data.data);
       } catch (err) {
         console.error(err);
       }
