@@ -5,6 +5,7 @@ import student from './student/reducer';
 import photo from './photo/reducer';
 import staff from './staff/reducer';
 import guardian from './guardian/reducer';
+import unit from './unit/reducer';
 
 export default combineReducers({
   auth,
@@ -12,4 +13,5 @@ export default combineReducers({
   photo,
   staff,
   guardian,
+  unit,
 });

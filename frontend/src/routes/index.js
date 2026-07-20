@@ -24,6 +24,9 @@ import GuardianForm from 'pages/Guardian/GuardianForm';
 import GuardianList from 'pages/Guardian/GuardianList';
 import GuardianProfile from 'pages/Guardian/GuardianProfile';
 
+import UnitForm from 'pages/Unit/UnitForm';
+import UnitList from 'pages/Unit/UnitList';
+
 import Page404 from 'pages/System/Page404';
 import Photos from 'pages/System/Photos';
 
@@ -63,6 +66,33 @@ export default function AppRouter() {
         <Route path="/guardian/create" element={<GuardianForm />} />
         <Route path="/guardian/:id/edit" element={<GuardianForm />} />
         <Route path="/guardian/:id" element={<GuardianProfile />} />
+
+        {/* Espelha as flags do backend: leitura sob manage_record, escrita sob
+            manage_account. */}
+        <Route
+          path="/units"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2, 3]}>
+              <UnitList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/unit/create"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2]}>
+              <UnitForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/unit/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2]}>
+              <UnitForm />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/avatar/:userType/:id" element={<Photos />} />
       </Route>
