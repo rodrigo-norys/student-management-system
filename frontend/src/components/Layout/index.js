@@ -13,6 +13,7 @@ import {
   FaTimes,
   FaUserFriends,
   FaEye,
+  FaBuilding,
 } from 'react-icons/fa';
 import {
   LayoutContainer,
@@ -102,6 +103,13 @@ export default function Layout() {
             onClick={() => setIsMenuOpen(false)}
           >
             <FaUsers /> Guardians
+          </NavItem>
+          <NavItem
+            to="/units"
+            className={isActive('/units')}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <FaBuilding /> Units
           </NavItem>
           <NavItem
             to="/settings"

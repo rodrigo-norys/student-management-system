@@ -45,10 +45,11 @@ e o sistema rodando na VPS atrás do Caddy com TLS válido.
                  contrato,         demo)          (academico)   multitenant, (cutover    self-update
                  testes)                                        testes, obs) Caddy/VPS)  do setup)
  ───────────────────────────────────────────────────────────────────────────────────────────────
-   ✅ FEITO       ✅ FECHADA        ✅ FEITO        ⬜ NÃO          ⬜            ✅ FEITO    ⬜
- (com dívida)                    (com dívida)     INICIADO                    (cutover)
-                     ▲
-                     └── auth selada, 134 testes verdes, CI backend+frontend em PR, contrato de paginação unificado.
+   ✅ FEITO       ✅ FECHADA        ✅ FEITO        🔶 EM           ⬜            ✅ FEITO    ⬜
+ (com dívida)                    (com dívida)     ANDAMENTO                   (cutover)
+                                                      ▲
+                                                      └── 3A: fatia Unit entregue (controller → rota → página);
+                                                          198 testes verdes (7 suítes de fundação + 64 de Unit).
 ```
 
 **Leitura de Tech Lead:** o projeto fez a jogada pragmática certa de um solo — entregou
@@ -147,9 +148,9 @@ a volta do bug.
 projeção whitelisted nos retornos, `handleErrors` consistente, soft delete via `status:'inactive'`,
 peso hierárquico **correto** em `UserController` (`:51,:284,:309,:384`) — é o controller-referência.
 
-**Gap de build-out (model sem HTTP):** `Unit`, `UnitClass`, `Subject`, `StaffUnit`,
-`ClassAllocation`, `StudentClass`, `StudentGrade`, `StudentGuardian`, `Attendance` têm model
-mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
+**Gap de build-out (model sem HTTP):** `UnitClass`, `Subject`, `StaffUnit`, `ClassAllocation`,
+`StudentClass`, `StudentGrade`, `StudentGuardian`, `Attendance` têm model mas **zero
+controller/rota**. `Unit` saiu da lista (fatia 3A entregue — `UnitController` + `unitRoutes`).
 
 ### 1.3 Frontend / UI Kit — 🔶 parcial
 
@@ -170,9 +171,9 @@ mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
   já exporta (`ViewToggle` L64, `ToggleButton` L73, `TableNameCol` L131, `SmallProfilePic` L146,
   `EditButton` L182); `System/Photos/styled.js:11` define `Container` local e hardcoda tokens de
   cor. Compliant: StudentList, GuardianList, StaffList.
-- **Gap de build-out (entidade sem página):** Units, UnitClasses, Subjects, StaffUnits,
-  ClassAllocations, StudentClasses, StudentGrades, Attendance, AccessLevels. Todo o núcleo
-  acadêmico (Tier 3–5) está sem UI.
+- **Gap de build-out (entidade sem página):** UnitClasses, Subjects, StaffUnits,
+  ClassAllocations, StudentClasses, StudentGrades, Attendance, AccessLevels. **Units** saiu da
+  lista (módulo redux-saga `unit` + `UnitList`/`UnitForm`, fatia 3A).
 
 ### 1.4 Infra / deploy — 🟢 cutover concluído
 
@@ -187,9 +188,10 @@ mas **zero controller/rota**. Tiers 3–5 inteiros sem superfície HTTP.
 
 ### 1.5 Testes / CI — ✅ CI backend + frontend em PR (frontend sem testes ainda)
 
-- **Suíte de guards no ar:** 7 arquivos em `backend/test/` (+ helpers `auth.js`/`db.js`),
-  **134 testes passando** (medido em 2026-07-17, `npm test` → `Test Files 7 passed · Tests 134
-  passed`), vitest+supertest contra o `school_test` **real** (MariaDB 10.11, nunca SQLite).
+- **Suíte de guards no ar:** 8 arquivos em `backend/test/` (+ helpers `auth.js`/`db.js`),
+  **198 testes passando** (medido em 2026-07-20, `npm test` → `Test Files 8 passed · Tests 198
+  passed`) — 134 da fundação + **64 de `unitRoutes`** (fatia 3A). vitest+supertest contra o
+  `school_test` **real** (MariaDB 10.11, nunca SQLite).
   Cobre `loginRequired`, `roleAuth` por flag, demo read-only trap, peso hierárquico/política de
   delete e cascade, política de avatar, robustez de input, envelope de erro `{ errors }` e
   **regressão estrutural** dos 2 bugs de F1.
@@ -290,14 +292,26 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   módulo de hard delete/cascade (parte de Usuários).
 - **Saída:** ✅ atingida — Actors operáveis pela UI.
 
-### Fase 3 — Build-out do núcleo acadêmico (Tiers 3–5) · ⬜ NÃO INICIADO — **MAIOR FASE**
+### Fase 3 — Build-out do núcleo acadêmico (Tiers 3–5) · 🔶 EM ANDAMENTO — **MAIOR FASE**
 - **Objetivo:** dar à vida o que o modelo promete: estrutura → operações → resultados. Cada
   entidade é uma **fatia vertical** pela cadeia canônica (`create-controller` → `create-route` →
   `create-page`; model já existe; `create-migration` só se houver ajuste de schema).
 - **Entregáveis (em ordem de dependência):**
-  - **3A — Estrutura:** `Unit`, `Subject`, `UnitClass` (turmas), `StaffUnit` (lotação).
-    > Construir **StaffUnit primeiro entre os de operação**: o isolamento multitenant da Fase 4
-    > depende dele. Sequenciamento é decisão de arquitetura, não acaso.
+  - **3A — Estrutura:** `Unit` ✅, `Subject` ⬜, `UnitClass` (turmas) ⬜, `StaffUnit` (lotação) ⬜.
+    > `Unit` vem primeiro por ser **pré-requisito estrutural** (as FKs `unit_id` de `addresses`,
+    > `unit_classes` e `staff_units` apontam para ela). Entre os de operação, **StaffUnit primeiro**:
+    > o isolamento multitenant da Fase 4 depende dele. Sequenciamento é decisão de arquitetura.
+    >
+    > **`Unit` ✅ entregue:** `UnitController` (5 actions, transação, endereço 1:1, envelope canônico),
+    > `unitRoutes` com **flags por verbo** (`manage_account` na escrita — a unidade carrega a identidade
+    > fiscal da rede; `manage_record` na leitura), módulo redux-saga `unit` + páginas `UnitList`/`UnitForm`,
+    > e 64 testes de guarda. É o **único router do projeto com flags distintas por verbo**.
+    >
+    > **Consequência aceita (decisão do dono):** com leitura em `manage_record`, o Academic Coordinator
+    > não lista unidades. Endereçar na fatia `UnitClass` com um **endpoint de lookup enxuto**
+    > (`id` + `name`) sob `manage_academic` — **não** afrouxando o router de `Unit`.
+  - **3A.0 — Fatia horizontal (antes de `Subject`):** ver **R-F** (§3) — extrair o helper de paginação
+    e corrigir a ordem morta de `UniqueConstraintError` nos controllers irmãos.
   - **3B — Operações:** `StudentClass` (matrícula), `ClassAllocation` (professor×turma×disciplina).
   - **3C — Resultados:** `StudentGrade` (notas), `Attendance` (frequência).
   - Cada fatia: controller (forma canônica do `UserController` — transação, projeção
@@ -420,6 +434,39 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
    `userSchema`). *Entra:* yup por endpoint mutador (gerável pelo `create-controller`/`create-route`).
    *Risco:* baixo. Construir junto na Fase 3 (cada fatia nasce com schema).
 5. **R-E · Multitenant scoping helper** — ver H1 (Fase 4). Arquitetural; depende de StaffUnit HTTP.
+6. **R-F · Helper de paginação + ordem do `UniqueConstraintError`.** *Fatia horizontal curta, a rodar
+   **antes de `Subject`** (3A.0).* Não usa a cadeia de entidade — toca só controllers existentes.
+
+   *Motivo (medido em 2026-07-20, não estimado):* o default de destructuring
+   `const { page = 1 } = req.query` só cobre `page` **ausente**. Com `page` presente e não numérico,
+   `Number('abc')` vira `NaN`, o `offset` desce `NaN` para o SQL e o erro escapa dos branches do
+   `handleErrors` (não é `ValidationError` nem `ForeignKeyConstraintError`) — **500 para erro de input
+   do cliente**. Comportamento real por endpoint:
+
+   | Request | `/units` | `/guardians` · `/students` · `/staff` · `/users` |
+   |---|---|---|
+   | `?page=abc` | **200** (`currentPage: 1`) | **500** `Internal server error.` |
+   | `?limit=999999` | 200, limitado ao teto (100) | 200, **sem teto** — lê a tabela inteira |
+
+   *Sai:* `Number(page)`/`parseInt` cru em `UserController.index`+`searchTargets`,
+   `GuardianController.index`, `StudentController.index`, `StaffController.index`.
+   *Entra:* `utils/pagination.js` com o `parsePagination` já validado em
+   `UnitController.js` (default + teto `MAX_PAGE_SIZE`), consumido pelos 5.
+
+   *Junto, no mesmo PR (mesma família de dívida no `handleErrors`):*
+   - **Ordem morta:** `UserController.js:594-601`, `StaffController.js:367-378` e
+     `AccessLevelController.js:25-32` checam `ValidationError` **antes** de `UniqueConstraintError`.
+     Como a segunda **estende** a primeira, o branch de duplicata é **inalcançável** e a mensagem de
+     negócio nunca aparece — o cliente recebe o texto cru do Sequelize (com nome de índice).
+     `UnitController.js:287-299` já implementa a ordem correta e serve de referência.
+   - **`{ errors: [] }`:** `e.errors.map(...)` sem fallback devolve array vazio quando a lista vem
+     vazia. `UnitController.js:300-308` tem o fallback.
+   - **Texto do 500 divergente:** `StaffController` diz `'An internal server error occurred.'`; os
+     demais, `'Internal server error.'`.
+
+   *Por que antes de `Subject`:* as 3 fatias restantes da 3A vão precisar da mesma paginação. Fazer
+   agora evita 3 cópias novas do helper. *Risco:* baixo (sem mudança de envelope de sucesso).
+   *Reversível:* sim, incremental por controller. *Gate:* `api-contract-review` + `npm test`.
 
 ---
 
@@ -504,6 +551,15 @@ Tier-map do `CLAUDE.md` (Fase 6); o `settings.local.json` já teve o `ssh` estre
 > Atualização 2026-07-09: auditoria de dependências (Fase 6 hygiene) — P1/P2 **mergeadas**; migração CRA→Vite registrada como **H6 (Fase 4)**. Ver §Fase 4 e §Fase 6. Diferente do resto do doc (diagnóstico), estas linhas refletem trabalho efetivamente mergeado.
 > Atualização 2026-07-10: auditoria do setup `.claude` em [`claude-setup-audit.md`](claude-setup-audit.md) (complementar). Sync do §1.7: registrado o 3º hook `format-on-stop` (Prettier + ESLint bloqueante no Stop), antes subdocumentado. Pendências acionáveis abertas por lá: R2 (estreitar `git checkout *` no `settings.local.json`) e R6 (avaliar `.claude/rules/`).
 > **Atualização 2026-07-17 — reancoragem da Fase 1 (medida nesta sessão):** o "VOCÊ ESTÁ AQUI" saiu de *Fase 1 RACHADA* para **essencialmente verde**. Estado medido: `npm test` = **134 testes passando** (7 suítes, `school_test` real); CI backend (`.github/workflows/backend-tests.yml`) com **5 runs verdes** (`gh run list`). Fechados: **F1** (auth — grep de `req.userLevel` = 0, regressão travada), **QW1** (`{errors}` plural), **User.show** (`roleAuth`), **F4** (suíte de guards). Resíduo real e único da Fase 1 = **F2** (envelope de paginação: `UserController.index`+`searchTargets` e `AccessLevelController.index`; + **QW2** log mislabel) — endereçado no passo seguinte. Fora do F2: **CI de frontend** ainda ausente. §1/§1.2/§1.5/§2/§3 sincronizados com esse estado. Fase 3 permanece **NÃO INICIADA**.
+> **Atualização 2026-07-20 — Fase 3A aberta, fatia `Unit` entregue:** primeira fatia vertical do
+> núcleo acadêmico fechada ponta a ponta (controller → rota → página), com o gate completo verde
+> (`controller-review`, `backend-auth-review`, `api-contract-review`, `ui-kit-review`, `npm test`,
+> `CI=true build`). `npm test` = **198** (134 + 64 de `unitRoutes`). O contrato canônico
+> (`{ data, totalItems, totalPages, currentPage }` + `{ errors }`) nasceu com o controller, não foi
+> retrofitado. Registrada a **R-F** (§3) como fatia horizontal **anterior a `Subject`**: a
+> normalização de paginação de `Unit` corrige um 500 real, mas cria assimetria com os 4 controllers
+> irmãos — decisão do dono foi manter a melhoria em `Unit` e propagar via R-F, não reverter.
+> Fase 3 passa de **NÃO INICIADA** para **EM ANDAMENTO**; §1.2/§1.3/§1.5/§2/§3 sincronizados.
 > **Atualização 2026-07-17 (2) — Fase 1 FECHADA:** F2 mergeado (PRs #40/#41 — envelope de paginação unificado + consumidor frontend + QW2) e **CI de frontend** adicionado (`.github/workflows/frontend-ci.yml`: lint + Prettier + `vite build` em PR), fechando o F3. A Fase 1 passa de "essencialmente verde" para **✅ FECHADA**; §VOCÊ ESTÁ AQUI/§1/§1.2/§1.5/§2/§3 sincronizados. Próximo horizonte: **Fase 3A** (Unit/Subject/StaffUnit/UnitClass — StaffUnit destrava o multitenant H1). Fase 3 segue **NÃO INICIADA**.
 
 ---
