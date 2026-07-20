@@ -85,6 +85,9 @@ Sem isso o model não inicializa nem associa. **Dois passos:**
 - **Texto = `STRING(n)`** com `n` idêntico ao da migration; sempre `validate` com `msg` **em inglês** (as msgs viram `{ errors: [...] }` no `handleErrors` do controller). FKs = `INTEGER` com `allowNull` conforme o relacionamento.
 - **`status` é ENUM** quando a entidade tem ciclo de vida (`active`/`inactive`/…), `allowNull: false`, default `'active'`. Nunca `is_active` booleano.
 - **`associate`** declara os relacionamentos com `foreignKey` + `as` consistentes com o que os controllers usam no `include` (ex.: `as: 'addresses'`, `as: 'guardians'`). N:N via `through` do model de junção. Confira a direção contra o **Modelo de dados** do `CLAUDE.md`.
-- **Comentários em pt-br**, identificadores e `msg` de validação em inglês.
+- **Comentários em pt-br**, identificadores e `msg` de validação em inglês — **e escassos**.
+  Só onde há complexidade real; a maioria **não deve existir**. Sem narrativa ("antes era",
+  "de propósito"): declara restrição, impessoal e atemporal. Justificativa vai para a resposta
+  ao usuário, não para o bloco de código.
 
 > Depois de gerar: crie a **migration** correspondente (`create-migration`) com os mesmos tipos/tamanhos e revise-a no `migration-review`. O model em si é validado de forma transversal quando o controller que o consome passa no `controller-review`.

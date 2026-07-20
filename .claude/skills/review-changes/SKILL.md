@@ -1,6 +1,6 @@
 ---
 name: review-changes
-description: Umbrella de code review. Lê o diff atual (git status/diff), classifica os arquivos alterados por domínio e dispara em paralelo os agentes revisores certos (migration-review, controller-review, backend-auth-review, api-contract-review, ui-kit-review), consolidando os achados em um relatório único por severidade. Use antes de commitar/abrir PR para um passe de revisão completo.
+description: Umbrella de code review. Lê o diff atual (git status/diff), classifica os arquivos alterados por domínio e dispara em paralelo os agentes revisores certos (migration-review, controller-review, backend-auth-review, api-contract-review, ui-kit-review, comment-review), consolidando os achados em um relatório único por severidade. Use antes de commitar/abrir PR para um passe de revisão completo.
 ---
 
 # Revisar mudanças
@@ -32,8 +32,10 @@ Mapeie cada arquivo alterado para os agentes correspondentes (um arquivo pode ac
 | `backend/src/models/*.js` | `model-review` *(quando existir; até lá, revisão manual)* |
 | `docker-compose.yml`, `Dockerfile*`, `frontend/Caddyfile`, `.env.example` | `infra-review` |
 | auth/upload/query pesada (rate-limit, bcrypt, N+1, índices aninhados) | `security-perf-review` *(quando existir)* |
+| **qualquer arquivo de código com comentário adicionado no diff** | `comment-review` |
 
 Regras de roteamento:
+- **`comment-review` é transversal e quase sempre aplicável**: dispare sempre que o diff adicionar linha de comentário, em qualquer domínio. O hook `comments-on-stop.sh` já barra forma (narrativa, idioma, densidade); o agente é a única camada que pega **comentário factualmente errado** — o que descreve mecanismo que o código não tem. Diff sem comentário novo: pule.
 - **`api-contract-review` é transversal**: dispare quando a mudança puder afetar a coerência entre endpoints (vários controllers, novo endpoint, mexeu no envelope de erro/paginação). Para um controller isolado, `controller-review` já basta.
 - **Migration trivial** (1 `addColumn`) não precisa de `migration-review` — sinalize e pule, não gaste o disparo.
 - Domínio sem agente (ex.: `store/`, `config/`, model puro) não tem revisor dedicado: revise você mesmo no relatório, marcando como "revisão manual".

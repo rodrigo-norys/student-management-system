@@ -63,7 +63,12 @@ Página (`pages/<Entity>/...`): `useDispatch` para disparar `actions.<x>Request`
 ## Comum aos dois
 - **Fachada `styled.js`**: reexporta primitivos de `components/ui`, define localmente só o específico da página (mesma convenção que o agente `ui-kit-review` valida).
 - `constants.js` para constantes da tela.
-- **Comentários pt-br, identificadores em inglês.**
+- **Comentários pt-br, identificadores em inglês — e escassos.** Só onde há complexidade real;
+  a maioria **não deve existir**. Justificativa e raciocínio vão para a resposta ao usuário,
+  nunca no bloco de código. Sem narrativa ("antes era", "de propósito"): o comentário declara
+  restrição, impessoal e atemporal. Separadores de seção já usados no projeto
+  (`// --- CREATE ---` no `actions.js`, `// ===== REQUEST =====` no `reducer.js`) são padrão
+  estabelecido — mantenha-os; não são o mesmo caso.
 - HTTP via `axios` de `services/axios`; erros via `toast` + `get(e, 'response.data.errors')`.
 - `CI=true npm run build` trata warning como erro — rode antes de considerar pronto.
 

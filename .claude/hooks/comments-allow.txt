@@ -1,0 +1,19 @@
+# Substrings de comentários isentos da auditoria do comments-on-stop.sh.
+# Uma por linha. Serve para padrão JÁ replicado no projeto, onde divergir seria
+# inconsistência — não para abrir exceção a comentário novo.
+# Linhas iniciadas por # são ignoradas.
+
+# Separadores de seção do padrão redux-saga (store/modules/*/actions.js e reducer.js)
+--- CREATE ---
+--- GET ---
+--- UPDATE ---
+--- DELETE ---
+--- CEP ---
+================= REQUEST =================
+================= FAILURE =================
+================= SUCCESS =================
+================= PHOTO =================
+================= CEP =================
+
+# Helper replicado em StudentController/UserController/UnitController
+Escapa wildcards do LIKE
