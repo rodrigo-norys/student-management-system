@@ -18,8 +18,8 @@ Quatro níveis, mapeados aos artefatos reais do projeto:
 
 1. **Observe** — só lê e aponta. Os reviewers read-only (`migration-review`, `db-schema-review`,
    `model-review`, `controller-review`, `backend-auth-review`, `api-contract-review`, `ui-kit-review`,
-   `infra-review`) e o `state-audit` (auditor de estado): `tools: Read, Grep, Glob`, nunca
-   editam. (`security-perf-review`, planejado, entra no mesmo nível.)
+   `comment-review`, `infra-review`) e o `state-audit` (auditor de estado): `tools: Read, Grep, Glob`,
+   nunca editam. (`security-perf-review`, planejado, entra no mesmo nível.)
 2. **Advise** — recomenda sem agir. `suggest-commits`, `suggest-prs`, `plan-feature`
    e `plan-project`: produzem plano/texto pro humano decidir; não tocam no working tree.
 3. **Act with approval** — gera código na sessão, sob revisão humana. As skills `create-*`
@@ -72,6 +72,7 @@ não rodam; hooks **rodam** (determinísticos).
 | Infra / IaC (compose, Dockerfile, Caddyfile, `.env.example`) | revisão antes do cutover | agente `infra-review` (estático) + skill `audit-vps` (live, prod) |
 | Type-safety (`// @ts-check`) | `tsc` verde no fim do turno | hook `typecheck-on-stop.sh` (Stop) roda `tsc --noEmit`; skill `add-ts-check` adota a marca |
 | Formatação + lint (JS/JSX/CSS alterados no turno) | Prettier aplicado + ESLint sem erro | hook `format-on-stop.sh` (Stop): `prettier --write` + `eslint` bloqueante (sem `--fix`) em `backend/src` |
+| Comentários adicionados no turno | forma verde no hook + julgamento do agente | hook `comments-on-stop.sh` (Stop, bloqueante) pega narrativa/idioma/densidade; agente `comment-review` julga se o comentário é **verdadeiro**, necessário e atemporal — a única camada que pega comentário factualmente errado |
 
 Não há e2e, a11y, visual smoke nem security-matrix — não inventar gate inexistente. A suíte
 cobre guards e robustez; integração CRUD/DB (fluxo de escrita) ainda é lacuna — a skill
@@ -93,6 +94,16 @@ agentes (julgamento) e o gate de comando (permissão):
   backend; se algum tipo quebra, `block` devolvendo a saída do `tsc` pro Claude corrigir antes
   de encerrar. Fail-open (sem `tsc`, sem arquivo marcado, ou loop-guard → sai limpo). É o
   **verificador** do par `add-ts-check` (fazer → checar via hook, sem agente).
+- **`comments-on-stop.sh`** (Stop) — audita os comentários **adicionados no turno** contra a regra
+  do `CLAUDE.md` global: narrativa ("antes era", "de propósito", TODO/FIXME), idioma (o comentário
+  é pt-br) e **densidade** comparada com os arquivos irmãos do mesmo diretório. Se acusa, `block`
+  devolvendo a lista pro Claude corrigir antes de encerrar (mesmo contrato dos outros dois).
+  Tolerância em `.claude/hooks/comments-allow.txt` (substrings) para padrão **já replicado** no
+  projeto — sem ela o hook vira ruído e passa a ser ignorado. Fail-open (sem `jq`, sem arquivo
+  alterado, ou loop-guard → sai limpo). Nasceu porque a regra de comentários falhou repetidamente
+  como instrução declarativa: as skills `create-*` regulavam só o idioma e traziam template denso
+  em comentários. É a camada de **forma**; o julgamento (o comentário é verdadeiro?) é do agente
+  `comment-review`.
 - **`format-on-stop.sh`** (Stop) — formata e checa lint no fim do turno: `prettier --write`
   (idempotente, muta em silêncio) nos arquivos JS/JSX/CSS alterados do turno + `eslint` **sem
   `--fix`** como check-and-block em `backend/src`; se o ESLint acusa erro, `block` devolvendo a

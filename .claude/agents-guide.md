@@ -56,7 +56,7 @@ No projeto eles vêm em pares **fazer → checar**, organizados em camadas:
 
 **Camada 4 — Processo:** `suggest-commits` (plano de commits), `suggest-prs` (fatia a pilha em 1+ PRs + descreve cada). Não revisam código — preparam a entrega.
 
-**Hooks (enforcement determinístico, fora do allow/deny):** `guard-sensitive-writes` (PreToolUse Edit/Write) força confirmação humana em escrita sensível (`.env`, auth, models core, migration versionada); `typecheck-on-stop` (Stop) roda `tsc` nos arquivos `// @ts-check` e segura o encerramento se quebrar; `format-on-stop` (Stop) roda `prettier --write` nos arquivos do turno + `eslint` bloqueante (sem `--fix`) em `backend/src`. São a terceira forma de "checar" (determinística), além do agente e do gate de comando. Ver Governança.
+**Hooks (enforcement determinístico, fora do allow/deny):** `guard-sensitive-writes` (PreToolUse Edit/Write) força confirmação humana em escrita sensível (`.env`, auth, models core, migration versionada); `typecheck-on-stop` (Stop) roda `tsc` nos arquivos `// @ts-check` e segura o encerramento se quebrar; `format-on-stop` (Stop) roda `prettier --write` nos arquivos do turno + `eslint` bloqueante (sem `--fix`) em `backend/src`; `comments-on-stop` (Stop) audita os comentários adicionados no turno (narrativa, idioma, densidade vs irmãos) e bloqueia com a lista — par determinístico do agente `comment-review`. São a terceira forma de "checar" (determinística), além do agente e do gate de comando. Ver Governança.
 
 Fluxo: a skill gera seguindo o padrão; o agente revisa em contexto limpo; a umbrella `review-changes` orquestra os revisores certos sobre o diff antes do PR.
 
@@ -77,6 +77,7 @@ Hoje: **9 ativos** (8 reviewers de par/transversais/dados + o `state-audit` macr
 | `backend-auth-review` | [agents/backend-auth-review.md](agents/backend-auth-review.md) | Revisa rota/controller: `loginRequired` → `roleAuth(flag)` → peso hierárquico no controller, `status` ENUM, projeção whitelisted, e uso de `req.*` indefinido. |
 | `api-contract-review` | [agents/api-contract-review.md](agents/api-contract-review.md) | **Transversal**: coerência do contrato entre endpoints — envelope de erro `{errors}` plural, envelope de paginação canônico, status HTTP, shape de resposta. Compara o alvo com os irmãos. |
 | `ui-kit-review` | [agents/ui-kit-review.md](agents/ui-kit-review.md) | Revisa página/componente: fachada `styled.js` reexportando `components/ui`, casing de pasta, sem duplicar primitivo do UI Kit. |
+| `comment-review` | [agents/comment-review.md](agents/comment-review.md) | **Transversal**: audita os comentários do diff — se cada um é **verdadeiro** sobre o código, se precisa existir e se é atemporal. Par de julgamento do hook `comments-on-stop` (que só pega forma). |
 | `infra-review` | [agents/infra-review.md](agents/infra-review.md) | Revisa IaC do repo (compose, Dockerfile, Caddyfile, `.env.example`): segredo fora do arquivo, porta só na borda, DB least-privilege, container não-root, rede segmentada, TLS/headers. |
 | `state-audit` | [agents/state-audit.md](agents/state-audit.md) | **Macro**: re-roda o diagnóstico por domínio e compara com `docs/roadmap.md` — reporta drift e progresso por fase. Par de checagem da `plan-project`. |
 | `security-perf-review` *(planejado · F4)* | — | **Transversal**: segurança/performance app-layer — rate-limit, bcrypt, upload, env guard, N+1, índices, deps (OWASP). |
@@ -248,6 +249,7 @@ transforme caso pontual em regra global sem o meu ok. Reviewer jamais ganha `Edi
   | `state-audit` | opus | síntese cross-domínio + drift vs roadmap |
   | `api-contract-review` | sonnet | comparação de consistência entre endpoints (delimitado) |
   | `ui-kit-review` | sonnet | aderência de convenção (mecânico) |
+  | `comment-review` | sonnet | leitura delimitada do diff; verificar afirmação contra o código |
   | `security-perf-review` *(F4)* | opus | segurança + varredura ampla |
 - **`tools`** (agentes): manter `Read, Grep, Glob` nos revisores. **Não** adicionar `Edit`/`Write` — perde o ponto de controle.
 - **`description`** (agentes e skills): é o que decide o roteamento automático e, na skill, a invocação por `/nome`. Se o item certo não for escolhido sozinho, refine o `description` (oriente a "quando usar").

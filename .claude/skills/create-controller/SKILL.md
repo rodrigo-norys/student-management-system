@@ -146,7 +146,17 @@ export default new <Entity>Controller();
 - **Shape de erro `{ errors: [...] }`** (plural, array de strings) em **todas** as respostas de erro. Status: `201` create, `200` ok, `400` validação/id inválido, `403` permissão/hierarquia, `404` ausência, `500` interno.
 - **Soft delete via `status` ENUM** (`update({ status: 'inactive' })`), nunca `destroy`. Em cascata, desative os filhos diretos (ex.: o `user` vinculado) na mesma transação.
 - **Peso hierárquico no controller.** Se a action mexe em **outro ator**, valide `req.userWeight` contra o `hierarchy_weight` do alvo (e regras de self-action) — `roleAuth` na rota **não** cobre isso. Veja `UserController.update/delete`.
-- **Busca:** `escapeLike(searchTerm)` + `Sequelize.Op.like` + `Sequelize.Op.or`. **Comentários em pt-br**, identificadores em inglês.
+- **Busca:** `escapeLike(searchTerm)` + `Sequelize.Op.like` + `Sequelize.Op.or`.
+- **Comentários: em pt-br, identificadores em inglês — e escassos.** Só onde há complexidade
+  real (herança de erro não-óbvia, comportamento do ORM que contraria a leitura direta). A
+  maioria dos comentários **não deve existir**; o código limpo se explica. Justificativa e
+  raciocínio vão para a resposta ao usuário ou `docs/`, **nunca** dentro do bloco de código.
+  Nada de narrativa ("antes era", "de propósito", "decisão do dono") — o comentário declara
+  restrição, é impessoal e atemporal.
+  > ⚠️ Os comentários do template acima são **ilustrativos do padrão**, não um piso a atingir.
+  > Não os copie por reflexo: reproduza só os que a sua entidade realmente justifica.
+  > Referência de densidade: `GuardianController.js` e `StaffController.js` têm ~6 comentários
+  > em ~400 linhas. Se você passou disso, corte.
 
 ## Forma mínima (entidade folha)
 

@@ -27,7 +27,10 @@ Copie a forma de `test/auth.guards.test.js`: import de `'../src/app.js'`, fixtur
 
 - **Envelope nos asserts:** erro é `{ errors: [...] }` plural (o canônico). Se um endpoint devolver `{ error }` singular, o teste **documenta a divergência** — não a normalize escondido.
 - **Prova de não-vacuidade (teste de guarda):** verde não prova que o teste cobre. Neutralize a guarda na **fonte** (o `return`/`throw` dela vira no-op) e rode — o teste-alvo **tem que ficar vermelho**. Se seguir verde, está preso a outro mecanismo (o ator passa pelo **peso** e não pela guarda; ou o **self-guard** dispara antes): corrija o **teste**, não a guarda. Restaure com `git checkout -- <arquivo>`, nunca reescrevendo à mão — guarda neutralizada esquecida no código é pior que teste vácuo.
-- **Comentários em pt-br, identificadores em inglês.**
+- **Comentários em pt-br, identificadores em inglês.** Em teste, o comentário que se justifica é
+  o que explica **por que aquele caso existe** ou **o que quebra sem ele** — sem ele, alguém
+  remove o teste achando que é redundante (ex.: a âncora positiva de uma matriz de flags).
+  Descrever o que o `expect` já diz é ruído. Sem narrativa; impessoal e atemporal.
 - Nome do arquivo: `backend/test/<alvo>.test.js` (flat, junto das suítes existentes — ex.: `delete.policy.test.js`).
 
 > O ciclo desta skill fecha no **gate `npm test`** (`vitest run`) **mais a prova de não-vacuidade** — teste é verificado **rodando**, não revisado. Rode `npm test` em `backend/`. A lógica de autorização que os testes cobrem tem o `backend-auth-review` como revisor de par.

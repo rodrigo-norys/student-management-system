@@ -57,6 +57,15 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/comments-on-stop.sh\"",
+            "timeout": 30
+          }
+        ]
       }
     ]
   }
