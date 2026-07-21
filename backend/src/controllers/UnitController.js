@@ -3,6 +3,7 @@ import database from '../database/index.js';
 
 import Unit from '../models/Unit.js';
 import Address from '../models/Address.js';
+import { parsePagination } from '../utils/pagination.js';
 
 const UNIT_ATTRIBUTES = ['id', 'name', 'cnpj', 'email', 'phone', 'status'];
 
@@ -23,9 +24,6 @@ const ADDRESS_INCLUDE = {
   attributes: ADDRESS_ATTRIBUTES,
 };
 
-const DEFAULT_PAGE_SIZE = 15;
-const MAX_PAGE_SIZE = 100;
-
 // Valor fora do ENUM escapa da validação do Sequelize e vira 500 no MariaDB.
 const UNIT_STATUSES = ['active', 'inactive'];
 
@@ -39,19 +37,6 @@ const UNIQUE_INDEX_FIELDS = {
 
 function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
-}
-
-function parsePagination({ page, limit }) {
-  const parsedPage = Number.parseInt(page, 10);
-  const parsedLimit = Number.parseInt(limit, 10);
-
-  return {
-    page: Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1,
-    limit:
-      Number.isInteger(parsedLimit) && parsedLimit > 0
-        ? Math.min(parsedLimit, MAX_PAGE_SIZE)
-        : DEFAULT_PAGE_SIZE,
-  };
 }
 
 function isAddressPayload(address) {
@@ -123,8 +108,7 @@ class UnitController {
   index = async (req, res) => {
     try {
       const { searchTerm } = req.query;
-      const { page, limit } = parsePagination(req.query);
-      const offset = (page - 1) * limit;
+      const { page, limit, offset } = parsePagination(req.query);
 
       const where = searchTerm
         ? {
