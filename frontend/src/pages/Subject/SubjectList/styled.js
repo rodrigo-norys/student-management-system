@@ -1,0 +1,43 @@
+import styled from 'styled-components';
+import * as colors from 'config/colors';
+import { StatusBadge } from 'components/ui';
+
+import { SUBJECT_STATUS } from '../constants';
+
+export {
+  ListContainer as Container,
+  HeaderToolbar,
+  ControlsArea,
+  SearchInput,
+  TableContainer,
+  TableActions,
+  PaginationArea,
+  NoResultsMessage,
+  PageButton,
+  Table as StyledTable,
+  TableNameCol,
+  EditButton,
+  DeleteButton,
+  NewEntityLink as NewSubjectLink,
+} from 'components/ui';
+
+const statusTheme = {
+  [SUBJECT_STATUS.ACTIVE]: {
+    text: colors.successColor,
+    bg: 'rgba(16, 185, 129, 0.1)',
+  },
+  [SUBJECT_STATUS.INACTIVE]: {
+    text: colors.dangerColor,
+    bg: 'rgba(239, 68, 68, 0.1)',
+  },
+};
+
+const resolveStatusColors = (props) => ({
+  $color: statusTheme[props.$status]?.text || colors.textSecondary,
+  $bg: statusTheme[props.$status]?.bg || colors.bgColor,
+});
+
+export const StatusCell = styled(StatusBadge).attrs((props) => ({
+  $variant: 'cell',
+  ...resolveStatusColors(props),
+}))``;

@@ -21,6 +21,7 @@ import staffRoutes from './routes/staffRoutes.js';
 import guardianRoutes from './routes/guardianRoutes.js';
 import accessLevelRoutes from './routes/accessLevelRoutes.js';
 import unitRoutes from './routes/unitRoutes.js';
+import subjectRoutes from './routes/subjectRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -87,6 +88,7 @@ class App {
     this.app.use('/guardians', guardianRoutes);
     this.app.use('/access-levels', accessLevelRoutes);
     this.app.use('/units', unitRoutes);
+    this.app.use('/subjects', subjectRoutes);
   }
 }
 

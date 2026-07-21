@@ -1,4 +1,5 @@
 import { ErrorMessage } from 'styles/GlobalStyles.js';
+import { PersistenceToggle } from './forms.js';
 
 // Valida input text de forma dinâmica.
 export const ValidatedInput = ({ label, error, ...rest }) => {
@@ -44,5 +45,15 @@ export const ValidatedTextarea = ({ label, error, ...rest }) => {
       <textarea {...rest} className={error ? 'has-error' : ''} />
       {error && <ErrorMessage>{error}</ErrorMessage>}
     </label>
+  );
+};
+
+export const CheckboxField = ({ id, label, checked, onChange }) => {
+  return (
+    <PersistenceToggle>
+      <input type="checkbox" id={id} checked={checked} onChange={onChange} />
+      <span className="checkmark" />
+      <label htmlFor={id}>{label}</label>
+    </PersistenceToggle>
   );
 };

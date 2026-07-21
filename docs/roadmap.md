@@ -49,7 +49,7 @@ e o sistema rodando na VPS atrás do Caddy com TLS válido.
  (com dívida)                    (com dívida)     ANDAMENTO                   (cutover)
                                                       ▲
                                                       └── 3A: fatia Unit entregue + R-F (paginação/erro unificados);
-                                                          213 testes verdes. Próximo: Subject.
+                                                          255 testes verdes. Próximo: UnitClass.
 ```
 
 **Leitura de Tech Lead:** o projeto fez a jogada pragmática certa de um solo — entregou
@@ -188,10 +188,10 @@ controller/rota**. `Unit` saiu da lista (fatia 3A entregue — `UnitController` 
 
 ### 1.5 Testes / CI — ✅ CI backend + frontend em PR (frontend sem testes ainda)
 
-- **Suíte de guards no ar:** 9 arquivos em `backend/test/` (+ helpers `auth.js`/`db.js`),
-  **213 testes passando** (medido em 2026-07-20, `npm test` → `Test Files 9 passed · Tests 213
-  passed`) — 134 da fundação + **64 de `unitRoutes`** (fatia 3A) + **15 de contrato de paginação**
-  (R-F). vitest+supertest contra o `school_test` **real** (MariaDB 10.11, nunca SQLite).
+- **Suíte de guards no ar:** 10 arquivos em `backend/test/` (+ helpers `auth.js`/`db.js`),
+  **255 testes passando** (medido em 2026-07-21, `npm test` → `Test Files 10 passed · Tests 255
+  passed`) — 134 da fundação + **64 de `unitRoutes`** + **17 de contrato de paginação** (R-F) +
+  **40 de `subjectRoutes`**. vitest+supertest contra o `school_test` **real** (MariaDB 10.11, nunca SQLite).
   Cobre `loginRequired`, `roleAuth` por flag, demo read-only trap, peso hierárquico/política de
   delete e cascade, política de avatar, robustez de input, envelope de erro `{ errors }` e
   **regressão estrutural** dos 2 bugs de F1.
@@ -297,7 +297,7 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
   entidade é uma **fatia vertical** pela cadeia canônica (`create-controller` → `create-route` →
   `create-page`; model já existe; `create-migration` só se houver ajuste de schema).
 - **Entregáveis (em ordem de dependência):**
-  - **3A — Estrutura:** `Unit` ✅, `Subject` ⬜, `UnitClass` (turmas) ⬜, `StaffUnit` (lotação) ⬜.
+  - **3A — Estrutura:** `Unit` ✅, `Subject` ✅, `UnitClass` (turmas) ⬜, `StaffUnit` (lotação) ⬜.
     > `Unit` vem primeiro por ser **pré-requisito estrutural** (as FKs `unit_id` de `addresses`,
     > `unit_classes` e `staff_units` apontam para ela). Entre os de operação, **StaffUnit primeiro**:
     > o isolamento multitenant da Fase 4 depende dele. Sequenciamento é decisão de arquitetura.
@@ -310,6 +310,17 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
     > **Consequência aceita (decisão do dono):** com leitura em `manage_record`, o Academic Coordinator
     > não lista unidades. Endereçar na fatia `UnitClass` com um **endpoint de lookup enxuto**
     > (`id` + `name`) sob `manage_academic` — **não** afrouxando o router de `Unit`.
+    >
+    > **`Subject` ✅ entregue (2026-07-21):** `SubjectController` na **forma mínima** (tabela folha:
+    > sem transação nem peso), nascido já no contrato pós-R-F (`parsePagination` compartilhado,
+    > `UniqueConstraintError` antes de `ValidationError`, allowlist de `status`); `subjectRoutes` com
+    > **`manage_academic` single-flag** em todos os verbos — ao contrário do `Unit`, aqui a flag é
+    > semanticamente correta (o catálogo curricular é conteúdo acadêmico); módulo redux-saga `subject`
+    > + páginas `SubjectList`/`SubjectForm`; primitivo `CheckboxField` extraído para o UI Kit.
+    >
+    > **Consequência aceita:** Student/Guardian **não leem** `/subjects` (não têm `manage_academic`).
+    > Quando o portal família (M11) precisar do nome da disciplina, virá por **endpoint escopado**,
+    > não por `GET /subjects` cru.
   - **3A.0 — Fatia horizontal — ✅ FEITA (2026-07-20):** ver **R-F** (§3). Helper de paginação
     compartilhado + ordem morta de `UniqueConstraintError` corrigida. Coerência de contrato
     remanescente registrada em **R-G** para o hardening.
@@ -577,6 +588,13 @@ Tier-map do `CLAUDE.md` (Fase 6); o `settings.local.json` já teve o `ssh` estre
 > Atualização 2026-07-09: auditoria de dependências (Fase 6 hygiene) — P1/P2 **mergeadas**; migração CRA→Vite registrada como **H6 (Fase 4)**. Ver §Fase 4 e §Fase 6. Diferente do resto do doc (diagnóstico), estas linhas refletem trabalho efetivamente mergeado.
 > Atualização 2026-07-10: auditoria do setup `.claude` em [`claude-setup-audit.md`](claude-setup-audit.md) (complementar). Sync do §1.7: registrado o 3º hook `format-on-stop` (Prettier + ESLint bloqueante no Stop), antes subdocumentado. Pendências acionáveis abertas por lá: R2 (estreitar `git checkout *` no `settings.local.json`) e R6 (avaliar `.claude/rules/`).
 > **Atualização 2026-07-17 — reancoragem da Fase 1 (medida nesta sessão):** o "VOCÊ ESTÁ AQUI" saiu de *Fase 1 RACHADA* para **essencialmente verde**. Estado medido: `npm test` = **134 testes passando** (7 suítes, `school_test` real); CI backend (`.github/workflows/backend-tests.yml`) com **5 runs verdes** (`gh run list`). Fechados: **F1** (auth — grep de `req.userLevel` = 0, regressão travada), **QW1** (`{errors}` plural), **User.show** (`roleAuth`), **F4** (suíte de guards). Resíduo real e único da Fase 1 = **F2** (envelope de paginação: `UserController.index`+`searchTargets` e `AccessLevelController.index`; + **QW2** log mislabel) — endereçado no passo seguinte. Fora do F2: **CI de frontend** ainda ausente. §1/§1.2/§1.5/§2/§3 sincronizados com esse estado. Fase 3 permanece **NÃO INICIADA**.
+> **Atualização 2026-07-21 — `Subject` entregue (2ª fatia da 3A):** segunda fatia vertical fechada
+> ponta a ponta, com o gate completo verde e **5 reviewers** (o `comment-review` entrou no par).
+> `npm test` = **255**. Primeira entidade a nascer **depois** da R-F: consumiu o `parsePagination`
+> compartilhado sem recriar helper — que era exatamente a razão de rodar a R-F antes de `Subject`.
+> Primeira rota do projeto a usar **`manage_academic`**. O UI Kit ganhou o primitivo `CheckboxField`
+> (extraído no lugar de reusar `PersistenceToggle` para campo de domínio). Próximo: **`UnitClass`**,
+> onde entra o endpoint de lookup que destrava o Academic Coordinator.
 > **Atualização 2026-07-20 — Fase 3A aberta, fatia `Unit` entregue:** primeira fatia vertical do
 > núcleo acadêmico fechada ponta a ponta (controller → rota → página), com o gate completo verde
 > (`controller-review`, `backend-auth-review`, `api-contract-review`, `ui-kit-review`, `npm test`,
