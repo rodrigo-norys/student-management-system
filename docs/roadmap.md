@@ -482,7 +482,27 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
      vazia. `UnitController.js:300-308` tem o fallback.
    - **Texto do 500 divergente:** `StaffController` diz `'An internal server error occurred.'`; os
      demais, `'Internal server error.'`.
-7. **R-G · Coerência de contrato entre controllers.** *Transversal; não bloqueia a 3A — candidata ao
+7. **R-H · Coerência de autorização de escrita no Tier 3.** *HITL (auth). Não bloqueia a 3A.*
+   As três entidades estruturais nasceram com **três fronteiras de escrita diferentes**, cada uma
+   decidida isoladamente:
+
+   | Catálogo | Escrita exige | Teacher escreve? |
+   |---|---|---|
+   | `Unit` | flag `manage_account` | ❌ |
+   | `UnitClass` | `manage_academic` + **peso ≥ 70** (`minWeight`) | ❌ |
+   | `Subject` | flag `manage_academic` | ✅ |
+
+   *O ponto que inverte a intuição:* o **blast radius do `Subject` é o maior dos três** — o catálogo
+   é global e referenciado por `class_allocations`, então desativar uma disciplina afeta todas as
+   turmas que a usam, enquanto desativar uma turma afeta uma turma. Barramos o professor no caso
+   menor e deixamos aberto o maior.
+
+   *Custo de adiar:* `subject.routes.test.js` **afirma em teste verde** que "nível 5 cria subject de
+   fato" — a assimetria está fixada em CI, então harmonizar exige editar suíte que passa.
+
+   *Se for uniformizar:* o `minWeight(ACADEMIC_STRUCTURE_MIN_WEIGHT)` já existe como middleware e se
+   aplica ao `subjectRoutes` sem código novo. *Gate:* `backend-auth-review` + `npm test`.
+8. **R-G · Coerência de contrato entre controllers.** *Transversal; não bloqueia a 3A — candidata ao
    hardening (H4).* Desenterrada pelo `api-contract-review` ao fechar a R-F (2026-07-20). Todas
    **pré-existentes**, nenhuma é regressão:
    - **Projeção da mesma relação difere entre ações:** `UserController` projeta `access_level` como

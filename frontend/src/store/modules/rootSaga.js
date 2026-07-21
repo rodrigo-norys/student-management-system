@@ -7,7 +7,17 @@ import staff from './staff/sagas.js';
 import guardian from './guardian/sagas.js';
 import unit from './unit/sagas.js';
 import subject from './subject/sagas.js';
+import unitClass from './unitClass/sagas.js';
 
 export default function* rootSaga() {
-  return yield all([auth, student, photo, staff, guardian, unit, subject]);
+  return yield all([
+    auth,
+    student,
+    photo,
+    staff,
+    guardian,
+    unit,
+    subject,
+    unitClass,
+  ]);
 }

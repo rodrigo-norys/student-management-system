@@ -30,6 +30,9 @@ import UnitList from 'pages/Unit/UnitList';
 import SubjectForm from 'pages/Subject/SubjectForm';
 import SubjectList from 'pages/Subject/SubjectList';
 
+import UnitClassForm from 'pages/UnitClass/UnitClassForm';
+import UnitClassList from 'pages/UnitClass/UnitClassList';
+
 import Page404 from 'pages/System/Page404';
 import Photos from 'pages/System/Photos';
 
@@ -119,6 +122,33 @@ export default function AppRouter() {
           element={
             <ProtectedRoute allowedRoles={[1, 2, 4, 5]}>
               <SubjectForm />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/unit-classes"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2, 4, 5]}>
+              <UnitClassList />
+            </ProtectedRoute>
+          }
+        />
+        {/* A escrita de turma exige o piso de peso do backend, que exclui o
+            professor; a leitura acima segue em manage_academic. */}
+        <Route
+          path="/unit-class/create"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2, 4]}>
+              <UnitClassForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/unit-class/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2, 4]}>
+              <UnitClassForm />
             </ProtectedRoute>
           }
         />

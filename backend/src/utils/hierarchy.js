@@ -18,6 +18,13 @@ export const PROTECTED_TARGET_ERROR =
   'Forbidden. The General Director cannot be deactivated.';
 
 /**
+ * Piso de escrita da estrutura acadêmica. `manage_academic` alcança do
+ * Academic Coordinator ao Teacher; o peso é o que separa os dois, já que
+ * nenhuma flag os distingue.
+ */
+export const ACADEMIC_STRUCTURE_MIN_WEIGHT = 70;
+
+/**
  * @param {number | null | undefined} targetUserId
  * @param {{ access_level_id?: number } | null | undefined} targetUser
  * @returns {boolean}
