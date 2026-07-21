@@ -7,11 +7,20 @@ export default class UnitClass extends Model {
         unit_id: {
           type: Sequelize.INTEGER,
           allowNull: false,
+          validate: {
+            notNull: {
+              msg: 'Unit is required.',
+            },
+          },
         },
         name: {
           type: Sequelize.STRING(20),
+          allowNull: false,
           defaultValue: '',
           validate: {
+            notNull: {
+              msg: 'Class identifier/name is required.',
+            },
             notEmpty: {
               msg: 'Class identifier/name is required.',
             },
@@ -23,37 +32,69 @@ export default class UnitClass extends Model {
         },
         grade_level: {
           type: Sequelize.STRING(50),
+          allowNull: false,
           defaultValue: '',
           validate: {
+            notNull: {
+              msg: 'Grade level is required.',
+            },
             notEmpty: {
               msg: 'Grade level is required.',
+            },
+            len: {
+              args: [1, 50],
+              msg: 'Grade level must be between 1 and 50 characters.',
             },
           },
         },
         room_number: {
           type: Sequelize.STRING(20),
+          allowNull: false,
           defaultValue: '',
           validate: {
+            notNull: {
+              msg: 'Room number is required.',
+            },
             notEmpty: {
               msg: 'Room number is required.',
+            },
+            len: {
+              args: [1, 20],
+              msg: 'Room number must be between 1 and 20 characters.',
             },
           },
         },
         shift: {
           type: Sequelize.STRING(15),
+          allowNull: false,
           defaultValue: '',
           validate: {
+            notNull: {
+              msg: 'Shift is required.',
+            },
             notEmpty: {
               msg: 'Shift is required.',
+            },
+            len: {
+              args: [1, 15],
+              msg: 'Shift must be between 1 and 15 characters.',
             },
           },
         },
         school_year: {
           type: Sequelize.STRING(45),
+          allowNull: false,
           defaultValue: '',
           validate: {
+            notNull: {
+              msg: 'School year is required.',
+            },
             notEmpty: {
               msg: 'School year is required.',
+            },
+            len: {
+              args: [1, 45],
+              msg: 'School year must be between 1 and 45 characters.',
             },
           },
         },
@@ -67,6 +108,10 @@ export default class UnitClass extends Model {
             min: {
               args: [1],
               msg: 'Class must support at least 1 student.',
+            },
+            max: {
+              args: [10000],
+              msg: 'Max students must not exceed 10000.',
             },
           },
         },
