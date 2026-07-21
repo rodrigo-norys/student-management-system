@@ -48,8 +48,8 @@ e o sistema rodando na VPS atrás do Caddy com TLS válido.
    ✅ FEITO       ✅ FECHADA        ✅ FEITO        🔶 EM           ⬜            ✅ FEITO    ⬜
  (com dívida)                    (com dívida)     ANDAMENTO                   (cutover)
                                                       ▲
-                                                      └── 3A: fatia Unit entregue (controller → rota → página);
-                                                          198 testes verdes (7 suítes de fundação + 64 de Unit).
+                                                      └── 3A: fatia Unit entregue + R-F (paginação/erro unificados);
+                                                          213 testes verdes. Próximo: Subject.
 ```
 
 **Leitura de Tech Lead:** o projeto fez a jogada pragmática certa de um solo — entregou
@@ -188,10 +188,10 @@ controller/rota**. `Unit` saiu da lista (fatia 3A entregue — `UnitController` 
 
 ### 1.5 Testes / CI — ✅ CI backend + frontend em PR (frontend sem testes ainda)
 
-- **Suíte de guards no ar:** 8 arquivos em `backend/test/` (+ helpers `auth.js`/`db.js`),
-  **198 testes passando** (medido em 2026-07-20, `npm test` → `Test Files 8 passed · Tests 198
-  passed`) — 134 da fundação + **64 de `unitRoutes`** (fatia 3A). vitest+supertest contra o
-  `school_test` **real** (MariaDB 10.11, nunca SQLite).
+- **Suíte de guards no ar:** 9 arquivos em `backend/test/` (+ helpers `auth.js`/`db.js`),
+  **213 testes passando** (medido em 2026-07-20, `npm test` → `Test Files 9 passed · Tests 213
+  passed`) — 134 da fundação + **64 de `unitRoutes`** (fatia 3A) + **15 de contrato de paginação**
+  (R-F). vitest+supertest contra o `school_test` **real** (MariaDB 10.11, nunca SQLite).
   Cobre `loginRequired`, `roleAuth` por flag, demo read-only trap, peso hierárquico/política de
   delete e cascade, política de avatar, robustez de input, envelope de erro `{ errors }` e
   **regressão estrutural** dos 2 bugs de F1.
@@ -310,8 +310,9 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
     > **Consequência aceita (decisão do dono):** com leitura em `manage_record`, o Academic Coordinator
     > não lista unidades. Endereçar na fatia `UnitClass` com um **endpoint de lookup enxuto**
     > (`id` + `name`) sob `manage_academic` — **não** afrouxando o router de `Unit`.
-  - **3A.0 — Fatia horizontal (antes de `Subject`):** ver **R-F** (§3) — extrair o helper de paginação
-    e corrigir a ordem morta de `UniqueConstraintError` nos controllers irmãos.
+  - **3A.0 — Fatia horizontal — ✅ FEITA (2026-07-20):** ver **R-F** (§3). Helper de paginação
+    compartilhado + ordem morta de `UniqueConstraintError` corrigida. Coerência de contrato
+    remanescente registrada em **R-G** para o hardening.
   - **3B — Operações:** `StudentClass` (matrícula), `ClassAllocation` (professor×turma×disciplina).
   - **3C — Resultados:** `StudentGrade` (notas), `Attendance` (frequência).
   - Cada fatia: controller (forma canônica do `UserController` — transação, projeção
@@ -434,8 +435,15 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
    `userSchema`). *Entra:* yup por endpoint mutador (gerável pelo `create-controller`/`create-route`).
    *Risco:* baixo. Construir junto na Fase 3 (cada fatia nasce com schema).
 5. **R-E · Multitenant scoping helper** — ver H1 (Fase 4). Arquitetural; depende de StaffUnit HTTP.
-6. **R-F · Helper de paginação + ordem do `UniqueConstraintError`.** *Fatia horizontal curta, a rodar
-   **antes de `Subject`** (3A.0).* Não usa a cadeia de entidade — toca só controllers existentes.
+6. **R-F · Helper de paginação + ordem do `UniqueConstraintError` — ✅ FEITO (3A.0, 2026-07-20).**
+   `utils/pagination.js` (`parsePagination` com default + teto) consumido pelos 6 controllers;
+   `?page=abc` cai no default em vez de 500 em toda a API paginada. `handleErrors` com
+   `UniqueConstraintError` antes de `ValidationError` em `User`/`Staff`/`AccessLevel`, fallback
+   `'Invalid data provided.'` nos 5, texto do 500 unificado no `Staff` e mensagem do `AccessLevel`
+   corrigida (`name`, não email). Suíte transversal `test/pagination.contract.test.js` (15 testes,
+   validada por mutação). `npm test` = **213**. *Escopo consciente:* `Guardian`/`Student` não
+   ganharam branch de duplicata (decisão do dono); o `handleErrors` do `AccessLevel` é código morto
+   até existir rota de escrita (hoje só `GET`). Diagnóstico original abaixo, preservado.
 
    *Motivo (medido em 2026-07-20, não estimado):* o default de destructuring
    `const { page = 1 } = req.query` só cobre `page` **ausente**. Com `page` presente e não numérico,
@@ -463,6 +471,24 @@ Cada fase: **objetivo · entregáveis · dependências · HITL/gates · critéri
      vazia. `UnitController.js:300-308` tem o fallback.
    - **Texto do 500 divergente:** `StaffController` diz `'An internal server error occurred.'`; os
      demais, `'Internal server error.'`.
+7. **R-G · Coerência de contrato entre controllers.** *Transversal; não bloqueia a 3A — candidata ao
+   hardening (H4).* Desenterrada pelo `api-contract-review` ao fechar a R-F (2026-07-20). Todas
+   **pré-existentes**, nenhuma é regressão:
+   - **Projeção da mesma relação difere entre ações:** `UserController` projeta `access_level` como
+     `{name, description}` no `update`, mas `{name, hierarchy_weight, manage_*}` no `index`/`show`.
+     `Guardian`/`Student` projetam `user` sem `access_level_id` no `show` mas com ele no `index`.
+     `StaffController` é o que acerta (mesma projeção nos dois). Alvo: uniformizar por entidade.
+   - **Branch de `ForeignKeyConstraintError` ausente** em `User`/`Staff`/`AccessLevel` (FK vira 500);
+     `Guardian`/`Student`/`Unit` convertem para 400. Mesmo tipo de erro, status diferente.
+   - **Convenção de resposta de mutação:** `User.delete` devolve `{message, cascade}` e
+     `User.setupPassword` devolve `{success:true}` — os demais deletes só `{message}`. `displayName`
+     em camelCase no `searchTargets` quebra o snake_case do resto.
+   - **Texto do 500 fora dos 6 CRUD:** `TokenController` e `AvatarController` mantêm textos próprios
+     (`'Internal server error while generating token'`) — decisão do dono foi preservá-los por serem
+     contextuais; unificar só se a régua endurecer.
+   - **`AccessLevelController.handleErrors` é código morto:** a rota só expõe `GET` — os branches de
+     erro (corrigidos na R-F) nunca são alcançados até existir rota de escrita.
+   *Risco:* baixo (mensagem/shape, não lógica). *Gate:* `api-contract-review` + `npm test`.
 
    *Por que antes de `Subject`:* as 3 fatias restantes da 3A vão precisar da mesma paginação. Fazer
    agora evita 3 cópias novas do helper. *Risco:* baixo (sem mudança de envelope de sucesso).
