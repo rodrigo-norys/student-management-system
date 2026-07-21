@@ -14,6 +14,7 @@ import {
   FaUserFriends,
   FaEye,
   FaBuilding,
+  FaBook,
 } from 'react-icons/fa';
 import {
   LayoutContainer,
@@ -110,6 +111,13 @@ export default function Layout() {
             onClick={() => setIsMenuOpen(false)}
           >
             <FaBuilding /> Units
+          </NavItem>
+          <NavItem
+            to="/subjects"
+            className={isActive('/subjects')}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <FaBook /> Subjects
           </NavItem>
           <NavItem
             to="/settings"

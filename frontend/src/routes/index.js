@@ -27,6 +27,9 @@ import GuardianProfile from 'pages/Guardian/GuardianProfile';
 import UnitForm from 'pages/Unit/UnitForm';
 import UnitList from 'pages/Unit/UnitList';
 
+import SubjectForm from 'pages/Subject/SubjectForm';
+import SubjectList from 'pages/Subject/SubjectList';
+
 import Page404 from 'pages/System/Page404';
 import Photos from 'pages/System/Photos';
 
@@ -90,6 +93,32 @@ export default function AppRouter() {
           element={
             <ProtectedRoute allowedRoles={[1, 2]}>
               <UnitForm />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Espelha manage_academic no backend: mesma flag para leitura e escrita. */}
+        <Route
+          path="/subjects"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2, 4, 5]}>
+              <SubjectList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subject/create"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2, 4, 5]}>
+              <SubjectForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subject/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={[1, 2, 4, 5]}>
+              <SubjectForm />
             </ProtectedRoute>
           }
         />
