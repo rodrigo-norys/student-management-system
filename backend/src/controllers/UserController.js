@@ -12,6 +12,7 @@ import {
   hasAuthorityOver,
   PROTECTED_TARGET_ERROR,
 } from '../utils/hierarchy.js';
+import { parsePagination } from '../utils/pagination.js';
 
 const { Op: Operators } = Sequelize;
 
@@ -161,10 +162,8 @@ class UserController {
 
   index = async (req, res) => {
     try {
-      const { status, searchTerm, page = 1, limit = 15 } = req.query;
-      const pageNum = parseInt(page, 10);
-      const limitNum = parseInt(limit, 10);
-      const offset = (pageNum - 1) * limitNum;
+      const { status, searchTerm } = req.query;
+      const { page, limit, offset } = parsePagination(req.query);
 
       const where = {};
 
@@ -199,16 +198,16 @@ class UserController {
           },
         ],
         order: [['id', 'DESC']],
-        limit: limitNum,
-        offset: offset,
+        limit,
+        offset,
       });
 
-      const totalPages = Math.ceil(count / limitNum);
+      const totalPages = Math.ceil(count / limit);
 
       return res.json({
         totalItems: count,
         totalPages,
-        currentPage: pageNum,
+        currentPage: page,
         data: rows,
       });
     } catch (e) {
@@ -473,10 +472,8 @@ class UserController {
    */
   searchTargets = async (req, res) => {
     try {
-      const { searchTerm, page = 1, limit = 15 } = req.query;
-      const pageNum = parseInt(page, 10);
-      const limitNum = parseInt(limit, 10);
-      const offset = (pageNum - 1) * limitNum;
+      const { searchTerm } = req.query;
+      const { page, limit, offset } = parsePagination(req.query);
 
       const studentWhere = { user_id: null };
       const guardianWhere = { user_id: null };
@@ -541,13 +538,13 @@ class UserController {
       ];
 
       const totalCount = results.length;
-      const totalPages = Math.ceil(totalCount / limitNum);
-      const paginatedResults = results.slice(offset, offset + limitNum);
+      const totalPages = Math.ceil(totalCount / limit);
+      const paginatedResults = results.slice(offset, offset + limit);
 
       return res.json({
         totalItems: totalCount,
         totalPages,
-        currentPage: pageNum,
+        currentPage: page,
         data: paginatedResults,
       });
     } catch (e) {
@@ -591,13 +588,15 @@ class UserController {
   };
 
   handleErrors(error, res) {
-    if (error instanceof Sequelize.ValidationError) {
-      return res
-        .status(400)
-        .json({ errors: error.errors.map((err) => err.message) });
-    }
+    // UniqueConstraintError estende ValidationError e precisa vir antes.
     if (error instanceof Sequelize.UniqueConstraintError) {
       return res.status(400).json({ errors: ['Email is already in use.'] });
+    }
+    if (error instanceof Sequelize.ValidationError) {
+      const messages = error.errors.map((err) => err.message).filter(Boolean);
+      return res.status(400).json({
+        errors: messages.length > 0 ? messages : ['Invalid data provided.'],
+      });
     }
     console.error('UserController Error:', error);
     return res.status(500).json({ errors: ['Internal server error.'] });

@@ -22,13 +22,17 @@ class AccessLevelController {
   };
 
   handleErrors(error, res) {
-    if (error instanceof Sequelize.ValidationError) {
+    // UniqueConstraintError estende ValidationError e precisa vir antes.
+    if (error instanceof Sequelize.UniqueConstraintError) {
       return res
         .status(400)
-        .json({ errors: error.errors.map((err) => err.message) });
+        .json({ errors: ['This access level name is already in use.'] });
     }
-    if (error instanceof Sequelize.UniqueConstraintError) {
-      return res.status(400).json({ errors: ['Email is already in use.'] });
+    if (error instanceof Sequelize.ValidationError) {
+      const messages = error.errors.map((err) => err.message).filter(Boolean);
+      return res.status(400).json({
+        errors: messages.length > 0 ? messages : ['Invalid data provided.'],
+      });
     }
     console.error('AccessLevelController Error:', error);
     return res.status(500).json({ errors: ['Internal server error.'] });

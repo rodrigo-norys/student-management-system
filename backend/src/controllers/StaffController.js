@@ -11,6 +11,7 @@ import {
   hasAuthorityOver,
   PROTECTED_TARGET_ERROR,
 } from '../utils/hierarchy.js';
+import { parsePagination } from '../utils/pagination.js';
 
 function isValidId(id) {
   return id && !isNaN(Number(id)) && Number(id) > 0;
@@ -92,11 +93,10 @@ class StaffController {
 
   index = async (req, res) => {
     try {
-      const { page = 1, limit = 15 } = req.query;
-      const offset = (Number(page) - 1) * Number(limit);
+      const { page, limit, offset } = parsePagination(req.query);
 
       const staffMembers = await Staff.findAndCountAll({
-        limit: Number(limit),
+        limit,
         offset,
         attributes: {
           exclude: ['created_at', 'updated_at'],
@@ -126,12 +126,12 @@ class StaffController {
         ],
       });
 
-      const totalPages = Math.ceil(staffMembers.count / Number(limit));
+      const totalPages = Math.ceil(staffMembers.count / limit);
 
       return res.json({
         totalItems: staffMembers.count,
         totalPages,
-        currentPage: Number(page),
+        currentPage: page,
         data: staffMembers.rows,
       });
     } catch (e) {
@@ -364,11 +364,7 @@ class StaffController {
   };
 
   handleErrors(e, res) {
-    if (e instanceof Sequelize.ValidationError) {
-      return res.status(400).json({
-        errors: e.errors.map((err) => err.message),
-      });
-    }
+    // UniqueConstraintError estende ValidationError e precisa vir antes.
     if (e instanceof Sequelize.UniqueConstraintError) {
       return res.status(400).json({
         errors: [
@@ -376,9 +372,15 @@ class StaffController {
         ],
       });
     }
+    if (e instanceof Sequelize.ValidationError) {
+      const messages = e.errors.map((err) => err.message).filter(Boolean);
+      return res.status(400).json({
+        errors: messages.length > 0 ? messages : ['Invalid data provided.'],
+      });
+    }
     console.error('StaffController Error:', e);
     return res.status(500).json({
-      errors: ['An internal server error occurred.'],
+      errors: ['Internal server error.'],
     });
   }
 }

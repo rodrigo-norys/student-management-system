@@ -17,3 +17,6 @@
 
 # Helper replicado em StudentController/UserController/UnitController
 Escapa wildcards do LIKE
+
+# Restrição de ordem no handleErrors, replicada nos controllers com branch de duplicata
+UniqueConstraintError estende ValidationError
