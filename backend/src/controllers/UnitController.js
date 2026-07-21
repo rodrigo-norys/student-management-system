@@ -105,6 +105,25 @@ class UnitController {
     }
   };
 
+  lookup = async (req, res) => {
+    try {
+      const units = await Unit.findAll({
+        attributes: ['id', 'name'],
+        where: { status: 'active' },
+        order: [['name', 'ASC']],
+      });
+
+      return res.json({
+        totalItems: units.length,
+        totalPages: 1,
+        currentPage: 1,
+        data: units,
+      });
+    } catch (e) {
+      return this.handleErrors(e, res);
+    }
+  };
+
   index = async (req, res) => {
     try {
       const { searchTerm } = req.query;

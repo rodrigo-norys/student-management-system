@@ -97,6 +97,7 @@ afterAll(async () => {
 describe('unitRoutes — autenticação', () => {
   it.each([
     ['get', '/units'],
+    ['get', '/units/lookup'],
     ['get', `/units/${ABSENT_UNIT_ID}`],
     ['post', '/units'],
     ['put', `/units/${ABSENT_UNIT_ID}`],
@@ -354,5 +355,63 @@ describe('unitRoutes — paginação normalizada', () => {
       .set('Cookie', cookieFor(testUser(LEVELS.GENERAL_DIRECTOR)));
     expect(res.status).toBe(200);
     expect(res.body.currentPage).toBe(1);
+  });
+});
+
+// A leitura do CRUD exige manage_record, que o Academic Coordinator não tem —
+// o lookup existe para o seletor de unidade das fatias acadêmicas.
+describe('unitRoutes — lookup sob manage_academic', () => {
+  const CAN_LOOKUP = [
+    LEVELS.GENERAL_DIRECTOR,
+    LEVELS.SCHOOL_OFFICE,
+    LEVELS.ACADEMIC_COORDINATOR,
+    LEVELS.TEACHER,
+  ];
+
+  it.each(CAN_LOOKUP)('nível %i obtém o lookup', async (level) => {
+    const res = await request(app)
+      .get('/units/lookup')
+      .set('Cookie', cookieFor(testUser(level)));
+    expect(res.status).toBe(200);
+    // Um show devolveria objeto: a lista prova que a rota estática não foi
+    // capturada pelo /:id.
+    expect(Array.isArray(res.body.data)).toBe(true);
+    const fixture = res.body.data.find((u) => u.id === READABLE_UNIT.id);
+    expect(fixture).toEqual({
+      id: READABLE_UNIT.id,
+      name: READABLE_UNIT.name,
+    });
+  });
+
+  it('não expõe a identidade fiscal servida pelo index', async () => {
+    const res = await request(app)
+      .get('/units/lookup')
+      .set('Cookie', cookieFor(testUser(LEVELS.TEACHER)));
+    expect(res.status).toBe(200);
+    expect(Object.keys(res.body.data[0]).sort()).toEqual(['id', 'name']);
+  });
+
+  it.each([LEVELS.SECURITY, LEVELS.STUDENT, LEVELS.GUARDIAN])(
+    'nível %i recebe 403 no lookup',
+    async (level) => {
+      const res = await request(app)
+        .get('/units/lookup')
+        .set('Cookie', cookieFor(testUser(level)));
+      expect(res.status).toBe(403);
+    },
+  );
+
+  it('omite unidade inativa do seletor', async () => {
+    await Unit.update(
+      { status: 'inactive' },
+      { where: { id: SECOND_UNIT.id } },
+    );
+    const res = await request(app)
+      .get('/units/lookup')
+      .set('Cookie', cookieFor(testUser(LEVELS.ACADEMIC_COORDINATOR)));
+    await Unit.update({ status: 'active' }, { where: { id: SECOND_UNIT.id } });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.some((u) => u.id === SECOND_UNIT.id)).toBe(false);
   });
 });
