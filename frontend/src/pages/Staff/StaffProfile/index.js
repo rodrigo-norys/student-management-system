@@ -7,10 +7,16 @@ import Loading from 'components/Loading';
 
 import * as actions from 'store/modules/staff/actions';
 
-import { TAB_KEYS, PROFILE_TABS, DEFAULT_TAB } from './constants';
+import {
+  TAB_KEYS,
+  PROFILE_TABS,
+  DEFAULT_TAB,
+  ASSIGNMENT_MANAGER_LEVELS,
+} from './constants';
 
 import GeneralTab from './components/GeneralTab';
 import AddressTab from './components/AddressTab';
+import UnitsTab from './components/UnitsTab';
 import MedicalTab from './components/MedicalTab';
 
 import * as Styled from './styled';
@@ -22,6 +28,11 @@ export default function StaffProfile() {
   const isLoading = useSelector((state) => state.staff.isLoading);
   const staffMember = useSelector((state) =>
     state.staff.staff.find((member) => String(member.id) === String(id)),
+  );
+  const { user = {} } = useSelector((state) => state.auth || {});
+
+  const canManageAssignments = ASSIGNMENT_MANAGER_LEVELS.includes(
+    user?.access_level_id,
   );
 
   const [activeTab, setActiveTab] = useState(DEFAULT_TAB);
@@ -88,6 +99,9 @@ export default function StaffProfile() {
             )}
             {activeTab === TAB_KEYS.ADDRESS && (
               <AddressTab staff={staffMember} />
+            )}
+            {activeTab === TAB_KEYS.UNITS && (
+              <UnitsTab staff={staffMember} canManage={canManageAssignments} />
             )}
             {activeTab === TAB_KEYS.MEDICAL && (
               <MedicalTab staff={staffMember} />

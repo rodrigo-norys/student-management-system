@@ -8,10 +8,10 @@ export default function AddressTab({ staff }) {
     <Styled.AddressGrid>
       {addressList.length > 0 ? (
         addressList.map((address, index) => (
-          <Styled.AddressCard key={address.id}>
-            <Styled.AddressCardHeader>
+          <Styled.InfoCard key={address.id}>
+            <Styled.InfoCardHeader>
               <h3>Location #{index + 1}</h3>
-            </Styled.AddressCardHeader>
+            </Styled.InfoCardHeader>
             <div
               style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
             >
@@ -44,12 +44,12 @@ export default function AddressTab({ staff }) {
                 <Styled.Value>{address.zip_code}</Styled.Value>
               </div>
             </div>
-          </Styled.AddressCard>
+          </Styled.InfoCard>
         ))
       ) : (
-        <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>
+        <Styled.EmptyMessage>
           No addresses registered for this staff member.
-        </p>
+        </Styled.EmptyMessage>
       )}
     </Styled.AddressGrid>
   );
