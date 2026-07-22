@@ -24,6 +24,7 @@ const PAGINATED_ENDPOINTS = [
   '/units',
   '/subjects',
   '/unit-classes',
+  '/staff-units',
 ];
 
 beforeAll(async () => {
