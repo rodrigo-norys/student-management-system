@@ -23,6 +23,7 @@ import accessLevelRoutes from './routes/accessLevelRoutes.js';
 import unitRoutes from './routes/unitRoutes.js';
 import subjectRoutes from './routes/subjectRoutes.js';
 import unitClassRoutes from './routes/unitClassRoutes.js';
+import staffUnitRoutes from './routes/staffUnitRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -91,6 +92,7 @@ class App {
     this.app.use('/units', unitRoutes);
     this.app.use('/subjects', subjectRoutes);
     this.app.use('/unit-classes', unitClassRoutes);
+    this.app.use('/staff-units', staffUnitRoutes);
   }
 }
 

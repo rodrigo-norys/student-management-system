@@ -84,8 +84,9 @@ export default class Unit extends Model {
     });
 
     this.belongsToMany(models.Staff, {
-      through: 'staff_units',
+      through: { model: models.StaffUnit, unique: false },
       foreignKey: 'unit_id',
+      otherKey: 'staff_id',
       as: 'staff_members',
     });
   }

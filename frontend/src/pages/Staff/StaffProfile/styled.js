@@ -1,5 +1,8 @@
 import styled from 'styled-components';
 import * as colors from 'config/colors';
+import { StatusBadge } from 'components/ui';
+
+import { ASSIGNMENT_STATUS } from './constants';
 
 export {
   FormGrid,
@@ -12,6 +15,8 @@ export {
   Value,
   AddressGrid,
   PrimaryButton,
+  DeleteButton,
+  ValidatedSelect,
 } from 'components/ui';
 
 export const Sidebar = styled.div`
@@ -26,7 +31,7 @@ export const MainContent = styled.div`
   gap: 24px;
 `;
 
-export const AddressCard = styled.div`
+export const InfoCard = styled.div`
   background: rgba(15, 23, 42, 0.4);
   border: 1px solid ${colors.borderColor};
   border-radius: 12px;
@@ -38,8 +43,11 @@ export const AddressCard = styled.div`
   }
 `;
 
-export const AddressCardHeader = styled.div`
+export const InfoCardHeader = styled.div`
+  align-items: center;
   border-bottom: 1px solid ${colors.borderColor};
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 15px;
   padding-bottom: 10px;
 
@@ -66,3 +74,38 @@ export const MedicalNotesWrapper = styled.div`
     font-style: italic;
   }
 `;
+
+export const AssignmentForm = styled.form`
+  align-items: flex-end;
+  border-bottom: 1px solid ${colors.borderColor};
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+
+  label {
+    flex: 1;
+  }
+`;
+
+export const EmptyMessage = styled.p`
+  color: ${colors.textSecondary};
+  font-style: italic;
+`;
+
+const statusTheme = {
+  [ASSIGNMENT_STATUS.ACTIVE]: {
+    text: colors.successColor,
+    bg: 'rgba(16, 185, 129, 0.1)',
+  },
+  [ASSIGNMENT_STATUS.INACTIVE]: {
+    text: colors.dangerColor,
+    bg: 'rgba(239, 68, 68, 0.1)',
+  },
+};
+
+export const StatusCell = styled(StatusBadge).attrs((props) => ({
+  $variant: 'cell',
+  $color: statusTheme[props.$status]?.text || colors.textSecondary,
+  $bg: statusTheme[props.$status]?.bg || colors.bgColor,
+}))``;

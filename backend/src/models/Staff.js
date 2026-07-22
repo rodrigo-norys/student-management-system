@@ -152,5 +152,12 @@ export default class Staff extends Model {
       foreignKey: 'staff_id',
       as: 'addresses',
     });
+
+    this.belongsToMany(models.Unit, {
+      through: { model: models.StaffUnit, unique: false },
+      foreignKey: 'staff_id',
+      otherKey: 'unit_id',
+      as: 'units',
+    });
   }
 }
