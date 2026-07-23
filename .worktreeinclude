@@ -1,0 +1,13 @@
+# Copiados para cada worktree nova. Sintaxe .gitignore; só entra o que também é gitignored.
+
+.env
+backend/.env
+frontend/.env
+frontend/.env.production
+
+docker-compose.override.yml
+
+backend/uploads/
+
+# LandingPreview importa estes arquivos direto; sem eles o build do frontend falha.
+frontend/src/assets/

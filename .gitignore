@@ -5,5 +5,8 @@
 
 docker-compose.override.yml
 
+# Cópias de trabalho paralelas criadas pelo Claude Code.
+.claude/worktrees/
+
 # Auditorias/notas de infra com dados sigilosos (hosts, topologia, achados) — nunca versionar
 docs/infra/
