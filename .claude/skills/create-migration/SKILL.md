@@ -68,4 +68,7 @@ export async function down(queryInterface, Sequelize) {
 ## 5. Aplicar
 De `backend/`: `npx sequelize-cli db:migrate` (comando muta o banco → pede permissão). Lembre que **não roda em transação por padrão** — em `createTable` simples é ok, mas em migration multi-passo uma falha no meio deixa estado parcial.
 
+> Depois do `db:migrate`, o ponto de retorno da fatia passa a ser o checkpoint B (pós-migration).
+> Rewind para antes daqui exige `db:migrate:undo` junto — o `down` que você revisou é o que o torna seguro.
+
 > Após gerar, sugira passar no agente `migration-review` antes de aplicar.
