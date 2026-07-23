@@ -9,6 +9,10 @@ Orquestrador-como-skill no nível de **épico/fase** (não 1 feature). Roda no c
 
 **Argumento:** o objetivo do épico (ex.: `/plan-project fechar Tier 3`, `/plan-project multitenant`). Sem argumento, pergunte qual épico/fase vamos planejar.
 
+**Rode em plan mode.** Com o épico já definido, chame `EnterPlanMode` antes do passo 1 (se a sessão
+ainda não estiver nele): o read-only passa a ser garantido pelo harness. A edição do `docs/roadmap.md` (passo 5) acontece
+depois do aceite, já fora do plan mode.
+
 ## Passos
 
 ### 1. Situar no roadmap

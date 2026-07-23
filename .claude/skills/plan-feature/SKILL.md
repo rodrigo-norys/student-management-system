@@ -12,6 +12,11 @@ para no seu aceite. Subagente Claude é um nível só, então a orquestração m
 Escopo: esta skill é para **uma fatia/feature**; para um **épico/fase inteira** (multi-entidade),
 use o macro-planner `plan-project`, que decompõe em fatias e chama esta por fatia.
 
+**Rode em plan mode.** Com o alvo já definido, chame `EnterPlanMode` antes do passo 1 (se a sessão
+ainda não estiver nele): o read-only passa a ser garantido pelo harness. O plano vai para o arquivo de plano da sessão e sai
+pelo `ExitPlanMode` — o aceite dele é o gate que libera as `create-*`. Use as seções do passo 6 como
+corpo desse arquivo.
+
 **Argumento:** descrição da feature ou nome da entidade (ex.: `/plan-feature subject`,
 `/plan-feature alocar professor em turma`). Sem argumento, pergunte o que vamos planejar
 antes de seguir.
@@ -59,6 +64,9 @@ Saída:
 - **Pontos de aprovação humana** — os do passo 4.
 - **Gates** — os do passo 5.
 - **Riscos / decisões em aberto** — local vs global, mínima vs completa, FKs ambíguas.
+
+Peça revisão **item a item**, não aceite global: pergunte o que falta ou está fora de escopo e
+reapresente com os ajustes antes de sair do plan mode. Plano incompleto custa menos que execução errada.
 
 > **Não implemente aqui.** Peça o meu OK. Com o aceite, executo as skills `create-*` na sessão
 > (cada passo aponta seu reviewer), e no fim `review-changes` → `suggest-prs` → `suggest-commits`
