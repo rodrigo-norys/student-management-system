@@ -66,7 +66,7 @@ Fluxo: a skill gera seguindo o padrão; o agente revisa em contexto limpo; a umb
 
 Todos são **read-only** (`tools: Read, Grep, Glob`). Um revisor com `Write` viraria editor disfarçado e tiraria o ponto de controle.
 
-Hoje: **9 ativos** (8 reviewers de par/transversais/dados + o `state-audit` macro) e **1 planejado** (`security-perf-review` na Fase 4) — **10 no alvo**.
+Hoje: **10 ativos** (9 reviewers de par/transversais/dados + o `state-audit` macro) e **1 planejado** (`security-perf-review` na Fase 4) — **11 no alvo**.
 
 | Agente | Arquivo | Função |
 |--------|---------|--------|
@@ -180,6 +180,70 @@ transforme caso pontual em regra global sem o meu ok. Reviewer jamais ganha `Edi
 **Skills:**
 - **`/create-migration <entidade>`** (ex.: `/create-route subject`) ou em linguagem natural. O argumento é o nome da entidade; sem ele, a skill pergunta.
 - Skills são descobertas no **start da sessão**. Se não aparecerem como `/create-...`, um `/clear` ou nova sessão reindexa.
+
+---
+
+## Sessões longas
+
+Hábitos para trabalho que não cabe numa sessão curta — fatia vertical inteira, épico multi-fatia.
+O mecanismo é do harness; a calibragem abaixo é deste repo.
+
+### Escopar antes — plan mode
+`plan-feature` e `plan-project` chamam `EnterPlanMode` antes do passo 1: o read-only vira garantia
+do harness, não promessa da skill. O plano sai pelo `ExitPlanMode`, e o aceite dele é o gate que
+libera as `create-*`. **Revise o plano item a item** — apontar o que falta ali custa menos que
+corrigir código depois.
+
+### Dirigir o contexto — `/compact` com instrução
+Nunca `/compact` nu: o que vem depois do comando molda o que o resumo preserva — e **esse texto é
+seu**, definido caso a caso conforme o que a sessão deve guardar. O exemplo abaixo é só a forma:
+
+    /compact Foco no controller e na rota de StudentClass; descarte o recon inicial do model   (exemplo)
+
+Como no rewind, `/compact` é ação sua no harness — eu não executo. Se a janela esticar ou acabarmos
+de cruzar uma fronteira de fatia, eu levanto a bandeira; a instrução, você escreve.
+
+### Voltar atrás — rewind
+Duplo ESC em prompt vazio abre o menu; **todo prompt seu já é um checkpoint** — a disciplina não é
+"criar" um, é abrir cada fronteira do trabalho com um prompt próprio, para o ponto de retorno cair
+em lugar seguro. Numa fatia da cadeia canônica, dois pontos importam:
+
+- **A — início da fatia** (árvore limpa, fatia anterior commitada): o ponto de "abortar a fatia
+  antes de tocar no banco".
+- **B — migration aplicada, revisada e model registrado**: o ponto de iterar controller/rota/página
+  com o schema já fixo. Rewind ao B é sempre limpo — depois dele não há mais escrita no banco.
+
+`Summarize up to here` no B comprime a fase de recon preservando a implementação.
+
+**Linha de água — `db:migrate`.** O rewind restaura arquivo, não o MariaDB.
+- Rewind ao **B**, ou ao **A antes** do `db:migrate`: limpo, não precisa de nada.
+- Rewind ao **A depois** do `db:migrate`: o código perde a migration, mas a tabela fica. Pareie com
+  `db:migrate:undo` (seguro porque a `migration-review` garantiu o `down`). Migration não roda em
+  transação — não há volta implícita.
+
+**Escrita dos Stop hooks:** o `format-on-stop` roda `prettier --write` no fim do turno, depois do
+último checkpoint.
+
+### Definir "pronto" — `/goal`
+O avaliador **só lê o transcript**: a condição precisa ser checável pela saída impressa, não pelo
+estado do disco.
+
+    /goal npm test --prefix backend imprimiu 0 failed, e CI=true npm run build em frontend/ terminou sem warning
+
+`/goal clear` cancela.
+
+### Paralelizar — worktree
+Vale quando há **simultaneidade real** (duas sessões escrevendo, ou você numa frente e o Claude
+noutra). Para trabalho sequencial, `git switch` basta. O `.worktreeinclude` na raiz já carrega
+`.env`, `docker-compose.override.yml`, `uploads/` e os assets do front para cada worktree nova.
+
+**Limite:** worktree isola arquivos, não porta nem banco. Duas sessões rodando a app disputam a
+`3001` e o mesmo `school_local`. Paralelize a escrita de código, não a execução.
+
+### `/loop` — por que não usamos
+O ganho do loop é **agir** quando um estado externo muda. Aqui o CI roda em PR e o merge é humano, e
+toda mudança de estado em produção é human-in-the-loop por política (`context/governance.md`). Sem
+poder agir, o loop só gasta turno.
 
 ---
 
