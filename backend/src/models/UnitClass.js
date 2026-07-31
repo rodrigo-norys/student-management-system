@@ -152,8 +152,9 @@ export default class UnitClass extends Model {
     });
 
     this.belongsToMany(models.Student, {
-      through: 'student_classes',
+      through: { model: models.StudentClass, unique: false },
       foreignKey: 'unit_class_id',
+      otherKey: 'student_id',
       as: 'students',
     });
 

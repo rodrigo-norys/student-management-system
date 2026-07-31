@@ -4,6 +4,13 @@ export default class StudentClass extends Model {
   static init(sequelize) {
     super.init(
       {
+        // Servir de `through` em belongsToMany reatribuiria a chave primária ao
+        // par de FKs; declarar a surrogate preserva o `id` real da tabela.
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+        },
         student_id: {
           type: Sequelize.INTEGER,
           allowNull: false,
